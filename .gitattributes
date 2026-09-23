@@ -1,0 +1,8 @@
+# Normaliza los archivos de texto del repositorio.
+# Se utilizar? LF para c?digo y documentaci?n independientemente
+# del sistema operativo utilizado por cada integrante.
+* text=auto eol=lf
+
+# Scripts nativos de Windows conservan CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf

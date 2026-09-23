@@ -24,7 +24,5 @@ const Color textoSecundario = Color(0xFF777D7A);
 final ThemeData appTheme = ThemeData(
   useMaterial3: true,
   scaffoldBackgroundColor: fondoPrincipal,
-  colorScheme: ColorScheme.fromSeed(
-    seedColor: verdePrincipal,
-  ),
+  colorScheme: ColorScheme.fromSeed(seedColor: verdePrincipal),
 );

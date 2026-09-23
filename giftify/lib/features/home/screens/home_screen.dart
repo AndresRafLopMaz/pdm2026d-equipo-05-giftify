@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
-import 'theme.dart';
+import '../../../core/theme/app_theme.dart';
 
 // ============================================================
 // MAIN SCREEN
 // ============================================================
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   // ==========================================================
   // VARIABLES
   // ==========================================================
 
-  String ocasionSeleccionada = 'Cumpleaños';
+  String ocasionSeleccionada = 'CumpleaÃ±os';
 
   final List<String> ocasiones = [
-    'Cumpleaños',
+    'CumpleaÃ±os',
     'Aniversario',
-    'Graduación',
+    'GraduaciÃ³n',
     'Amistad',
   ];
 
@@ -37,9 +37,7 @@ class _MainScreenState extends State<MainScreen> {
       SnackBar(
         content: Text(mensaje),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
@@ -72,7 +70,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 const SizedBox(height: 14),
                 const Text(
-                  'José María',
+                  'JosÃ© MarÃ­a',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -82,9 +80,7 @@ class _MainScreenState extends State<MainScreen> {
                 const SizedBox(height: 4),
                 const Text(
                   'JM@gmail.com',
-                  style: TextStyle(
-                    color: textoSecundario,
-                  ),
+                  style: TextStyle(color: textoSecundario),
                 ),
                 const SizedBox(height: 24),
                 Container(
@@ -103,16 +99,12 @@ class _MainScreenState extends State<MainScreen> {
                           ),
                         ),
                         title: const Text('Mis direcciones'),
-                        subtitle: const Text(
-                          'Administrar lugares de entrega',
-                        ),
-                        trailing: const Icon(
-                          Icons.chevron_right_rounded,
-                        ),
+                        subtitle: const Text('Administrar lugares de entrega'),
+                        trailing: const Icon(Icons.chevron_right_rounded),
                         onTap: () {
                           Navigator.pop(context);
                           mostrarMensaje(
-                            'Aquí se administrarían las direcciones.',
+                            'AquÃ­ se administrarÃ­an las direcciones.',
                           );
                         },
                       ),
@@ -125,17 +117,13 @@ class _MainScreenState extends State<MainScreen> {
                             color: rosaPrincipal,
                           ),
                         ),
-                        title: const Text('Métodos de pago'),
-                        subtitle: const Text(
-                          'Administrar formas de pago',
-                        ),
-                        trailing: const Icon(
-                          Icons.chevron_right_rounded,
-                        ),
+                        title: const Text('MÃ©todos de pago'),
+                        subtitle: const Text('Administrar formas de pago'),
+                        trailing: const Icon(Icons.chevron_right_rounded),
                         onTap: () {
                           Navigator.pop(context);
                           mostrarMensaje(
-                            'Aquí se administrarían los métodos de pago.',
+                            'AquÃ­ se administrarÃ­an los mÃ©todos de pago.',
                           );
                         },
                       ),
@@ -180,7 +168,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const SizedBox(height: 18),
               const Text(
-                '¡Empecemos!',
+                'Â¡Empecemos!',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -189,7 +177,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const SizedBox(height: 10),
               const Text(
-                'En la aplicación completa, este botón abrirá la pantalla donde podrás indicar para quién es el regalo, la ocasión y tu presupuesto.',
+                'En la aplicaciÃ³n completa, este botÃ³n abrirÃ¡ la pantalla donde podrÃ¡s indicar para quiÃ©n es el regalo, la ocasiÃ³n y tu presupuesto.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
@@ -205,21 +193,17 @@ class _MainScreenState extends State<MainScreen> {
                     Navigator.pop(context);
 
                     mostrarMensaje(
-                      'Se abriría la pantalla de personalización.',
+                      'Se abrirÃ­a la pantalla de personalizaciÃ³n.',
                     );
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: rosaPrincipal,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text(
                     'Continuar',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -240,7 +224,6 @@ class _MainScreenState extends State<MainScreen> {
       // ======================================================
       // BARRA SUPERIOR
       // ======================================================
-
       appBar: AppBar(
         backgroundColor: fondoPrincipal,
         elevation: 0,
@@ -259,21 +242,15 @@ class _MainScreenState extends State<MainScreen> {
             ),
             onSelected: (opcion) {
               if (opcion == 'vista') {
-                mostrarMensaje(
-                  'Configuración de vista seleccionada.',
-                );
+                mostrarMensaje('ConfiguraciÃ³n de vista seleccionada.');
               }
 
               if (opcion == 'soporte') {
-                mostrarMensaje(
-                  'Se abriría la sección de soporte.',
-                );
+                mostrarMensaje('Se abrirÃ­a la secciÃ³n de soporte.');
               }
 
               if (opcion == 'salir') {
-                mostrarMensaje(
-                  'Cerrar sesión seleccionado.',
-                );
+                mostrarMensaje('Cerrar sesiÃ³n seleccionado.');
               }
             },
             itemBuilder: (context) {
@@ -299,7 +276,7 @@ class _MainScreenState extends State<MainScreen> {
                   value: 'salir',
                   child: ListTile(
                     leading: Icon(Icons.logout_rounded),
-                    title: Text('Cerrar sesión'),
+                    title: Text('Cerrar sesiÃ³n'),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -312,9 +289,7 @@ class _MainScreenState extends State<MainScreen> {
             padding: const EdgeInsets.only(right: 16),
             child: IconButton(
               onPressed: mostrarPerfil,
-              style: IconButton.styleFrom(
-                backgroundColor: verdeClaro,
-              ),
+              style: IconButton.styleFrom(backgroundColor: verdeClaro),
               icon: const Icon(
                 Icons.person_outline_rounded,
                 color: verdeOscuro,
@@ -327,22 +302,15 @@ class _MainScreenState extends State<MainScreen> {
       // ======================================================
       // CONTENIDO
       // ======================================================
-
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            22,
-            10,
-            22,
-            35,
-          ),
+          padding: const EdgeInsets.fromLTRB(22, 10, 22, 35),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ==================================================
               // ENCABEZADO
               // ==================================================
-
               const Text(
                 'ENCUENTRA TU REGALO PERFECTO',
                 style: TextStyle(
@@ -354,7 +322,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                '¿Qué estás\nbuscando?',
+                'Â¿QuÃ© estÃ¡s\nbuscando?',
                 style: TextStyle(
                   color: verdePrincipal,
                   fontSize: 34,
@@ -364,8 +332,8 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const SizedBox(height: 12),
               const Text(
-                'Encontrar el regalo ideal puede ser más sencillo. '
-                'Personaliza tu búsqueda y descubre diferentes opciones.',
+                'Encontrar el regalo ideal puede ser mÃ¡s sencillo. '
+                'Personaliza tu bÃºsqueda y descubre diferentes opciones.',
                 style: TextStyle(
                   color: textoSecundario,
                   fontSize: 15,
@@ -378,24 +346,18 @@ class _MainScreenState extends State<MainScreen> {
               // ==================================================
               // TARJETA PRINCIPAL
               // ==================================================
-
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [
-                      rosaPrincipal,
-                      Color(0xFFF47CC4),
-                    ],
+                    colors: [rosaPrincipal, Color(0xFFF47CC4)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: rosaPrincipal.withValues(
-                        alpha: 0.20,
-                      ),
+                      color: rosaPrincipal.withValues(alpha: 0.20),
                       blurRadius: 15,
                       offset: const Offset(0, 7),
                     ),
@@ -407,8 +369,7 @@ class _MainScreenState extends State<MainScreen> {
                     children: [
                       Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -416,11 +377,8 @@ class _MainScreenState extends State<MainScreen> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(
-                                  alpha: 0.20,
-                                ),
-                                borderRadius:
-                                    BorderRadius.circular(20),
+                                color: Colors.white.withValues(alpha: 0.20),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Text(
                                 'Regalos personalizados',
@@ -443,7 +401,7 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                             const SizedBox(height: 8),
                             const Text(
-                              'Ideas para cada persona y ocasión.',
+                              'Ideas para cada persona y ocasiÃ³n.',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 13,
@@ -457,9 +415,7 @@ class _MainScreenState extends State<MainScreen> {
                         width: 90,
                         height: 110,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(
-                            alpha: 0.18,
-                          ),
+                          color: Colors.white.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(22),
                         ),
                         child: const Icon(
@@ -478,9 +434,8 @@ class _MainScreenState extends State<MainScreen> {
               // ==================================================
               // OCASIONES
               // ==================================================
-
               const Text(
-                '¿Tienes una ocasión en mente?',
+                'Â¿Tienes una ocasiÃ³n en mente?',
                 style: TextStyle(
                   color: textoPrincipal,
                   fontSize: 19,
@@ -489,11 +444,8 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Selecciona una opción para personalizar la experiencia.',
-                style: TextStyle(
-                  color: textoSecundario,
-                  fontSize: 13,
-                ),
+                'Selecciona una opciÃ³n para personalizar la experiencia.',
+                style: TextStyle(color: textoSecundario, fontSize: 13),
               ),
               const SizedBox(height: 14),
 
@@ -501,8 +453,7 @@ class _MainScreenState extends State<MainScreen> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: ocasiones.map((ocasion) {
-                    final bool seleccionada =
-                        ocasionSeleccionada == ocasion;
+                    final bool seleccionada = ocasionSeleccionada == ocasion;
 
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
@@ -518,9 +469,7 @@ class _MainScreenState extends State<MainScreen> {
                               : const Color(0xFFE1E6E3),
                         ),
                         labelStyle: TextStyle(
-                          color: seleccionada
-                              ? Colors.white
-                              : textoPrincipal,
+                          color: seleccionada ? Colors.white : textoPrincipal,
                           fontWeight: FontWeight.w600,
                         ),
                         onSelected: (seleccionado) {
@@ -539,17 +488,14 @@ class _MainScreenState extends State<MainScreen> {
               // ==================================================
               // CATALOGO
               // ==================================================
-
               Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Visita nuestro catálogo',
+                        'Visita nuestro catÃ¡logo',
                         style: TextStyle(
                           color: textoPrincipal,
                           fontSize: 20,
@@ -559,18 +505,13 @@ class _MainScreenState extends State<MainScreen> {
                       SizedBox(height: 4),
                       Text(
                         'Algunas ideas para ti',
-                        style: TextStyle(
-                          color: textoSecundario,
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: textoSecundario, fontSize: 13),
                       ),
                     ],
                   ),
                   TextButton(
                     onPressed: () {
-                      mostrarMensaje(
-                        'Se abriría el catálogo completo.',
-                      );
+                      mostrarMensaje('Se abrirÃ­a el catÃ¡logo completo.');
                     },
                     child: const Text('Ver todo'),
                   ),
@@ -611,7 +552,7 @@ class _MainScreenState extends State<MainScreen> {
                     child: ProductoCard(
                       icono: Icons.local_cafe_rounded,
                       nombre: 'Detalles',
-                      descripcion: 'Pequeños regalos',
+                      descripcion: 'PequeÃ±os regalos',
                       color: Color(0xFFFFF5D8),
                       colorIcono: Color(0xFFC58D16),
                     ),
@@ -620,7 +561,7 @@ class _MainScreenState extends State<MainScreen> {
                   Expanded(
                     child: ProductoCard(
                       icono: Icons.devices_rounded,
-                      nombre: 'Tecnología',
+                      nombre: 'TecnologÃ­a',
                       descripcion: 'Ideas modernas',
                       color: Color(0xFFEDEBFF),
                       colorIcono: Color(0xFF6759C8),
@@ -634,9 +575,8 @@ class _MainScreenState extends State<MainScreen> {
               // ==================================================
               // COMO FUNCIONA
               // ==================================================
-
               const Text(
-                '¿Cómo funciona?',
+                'Â¿CÃ³mo funciona?',
                 style: TextStyle(
                   color: textoPrincipal,
                   fontSize: 20,
@@ -645,11 +585,8 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Conoce rápidamente el proceso para encontrar tu regalo.',
-                style: TextStyle(
-                  color: textoSecundario,
-                  fontSize: 13,
-                ),
+                'Conoce rÃ¡pidamente el proceso para encontrar tu regalo.',
+                style: TextStyle(color: textoSecundario, fontSize: 13),
               ),
               const SizedBox(height: 15),
 
@@ -657,32 +594,24 @@ class _MainScreenState extends State<MainScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFFE4E8E6),
-                  ),
+                  border: Border.all(color: const Color(0xFFE4E8E6)),
                 ),
                 child: const Column(
                   children: [
                     PasoTile(
                       numero: '1',
-                      titulo: 'Cuéntanos qué necesitas',
+                      titulo: 'CuÃ©ntanos quÃ© necesitas',
                       descripcion:
-                          'Selecciona la ocasión, destinatario, tipo de regalo y presupuesto.',
+                          'Selecciona la ocasiÃ³n, destinatario, tipo de regalo y presupuesto.',
                     ),
-                    Divider(
-                      height: 1,
-                      indent: 70,
-                    ),
+                    Divider(height: 1, indent: 70),
                     PasoTile(
                       numero: '2',
                       titulo: 'Recibe recomendaciones',
                       descripcion:
-                          'La aplicación mostrará diferentes opciones relacionadas con tu búsqueda.',
+                          'La aplicaciÃ³n mostrarÃ¡ diferentes opciones relacionadas con tu bÃºsqueda.',
                     ),
-                    Divider(
-                      height: 1,
-                      indent: 70,
-                    ),
+                    Divider(height: 1, indent: 70),
                     PasoTile(
                       numero: '3',
                       titulo: 'Elige tu favorito',
@@ -698,7 +627,6 @@ class _MainScreenState extends State<MainScreen> {
               // ==================================================
               // INFORMACION DESPLEGABLE
               // ==================================================
-
               Card(
                 elevation: 0,
                 color: verdeClaro,
@@ -716,23 +644,20 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                   title: Text(
-                    'Sobre Regalo Ideal',
+                    'Sobre Giftify',
                     style: TextStyle(
                       color: verdeOscuro,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  subtitle: Text(
-                    'Conoce el propósito de la aplicación',
-                  ),
-                  childrenPadding:
-                      EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  subtitle: Text('Conoce el propÃ³sito de la aplicaciÃ³n'),
+                  childrenPadding: EdgeInsets.fromLTRB(20, 0, 20, 20),
                   children: [
                     Text(
-                      'Regalo Ideal está pensado para ayudar al usuario '
-                      'a descubrir opciones de regalos según la persona, '
-                      'ocasión y presupuesto. También permite explorar '
-                      'un catálogo y administrar datos relacionados con '
+                      'Giftify estÃ¡ pensado para ayudar al usuario '
+                      'a descubrir opciones de regalos segÃºn la persona, '
+                      'ocasiÃ³n y presupuesto. TambiÃ©n permite explorar '
+                      'un catÃ¡logo y administrar datos relacionados con '
                       'la compra desde el perfil.',
                       style: TextStyle(
                         color: textoSecundario,
@@ -749,7 +674,6 @@ class _MainScreenState extends State<MainScreen> {
               // ==================================================
               // BOTON PRINCIPAL
               // ==================================================
-
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -757,22 +681,15 @@ class _MainScreenState extends State<MainScreen> {
                   style: FilledButton.styleFrom(
                     backgroundColor: rosaPrincipal,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 17,
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 17),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(17),
                     ),
                   ),
-                  icon: const Icon(
-                    Icons.search_rounded,
-                  ),
+                  icon: const Icon(Icons.search_rounded),
                   label: const Text(
                     'Encontrar mi regalo',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -782,16 +699,10 @@ class _MainScreenState extends State<MainScreen> {
               Center(
                 child: TextButton.icon(
                   onPressed: () {
-                    mostrarMensaje(
-                      'Se abriría directamente el catálogo.',
-                    );
+                    mostrarMensaje('Se abrirÃ­a directamente el catÃ¡logo.');
                   },
-                  icon: const Icon(
-                    Icons.storefront_outlined,
-                  ),
-                  label: const Text(
-                    'Explorar catálogo sin personalizar',
-                  ),
+                  icon: const Icon(Icons.storefront_outlined),
+                  label: const Text('Explorar catÃ¡logo sin personalizar'),
                 ),
               ),
             ],
@@ -830,20 +741,15 @@ class ProductoCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(19),
-        side: const BorderSide(
-          color: Color(0xFFE4E8E6),
-        ),
+        side: const BorderSide(color: Color(0xFFE4E8E6)),
       ),
       child: InkWell(
         onTap: () {
-          ScaffoldMessenger.of(context)
-              .hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Categoría seleccionada: $nombre',
-              ),
+              content: Text('CategorÃ­a seleccionada: $nombre'),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -860,11 +766,7 @@ class ProductoCard extends StatelessWidget {
                   color: color,
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Icon(
-                  icono,
-                  color: colorIcono,
-                  size: 45,
-                ),
+                child: Icon(icono, color: colorIcono, size: 45),
               ),
               const SizedBox(height: 12),
               Text(
@@ -878,10 +780,7 @@ class ProductoCard extends StatelessWidget {
               const SizedBox(height: 3),
               Text(
                 descripcion,
-                style: const TextStyle(
-                  color: textoSecundario,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: textoSecundario, fontSize: 12),
               ),
             ],
           ),
@@ -930,12 +829,7 @@ class PasoTile extends StatelessWidget {
           fontWeight: FontWeight.w600,
         ),
       ),
-      childrenPadding: const EdgeInsets.fromLTRB(
-        70,
-        0,
-        20,
-        18,
-      ),
+      childrenPadding: const EdgeInsets.fromLTRB(70, 0, 20, 18),
       children: [
         Align(
           alignment: Alignment.centerLeft,

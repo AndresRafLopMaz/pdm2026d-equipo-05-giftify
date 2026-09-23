@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'app.dart';
+
+import 'app/giftify_app.dart';
 
 void main() {
-  runApp(const RegaloApp());
+  runApp(const GiftifyApp());
 }
