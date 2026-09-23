@@ -121,3 +121,24 @@ La inteligencia artificial puede utilizarse como apoyo para comprender conceptos
 Las decisiones, validaciones, evidencia y revisión final corresponden al equipo.
 
 Cuando se utilice IA en una tarea relevante, se documentará qué apoyo proporcionó y qué decidió aceptar, modificar o rechazar el equipo.
+
+## Issue #2 - Estructura base del proyecto Flutter
+
+Como parte del milestone **M1 - Arquitectura y datos**, se ha definido la estructura base que posteriormente utilizará el proyecto Flutter de Giftify.
+
+La estructura mínima contemplada es la siguiente:
+
+```text
+pdm2026d-equipo-05-giftify/
+├── lib/
+├── test/
+└── pubspec.yaml
+```
+
+### Elementos principales
+
+* `lib/`: contendrá el código fuente principal de la aplicación.
+* `test/`: contendrá las pruebas que se incorporen durante el desarrollo.
+* `pubspec.yaml`: permitirá definir la configuración general, dependencias y recursos del proyecto Flutter.
+
+Esta estructura servirá como base para integrar posteriormente las pantallas, modelos, navegación y lógica correspondientes al MVP de Giftify.
