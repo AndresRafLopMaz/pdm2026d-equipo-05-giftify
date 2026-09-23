@@ -1,4 +1,4 @@
-/// Dirección que puede utilizarse durante el proceso de check-out.
+/// Dirección utilizada durante el proceso de check-out.
 class DeliveryAddress {
   const DeliveryAddress({
     required this.id,
@@ -12,7 +12,7 @@ class DeliveryAddress {
 
   final String id;
 
-  /// Nombre identificador como "Casa" o "Trabajo".
+  /// Nombre identificador: Casa, Trabajo, etc.
   final String label;
 
   final String recipientName;
@@ -20,6 +20,6 @@ class DeliveryAddress {
   final String city;
   final String department;
 
-  /// Indicaciones adicionales opcionales.
+  /// Información complementaria para localizar la dirección.
   final String? reference;
 }

@@ -1,8 +1,8 @@
 import 'delivery_address.dart';
 
-/// Información general del usuario.
+/// Información general del usuario de Giftify.
 ///
-/// No contiene contraseña ni datos completos de tarjetas.
+/// Las credenciales de autenticación no forman parte de este modelo.
 class UserProfile {
   const UserProfile({
     required this.id,

@@ -1,6 +1,6 @@
 import 'gift_product.dart';
 
-/// Representa un producto agregado al carrito.
+/// Representa un producto agregado al carrito de Giftify.
 class CartItem {
   const CartItem({required this.product, this.quantity = 1})
     : assert(quantity > 0);
@@ -8,7 +8,7 @@ class CartItem {
   final GiftProduct product;
   final int quantity;
 
-  /// Importe total correspondiente a este elemento.
+  /// Total correspondiente a este elemento.
   double get subtotal => product.price * quantity;
 
   CartItem copyWith({GiftProduct? product, int? quantity}) {

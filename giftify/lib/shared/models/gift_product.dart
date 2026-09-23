@@ -1,39 +1,59 @@
-/// Estado de disponibilidad de un producto.
-enum GiftAvailability { inStock, lowStock, outOfStock, unknown }
+import '../enums/gift_availability.dart';
 
-/// Producto que puede ser recomendado dentro de Giftify.
+/// Producto recomendado por Giftify.
 ///
-/// Es utilizado principalmente por resultados, detalle y carrito.
+/// Este modelo es compartido por resultados, detalle y carrito.
+/// No pertenece exclusivamente a ninguna pantalla.
 class GiftProduct {
   const GiftProduct({
     required this.id,
     required this.name,
     required this.description,
     required this.price,
+    required this.category,
+    required this.size,
     required this.availability,
     required this.sellerName,
     required this.sellerRating,
+    required this.suggestedOccasions,
     this.estimatedDeliveryDays,
     this.imageAsset,
   });
 
+  /// Identificador único del producto.
   final String id;
+
   final String name;
   final String description;
 
   /// Precio expresado en quetzales.
   final double price;
 
+  /// Categoría general del producto.
+  final String category;
+
+  /// Tamaño utilizado por el filtrado inicial.
+  final String size;
+
   final GiftAvailability availability;
 
-  /// Cantidad estimada de días necesarios para entregar el producto.
-  final int? estimatedDeliveryDays;
-
+  /// Nombre del comercio o proveedor.
   final String sellerName;
 
-  /// Calificación en una escala de 0 a 5.
+  /// Calificación del vendedor en escala de 0 a 5.
   final double sellerRating;
 
-  /// Ruta opcional hacia una imagen local de assets.
+  /// Ocasiones para las que normalmente puede recomendarse.
+  final List<String> suggestedOccasions;
+
+  /// Tiempo aproximado de entrega.
+  final int? estimatedDeliveryDays;
+
+  /// Ruta opcional a una imagen local dentro de assets.
   final String? imageAsset;
+
+  /// Indica si actualmente se puede considerar disponible.
+  bool get isAvailable =>
+      availability == GiftAvailability.inStock ||
+      availability == GiftAvailability.lowStock;
 }
