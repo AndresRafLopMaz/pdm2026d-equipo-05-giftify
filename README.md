@@ -1,57 +1,58 @@
 # 🎁 Giftify
 
-Aplicación móvil desarrollada con **Flutter** para apoyar la búsqueda, comparación y selección de regalos de acuerdo con el destinatario, la ocasión, el presupuesto y otras restricciones relevantes.
+Giftify es una aplicación móvil desarrollada con **Flutter** orientada a facilitar la elección de regalos personalizados mediante una experiencia de búsqueda guiada, comparación de opciones y consulta de información relevante antes de realizar una selección.
 
-> Proyecto académico del curso **Programación de Dispositivos Móviles**, 8.º semestre de Ingeniería en Sistemas — Universidad Mesoamericana, Sección D, Equipo 05.
+El proyecto surge de la necesidad de reducir la incertidumbre que puede aparecer al buscar un regalo cuando existen restricciones de presupuesto, destinatario, fecha, disponibilidad, características del producto y tiempo de entrega.
 
 ---
 
-## 📌 Estado actual
+## 📌 Descripción general
 
-Giftify se encuentra en una **fase temprana de desarrollo**, con énfasis actual en **frontend, arquitectura e integración entre pantallas**.
+Giftify busca apoyar al usuario durante todo el recorrido de selección de un regalo:
 
-La base común del proyecto ya incluye:
+1. identificar la ocasión;
+2. identificar al destinatario;
+3. definir criterios de búsqueda;
+4. consultar opciones recomendadas;
+5. comparar productos;
+6. revisar los detalles de una opción;
+7. agregar productos al carrito;
+8. completar un proceso de check-out.
 
-- estructura modular por funcionalidades;
-- tema visual compartido;
-- navegación centralizada;
-- modelos de datos compartidos;
-- catálogo local de productos simulados;
-- espacio básico reservado para backend;
-- pruebas iniciales de arranque, modelos y navegación;
-- bitácoras individuales por integrante;
-- documentación técnica de las fases iniciales.
-
-El backend real, autenticación, persistencia, pagos y consumo de API **todavía no forman parte de la implementación funcional actual**.
+La intención principal es que la aplicación no se limite a mostrar un catálogo general, sino que utilice información contextual para presentar alternativas más adecuadas a la necesidad del usuario.
 
 ---
 
 ## 🎯 Problema que aborda
 
-Al elegir un regalo con una fecha límite, una persona puede encontrar:
+Durante la búsqueda de un regalo pueden presentarse dificultades como:
 
 - información de disponibilidad desactualizada;
 - diferencias entre lo publicado y el producto real;
-- múltiples alternativas difíciles de comparar;
-- información dispersa;
-- respuestas tardías de vendedores;
-- restricciones de presupuesto, tiempo, tamaño o entrega.
+- dificultad para comparar varias alternativas;
+- restricciones de presupuesto;
+- tiempos de entrega limitados;
+- características específicas del destinatario;
+- información dispersa entre diferentes fuentes.
 
-Giftify busca reducir esta incertidumbre mediante una experiencia de búsqueda personalizada y una comparación más clara de alternativas.
+Giftify busca concentrar la información necesaria para apoyar una decisión más clara y estructurada.
 
 ---
 
 ## 💡 Propuesta de valor
 
-**Ayudar al usuario a encontrar y validar una opción de regalo adecuada antes de realizar la compra**, considerando criterios como:
+Giftify propone una experiencia de búsqueda personalizada donde el usuario pueda establecer criterios y recibir opciones que se ajusten mejor a su contexto.
+
+Entre los criterios considerados se encuentran:
 
 - ocasión;
 - destinatario;
-- presupuesto;
-- categoría;
+- presupuesto máximo;
+- fecha prevista;
+- categoría del regalo;
 - tamaño;
 - disponibilidad;
-- vendedor;
+- información del vendedor;
 - calificación;
 - tiempo estimado de entrega.
 
@@ -59,29 +60,29 @@ Giftify busca reducir esta incertidumbre mediante una experiencia de búsqueda p
 
 # 🧭 Flujo general de la aplicación
 
-El prototipo contempla siete pantallas principales:
+El diseño contempla siete pantallas principales:
 
 ```text
-1. Registro
-      ↓
-2. Inicio / guía
-      ↓
+1. Registro de usuario
+        ↓
+2. Pantalla principal / guía
+        ↓
 3. Personalización de búsqueda
-      ↓
+        ↓
 4. Resultados personalizados
-      ↓
+        ↓
 5. Detalle del producto
-      ↓
-6. Carrito
-      ↓
+        ↓
+6. Carrito de compras
+        ↓
 7. Check-out
 ```
 
-También se contemplan recorridos secundarios, por ejemplo:
+Además del recorrido principal, la aplicación contempla navegación secundaria como:
 
 ```text
-Resultados → modificar criterios
-Resultados → detalle
+Resultados → modificar búsqueda
+Resultados → detalle de producto
 Resultados → carrito
 Detalle → carrito
 Carrito → detalle
@@ -90,66 +91,28 @@ Carrito → check-out
 
 ---
 
-# 👥 Equipo y distribución de pantallas
+# 🧱 Tecnologías principales
 
-El proyecto se desarrolla actualmente con **4 integrantes**.
+El proyecto utiliza principalmente:
 
-| Integrante | Rama de trabajo | Pantallas | Módulo principal |
-|---|---|---:|---|
-| Diego Barrios | `diego` | 1 | `features/auth/` |
-| Brayan Chaclan | `brayan` | 2 y 3 | `features/home/` y `features/search/` |
-| Andrés López | `andres` | 4 y 5 | `features/products/` |
-| Catherine Coti | `catherine` | 6 y 7 | `features/cart/` |
+- **Flutter** para el desarrollo de la aplicación móvil;
+- **Dart** como lenguaje de programación;
+- **Material 3** como base del sistema visual;
+- **Git** para control de versiones;
+- **GitHub** para almacenamiento, integración y colaboración.
 
-> Cada integrante tiene una zona principal de trabajo, pero algunos archivos son compartidos y deben modificarse con coordinación.
-
----
-
-# 🧱 Tecnologías
-
-## Principales
-
-- **Flutter**
-- **Dart**
-- **Material 3**
-- **Git**
-- **GitHub**
-
-## Estado actual de dependencias
-
-El proyecto mantiene una configuración deliberadamente sencilla.
-
-Por el momento **no se han incorporado** gestores de estado o clientes HTTP externos como:
-
-- Provider;
-- Riverpod;
-- BLoC;
-- Dio;
-- Firebase;
-- Supabase.
-
-Estas tecnologías solo se agregarán cuando exista una necesidad concreta y acordada por el equipo.
+La arquitectura se mantiene deliberadamente sencilla y modular para permitir que pueda evolucionar sin agregar complejidad innecesaria.
 
 ---
 
-# 🗂️ Arquitectura actual
-
-La estructura principal se organiza por funcionalidades:
+# 🗂️ Estructura general del repositorio
 
 ```text
 pdm2026d-equipo-05-giftify/
 │
 ├── docs/
 │   ├── bitacoras/
-│   │   ├── ANDRES.md
-│   │   ├── BRAYAN.md
-│   │   ├── CATHERINE.md
-│   │   └── DIEGO.md
-│   │
 │   └── fases/
-│       ├── FASE_1_REORGANIZACION_BASE.md
-│       ├── FASE_2_MODELOS_MOCKS_BACKEND.md
-│       └── FASE_3_CONTRATO_NAVEGACION.md
 │
 └── giftify/
     ├── lib/
@@ -169,236 +132,261 @@ pdm2026d-equipo-05-giftify/
     │   │
     │   ├── shared/
     │   │   ├── data/
-    │   │   │   └── mock_products.dart
-    │   │   │
     │   │   ├── enums/
-    │   │   │   ├── gift_availability.dart
-    │   │   │   └── payment_method_type.dart
-    │   │   │
     │   │   └── models/
-    │   │       ├── cart_item.dart
-    │   │       ├── delivery_address.dart
-    │   │       ├── gift_product.dart
-    │   │       ├── gift_search_criteria.dart
-    │   │       └── user_profile.dart
     │   │
     │   └── features/
     │       ├── auth/
-    │       │   └── screens/
-    │       │       └── register_screen.dart
-    │       │
     │       ├── home/
-    │       │   └── screens/
-    │       │       └── home_screen.dart
-    │       │
     │       ├── search/
-    │       │   └── screens/
-    │       │       └── gift_search_screen.dart
-    │       │
     │       ├── products/
-    │       │   └── screens/
-    │       │       ├── product_results_screen.dart
-    │       │       └── product_detail_screen.dart
-    │       │
     │       └── cart/
-    │           └── screens/
-    │               ├── cart_screen.dart
-    │               └── checkout_screen.dart
     │
     ├── test/
-    │   ├── app_smoke_test.dart
-    │   ├── navigation_contract_test.dart
-    │   └── shared_models_test.dart
-    │
     └── pubspec.yaml
 ```
 
 ---
 
-# 🧩 Responsabilidad de las capas
+# 🧩 Organización arquitectónica
+
+La aplicación se divide en cuatro bloques principales:
+
+```text
+app/
+core/
+shared/
+features/
+```
+
+Cada uno tiene una responsabilidad específica.
+
+---
 
 ## `app/`
 
-Configuración global de Giftify.
+Contiene la configuración global de la aplicación.
 
 Incluye:
 
-- `MaterialApp`;
-- rutas;
-- navegación central;
-- configuración de arranque.
+- inicialización de `MaterialApp`;
+- configuración de rutas;
+- navegación centralizada;
+- definición de la aplicación principal.
 
-No deben crearse otros routers globales ni otros `MaterialApp` sin una decisión explícita del equipo.
+Archivos relevantes:
+
+```text
+app/giftify_app.dart
+app/app_router.dart
+```
 
 ---
 
 ## `core/`
 
-Infraestructura transversal.
+Contiene infraestructura transversal que puede ser utilizada por diferentes partes del sistema.
 
-Actualmente contiene:
+Actualmente se consideran dos áreas principales:
 
-### `theme/`
+```text
+core/
+├── backend/
+└── theme/
+```
 
-Tema visual compartido.
+### `core/theme/`
 
-### `backend/`
+Centraliza la configuración visual de la aplicación.
 
-Espacio mínimo reservado para una futura API.
+La intención es que colores, estilos generales y elementos comunes no se definan de forma diferente en cada pantalla.
 
-> La existencia de `backend/` **no significa que Giftify ya tenga backend funcional**.
+### `core/backend/`
+
+Reserva un espacio común para una futura comunicación con servicios externos.
+
+La configuración se concentra en:
+
+```text
+backend_config.dart
+backend_client.dart
+```
+
+Esto permite evitar que la configuración de una futura API quede distribuida directamente dentro de las pantallas.
 
 ---
 
 ## `shared/`
 
-Elementos utilizados por más de un módulo.
+Contiene elementos que pueden ser utilizados por múltiples módulos.
 
-Contiene:
-
-- modelos;
-- enums;
-- datos mock.
-
-Antes de crear un nuevo modelo debe verificarse que no exista ya uno equivalente en esta carpeta.
-
----
-
-## `features/`
-
-Contiene el desarrollo específico de cada funcionalidad o pantalla.
-
-Esta separación permite que los integrantes trabajen en paralelo con menor riesgo de conflictos de Git.
-
----
-
-# 🔄 Contratos de datos entre pantallas
-
-El proyecto ya define modelos compartidos para evitar que cada módulo utilice estructuras incompatibles.
+Se divide en:
 
 ```text
-Pantalla 3
-    │
-    │ GiftSearchCriteria
-    ▼
-Pantalla 4
-    │
-    │ GiftProduct
-    ▼
-Pantalla 5
-    │
-    │ GiftProduct / CartItem
-    ▼
-Pantalla 6
-    │
-    │ List<CartItem>
-    ▼
-Pantalla 7
+shared/
+├── data/
+├── enums/
+└── models/
 ```
 
-## Modelos principales
+### `shared/data/`
 
-### `GiftSearchCriteria`
+Contiene fuentes de datos compartidas.
 
-Contiene criterios como:
+Por ejemplo, un catálogo simulado puede utilizarse para desarrollar y probar la interfaz sin depender de un servicio externo.
 
-- ocasión;
-- destinatario;
-- presupuesto;
-- fecha;
-- tipo de regalo;
-- tamaño.
+### `shared/enums/`
 
-### `GiftProduct`
+Contiene enumeraciones utilizadas por diferentes módulos.
 
-Representa un producto recomendado.
+Ejemplos:
 
-Incluye:
+```text
+GiftAvailability
+PaymentMethodType
+```
 
-- nombre;
-- descripción;
-- precio;
-- categoría;
-- tamaño;
-- disponibilidad;
-- vendedor;
-- calificación;
-- ocasiones sugeridas;
-- tiempo estimado de entrega.
+### `shared/models/`
 
-### `CartItem`
-
-Relaciona un `GiftProduct` con una cantidad.
-
-### `DeliveryAddress`
-
-Representa una dirección de entrega.
-
-### `UserProfile`
-
-Representa información general del usuario.
-
-No contiene contraseñas, CVV, PIN ni números completos de tarjeta.
+Contiene los modelos principales que permiten intercambiar información entre las diferentes pantallas.
 
 ---
 
-# 🧪 Datos mock
+# 📦 Modelos principales
 
-Durante el desarrollo frontend se utiliza:
+## `GiftSearchCriteria`
+
+Representa los criterios utilizados para personalizar una búsqueda.
+
+Puede incluir información como:
 
 ```text
-lib/shared/data/mock_products.dart
+occasion
+recipient
+maxBudget
+eventDate
+giftType
+size
 ```
 
-Este archivo permite trabajar sin depender de una API real.
-
-Los mocks incluyen distintos escenarios:
-
-- disponible;
-- poco stock;
-- agotado;
-- disponibilidad desconocida;
-- distintos precios;
-- distintos vendedores;
-- diferentes tiempos de entrega.
-
-La intención es sustituir o adaptar esta fuente cuando exista backend real.
+Su propósito principal es transportar los criterios de búsqueda entre la pantalla de personalización y la pantalla de resultados.
 
 ---
 
-# 🌐 Backend
+## `GiftProduct`
 
-Giftify está actualmente enfocado en frontend.
+Representa una opción de regalo.
 
-Se preparó únicamente:
+Incluye información como:
 
 ```text
-core/backend/
-├── backend_client.dart
-└── backend_config.dart
+id
+name
+description
+price
+category
+size
+availability
+sellerName
+sellerRating
+suggestedOccasions
+estimatedDeliveryDays
+imageAsset
 ```
 
-La URL futura podrá proporcionarse mediante:
+Este modelo puede ser utilizado por resultados, detalle de producto y carrito.
 
-```powershell
-flutter run --dart-define=GIFTIFY_API_BASE_URL=https://api.ejemplo.com
+---
+
+## `CartItem`
+
+Representa un producto agregado al carrito.
+
+Relaciona:
+
+```text
+GiftProduct
++
+quantity
 ```
 
-Actualmente `BackendClient` **no realiza solicitudes HTTP**.
+y permite calcular el subtotal correspondiente.
 
-No se deben realizar llamadas de red directamente desde widgets.
+---
+
+## `DeliveryAddress`
+
+Representa información necesaria para una dirección de entrega.
+
+Puede contener:
+
+```text
+label
+recipientName
+addressLine
+city
+department
+reference
+```
+
+---
+
+## `UserProfile`
+
+Representa información general de un usuario.
+
+Ejemplos:
+
+```text
+name
+email
+birthDate
+addresses
+```
+
+Los datos sensibles de autenticación o pago no deben almacenarse directamente dentro de este modelo.
+
+---
+
+# 🔄 Relación entre pantallas y datos
+
+La arquitectura busca que las pantallas intercambien objetos definidos previamente, en lugar de estructuras improvisadas.
+
+Ejemplo conceptual:
+
+```text
+Pantalla de personalización
+        │
+        │ GiftSearchCriteria
+        ▼
+Pantalla de resultados
+        │
+        │ GiftProduct
+        ▼
+Pantalla de detalle
+        │
+        │ CartItem / GiftProduct
+        ▼
+Carrito
+        │
+        │ List<CartItem>
+        ▼
+Check-out
+```
+
+Esto permite que cada parte de la aplicación tenga un contrato de datos predecible.
 
 ---
 
 # 🧭 Navegación
 
-Todas las rutas se concentran en:
+La navegación se concentra en:
 
 ```text
 lib/app/app_router.dart
 ```
 
-Se utilizan constantes como:
+Las rutas se identifican mediante constantes como:
 
 ```dart
 AppRoutes.register
@@ -410,7 +398,7 @@ AppRoutes.cart
 AppRoutes.checkout
 ```
 
-Ejemplo recomendado:
+Ejemplo de navegación:
 
 ```dart
 Navigator.pushNamed(
@@ -420,182 +408,206 @@ Navigator.pushNamed(
 );
 ```
 
-Evitar escribir rutas manualmente si ya existe una constante.
+Centralizar las rutas evita mantener cadenas duplicadas o diferentes sistemas de navegación dentro de cada pantalla.
 
 ---
 
-# 🌿 Estrategia de ramas
+# 🧪 Datos simulados
 
-`main` representa la base integrada y estable.
+La aplicación contempla el uso de datos locales para facilitar el desarrollo y las pruebas.
 
-El trabajo individual se realizará en:
+El archivo:
 
 ```text
-main
-├── diego
-├── brayan
-├── andres
-└── catherine
+shared/data/mock_products.dart
 ```
 
-## Regla principal
+puede contener productos con diferentes condiciones, como:
 
-> **No desarrollar directamente sobre `main`.**
+- disponible;
+- pocas unidades;
+- agotado;
+- disponibilidad desconocida;
+- distintos precios;
+- diferentes vendedores;
+- diferentes tiempos de entrega.
 
-Cada integrante trabaja en su rama y posteriormente integra mediante Pull Request.
+La finalidad de estos datos es desacoplar el desarrollo visual de una API externa.
 
-Flujo recomendado:
+---
+
+# 🌐 Integración futura con backend
+
+La arquitectura reserva el espacio:
 
 ```text
-Actualizar rama
-      ↓
-Desarrollar
-      ↓
-Revisar git diff
-      ↓
-flutter analyze
-      ↓
+core/backend/
+```
+
+para una futura integración con servicios externos.
+
+La idea es mantener un flujo conceptual como:
+
+```text
+Interfaz
+   ↓
+Modelos
+   ↓
+Capa de acceso a datos
+   ↓
+BackendClient
+   ↓
+API
+```
+
+La URL base puede configurarse mediante una variable de compilación:
+
+```powershell
+flutter run --dart-define=GIFTIFY_API_BASE_URL=https://api.ejemplo.com
+```
+
+Esto evita escribir direcciones del servidor directamente dentro de cada pantalla.
+
+---
+
+# 🎨 Organización de funcionalidades
+
+La carpeta:
+
+```text
+features/
+```
+
+separa el código por responsabilidad funcional.
+
+```text
+features/
+├── auth/
+├── home/
+├── search/
+├── products/
+└── cart/
+```
+
+## `auth/`
+
+Contiene las pantallas y lógica relacionadas con acceso o registro de usuario.
+
+## `home/`
+
+Contiene la pantalla principal y elementos relacionados con la introducción o navegación inicial.
+
+## `search/`
+
+Contiene la personalización de criterios de búsqueda.
+
+## `products/`
+
+Contiene resultados de búsqueda y detalle de producto.
+
+## `cart/`
+
+Contiene carrito y check-out.
+
+Esta organización evita concentrar toda la aplicación dentro de archivos grandes o carpetas genéricas.
+
+---
+
+# 🧪 Pruebas
+
+El proyecto contempla pruebas en:
+
+```text
+giftify/test/
+```
+
+Entre las pruebas iniciales pueden encontrarse:
+
+```text
+app_smoke_test.dart
+shared_models_test.dart
+navigation_contract_test.dart
+```
+
+Estas pruebas ayudan a verificar:
+
+- arranque de la aplicación;
+- comportamiento de modelos compartidos;
+- transferencia de argumentos entre rutas.
+
+Comando principal:
+
+```powershell
 flutter test
-      ↓
-Actualizar bitácora
-      ↓
-Commit
-      ↓
-Push
-      ↓
-Pull Request
-      ↓
-Revisión
-      ↓
-Merge a main
 ```
 
 ---
 
-# 📝 Bitácoras de trabajo
+# ✅ Validación del código
 
-Cada integrante dispone de un archivo en:
+Para verificar la calidad estática del proyecto:
 
-```text
-docs/bitacoras/
+```powershell
+flutter analyze
 ```
 
-Correspondencia:
-
-```text
-Andrés    → ANDRES.md
-Brayan    → BRAYAN.md
-Catherine → CATHERINE.md
-Diego     → DIEGO.md
-```
-
-Cada integrante debe actualizar **únicamente su propia bitácora**.
-
-La bitácora debe conservar el historial y registrar, como mínimo:
-
-- fecha o sesión;
-- objetivo;
-- trabajo realizado;
-- archivos modificados;
-- decisiones técnicas;
-- pruebas ejecutadas;
-- pendientes;
-- cambios que afecten a otros módulos.
-
-No deben registrarse:
-
-- contraseñas;
-- tokens;
-- API keys;
-- credenciales;
-- secretos.
-
----
-
-# 📚 Documentación técnica
-
-Las primeras decisiones arquitectónicas se documentan en:
-
-```text
-docs/fases/
-```
-
-Actualmente existen:
-
-1. `FASE_1_REORGANIZACION_BASE.md`
-2. `FASE_2_MODELOS_MOCKS_BACKEND.md`
-3. `FASE_3_CONTRATO_NAVEGACION.md`
-
-Estos documentos sirven como contexto para integrantes o asistentes de IA antes de realizar cambios estructurales.
-
----
-
-# 🤖 Uso de inteligencia artificial
-
-Se permite utilizar IA como apoyo durante el desarrollo.
-
-Ejemplos:
-
-- OpenCode;
-- ChatGPT;
-- otras herramientas compatibles con el flujo de trabajo del equipo.
-
-La IA debe utilizarse como **asistente**, no como sustituto de la revisión técnica.
-
-## Reglas mínimas para una IA
-
-Antes de modificar código debe:
-
-1. revisar la estructura existente;
-2. identificar la rama activa;
-3. identificar el módulo del integrante;
-4. revisar los modelos compartidos;
-5. evitar crear estructuras duplicadas;
-6. proponer un plan antes de cambios amplios.
-
-Después de modificar código debe:
-
-1. ejecutar o solicitar `dart format`;
-2. ejecutar `flutter analyze`;
-3. ejecutar `flutter test`;
-4. revisar `git diff`;
-5. indicar qué archivos fueron modificados;
-6. actualizar la bitácora del integrante correspondiente.
-
-La IA **no debe modificar módulos de otros integrantes de forma innecesaria**.
-
----
-
-# ✅ Validación mínima antes de un commit
-
-Desde la carpeta `giftify/`:
+Para aplicar formato:
 
 ```powershell
 dart format lib test
-flutter analyze
-flutter test
 ```
 
-Desde la raíz del repositorio:
+Y para ejecutar las pruebas:
 
 ```powershell
-git status
-git diff --check
-git diff --name-status
-```
-
-El objetivo es obtener:
-
-```text
-No issues found!
-All tests passed!
+flutter test
 ```
 
 ---
 
-# 🚀 Ejecutar el proyecto
+# 📚 Documentación interna
 
-## 1. Clonar
+El repositorio contiene:
+
+```text
+docs/
+```
+
+con dos grupos principales.
+
+## `docs/fases/`
+
+Contiene documentación técnica de decisiones arquitectónicas y de organización.
+
+Puede utilizarse como contexto adicional para comprender por qué se tomaron determinadas decisiones.
+
+## `docs/bitacoras/`
+
+Contiene archivos individuales destinados a registrar cambios relevantes y facilitar la comunicación técnica entre sesiones de trabajo.
+
+---
+
+# 🔐 Consideraciones de seguridad
+
+La arquitectura evita incluir datos sensibles directamente dentro de modelos compartidos.
+
+No deberían almacenarse como parte de modelos de interfaz:
+
+- contraseñas;
+- CVV;
+- PIN;
+- números completos de tarjeta;
+- tokens;
+- API keys;
+- secretos de servicios.
+
+Una futura implementación de autenticación o pagos deberá utilizar mecanismos especializados para estos datos.
+
+---
+
+# 🚀 Ejecución local
+
+## 1. Clonar el repositorio
 
 ```powershell
 git clone https://github.com/AndresRafLopMaz/pdm2026d-equipo-05-giftify.git
@@ -613,13 +625,13 @@ cd pdm2026d-equipo-05-giftify\giftify
 flutter pub get
 ```
 
-## 4. Verificar entorno
+## 4. Verificar Flutter
 
 ```powershell
 flutter doctor
 ```
 
-## 5. Ejecutar
+## 5. Ejecutar la aplicación
 
 ```powershell
 flutter run
@@ -627,83 +639,59 @@ flutter run
 
 ---
 
-# 🧪 Pruebas
+# 📐 Principios de diseño del proyecto
 
-Ejecutar:
+Giftify se plantea bajo los siguientes principios:
 
-```powershell
-flutter test
-```
+1. **Modularidad**  
+   Cada funcionalidad debe vivir en su propio espacio.
 
-Las pruebas iniciales cubren:
+2. **Separación de responsabilidades**  
+   Navegación, tema, modelos, datos y pantallas no deben mezclarse innecesariamente.
 
-- arranque de Giftify;
-- modelos compartidos;
-- contrato básico de navegación.
+3. **Contratos claros entre pantallas**  
+   Los datos deben intercambiarse mediante modelos conocidos.
 
----
+4. **Frontend desacoplado**  
+   La interfaz debe poder desarrollarse y probarse sin depender completamente de un backend.
 
-# 🎨 Estado de las pantallas
+5. **Evolución incremental**  
+   La arquitectura debe permitir incorporar persistencia, autenticación, APIs o manejo de estado cuando realmente sean necesarios.
 
-| # | Pantalla | Responsable | Estado base |
-|---:|---|---|---|
-| 1 | Registro | Diego | estructura preparada |
-| 2 | Inicio | Brayan | implementación inicial existente |
-| 3 | Personalización | Brayan | estructura preparada |
-| 4 | Resultados | Andrés | estructura preparada |
-| 5 | Detalle | Andrés | estructura preparada |
-| 6 | Carrito | Catherine | estructura preparada |
-| 7 | Check-out | Catherine | estructura preparada |
+6. **Reutilización**  
+   Elementos compartidos deben ubicarse en `shared/` o `core/`, evitando duplicación.
 
-> “Estructura preparada” significa que existen los archivos, rutas y contratos necesarios; no implica que la interfaz final esté implementada.
+7. **Validación continua**  
+   El proyecto debe mantenerse compatible con `flutter analyze` y `flutter test`.
 
 ---
 
-# ⚠️ Consideraciones actuales
+# 🧠 Visión técnica
 
-- El foco inmediato es **frontend**.
-- Los datos actuales son simulados.
-- No existe autenticación real.
-- No existe backend funcional.
-- No existe persistencia de carrito.
-- Los pagos no son reales.
-- Los Issues existentes de GitHub pueden reflejar temporalmente una versión anterior del alcance y serán actualizados posteriormente.
-- Los cambios en `app/`, `core/` o `shared/` deben tratarse como cambios de integración y revisarse con especial cuidado.
-
----
-
-# 📌 Próximos pasos
-
-1. Crear y publicar las ramas:
-   - `diego`
-   - `brayan`
-   - `andres`
-   - `catherine`
-2. Preparar las instrucciones específicas de trabajo para cada integrante.
-3. Actualizar posteriormente los Issues al nuevo alcance.
-4. Desarrollar las siete pantallas de forma paralela.
-5. Integrar mediante Pull Requests.
-6. Mantener actualizadas las bitácoras.
-7. Evaluar backend y estado global únicamente cuando sean necesarios.
-
----
-
-## 👨‍💻 Filosofía de desarrollo
-
-Giftify debe crecer de forma incremental:
+La arquitectura general puede resumirse así:
 
 ```text
-Prototipo
-   ↓
-Arquitectura común
-   ↓
-Frontend modular
-   ↓
-Integración
-   ↓
-Validación
-   ↓
-Backend cuando sea necesario
+                    GiftifyApp
+                        │
+                        ▼
+                    AppRouter
+                        │
+            ┌───────────┼───────────┐
+            ▼           ▼           ▼
+        Features      Shared       Core
+            │           │           │
+            │           │           ├── Theme
+            │           │           └── Backend
+            │           │
+            │           ├── Models
+            │           ├── Enums
+            │           └── Data
+            │
+            ├── Auth
+            ├── Home
+            ├── Search
+            ├── Products
+            └── Cart
 ```
 
-La prioridad es mantener una base **comprensible, modular, verificable y fácil de integrar** para todos los integrantes del equipo.
+La intención es mantener Giftify como una aplicación **comprensible, extensible y fácil de integrar**, evitando complejidad innecesaria durante sus primeras etapas de construcción.
