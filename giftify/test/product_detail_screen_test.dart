@@ -178,4 +178,50 @@ void main() {
     expect(cart.initialItems.length, 1);
     expect(cart.initialItems.first.product, same(product));
   });
+
+  testWidgets('producto con pocas unidades permite agregar', (tester) async {
+    final product = _buildProduct(availability: GiftAvailability.lowStock);
+
+    await tester.pumpWidget(
+      MaterialApp(home: ProductDetailScreen(product: product)),
+    );
+
+    expect(find.text('Pocas unidades'), findsOneWidget);
+
+    final button = tester.widget<FilledButton>(find.byType(FilledButton));
+    expect(button.onPressed, isNotNull);
+  });
+
+  testWidgets('sin estimatedDeliveryDays no muestra plazo de entrega', (
+    tester,
+  ) async {
+    final product = _buildProduct(estimatedDeliveryDays: null);
+
+    await tester.pumpWidget(
+      MaterialApp(home: ProductDetailScreen(product: product)),
+    );
+
+    expect(find.textContaining('Entrega estimada'), findsNothing);
+  });
+
+  testWidgets('no desborda en pantalla móvil pequeña', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final product = _buildProduct(
+      name: 'Nombre de producto largo para verificar el ajuste de texto',
+      description:
+          'Descripción extensa para comprobar que el contenido se adapta '
+          'correctamente a pantallas móviles pequeñas sin desbordar.',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(home: ProductDetailScreen(product: product)),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
+  });
 }

@@ -189,9 +189,11 @@ class _DeliveryLine extends StatelessWidget {
           color: textoSecundario,
         ),
         const SizedBox(width: 4),
-        Text(
-          'Entrega estimada: $days ${days == 1 ? 'día' : 'días'}',
-          style: const TextStyle(color: textoSecundario, fontSize: 12),
+        Flexible(
+          child: Text(
+            'Entrega estimada: $days ${days == 1 ? 'día' : 'días'}',
+            style: const TextStyle(color: textoSecundario, fontSize: 12),
+          ),
         ),
       ],
     );

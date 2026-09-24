@@ -87,4 +87,24 @@ void main() {
 
     expect(detail.product, same(expected));
   });
+
+  testWidgets('no desborda en pantalla móvil pequeña', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const criteria = GiftSearchCriteria(
+      occasion: 'Cumpleaños',
+      recipient: 'Un destinatario con nombre largo',
+      maxBudget: 1000,
+    );
+
+    await tester.pumpWidget(
+      const MaterialApp(home: ProductResultsScreen(criteria: criteria)),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(ListView), findsOneWidget);
+  });
 }

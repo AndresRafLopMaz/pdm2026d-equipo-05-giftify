@@ -27,12 +27,14 @@ class AvailabilityBadge extends StatelessWidget {
         children: [
           Icon(style.icon, size: 15, color: style.foreground),
           const SizedBox(width: 5),
-          Text(
-            style.label,
-            style: TextStyle(
-              color: style.foreground,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Text(
+              style.label,
+              style: TextStyle(
+                color: style.foreground,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

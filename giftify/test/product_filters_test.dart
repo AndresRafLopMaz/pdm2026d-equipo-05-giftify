@@ -114,6 +114,44 @@ void main() {
       expect(_ids(result), _ids(second));
     });
 
+    test('prioriza el producto que llega antes de eventDate', () {
+      final products = [
+        _product(id: 'tarde', occasions: const [], estimatedDeliveryDays: 10),
+        _product(id: 'a_tiempo', occasions: const [], estimatedDeliveryDays: 2),
+      ];
+
+      final criteria = GiftSearchCriteria(
+        occasion: 'Cumpleaños',
+        recipient: 'Amigo',
+        maxBudget: 1000,
+        eventDate: DateTime.now().add(const Duration(days: 5)),
+      );
+
+      final result = filterAndPrioritizeProducts(products, criteria);
+
+      expect(result.first.id, 'a_tiempo');
+    });
+
+    test('el destinatario no altera el resultado', () {
+      final products = mockProducts;
+
+      const forFriend = GiftSearchCriteria(
+        occasion: 'Cumpleaños',
+        recipient: 'Amigo',
+        maxBudget: 500,
+      );
+      const forMother = GiftSearchCriteria(
+        occasion: 'Cumpleaños',
+        recipient: 'Madre',
+        maxBudget: 500,
+      );
+
+      final friendResult = filterAndPrioritizeProducts(products, forFriend);
+      final motherResult = filterAndPrioritizeProducts(products, forMother);
+
+      expect(_ids(friendResult), _ids(motherResult));
+    });
+
     test('devuelve una lista vacía cuando nada cumple el presupuesto', () {
       const criteria = GiftSearchCriteria(
         occasion: 'Cumpleaños',
