@@ -1,4 +1,4 @@
-## Sesión 2026-09-23
+## Sesión 2026-09-22
 
 ### Objetivo
 Implementar y validar la Pantalla 6 — Carrito de compras.
@@ -49,7 +49,7 @@ Implementar y validar la Pantalla 6 — Carrito de compras.
 - La navegación a Checkout envía la lista actualizada mediante AppRoutes.checkout.
 - No se modificaron contratos compartidos ni otros módulos.
 
-## Sesión 2026-09-23 — Check-out
+## Sesión 2026-09-22 — Check-out
 
 ### Objetivo
 Implementar y validar la Pantalla 7 — Check-out simulado.
