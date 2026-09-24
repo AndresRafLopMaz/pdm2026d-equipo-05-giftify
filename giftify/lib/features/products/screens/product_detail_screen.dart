@@ -104,11 +104,13 @@ class _DetailContent extends StatelessWidget {
                             color: textoSecundario,
                           ),
                           const SizedBox(width: 5),
-                          Text(
-                            'Entrega estimada: $days ${days == 1 ? 'día' : 'días'}',
-                            style: const TextStyle(
-                              color: textoSecundario,
-                              fontSize: 13,
+                          Flexible(
+                            child: Text(
+                              'Entrega estimada: $days ${days == 1 ? 'día' : 'días'}',
+                              style: const TextStyle(
+                                color: textoSecundario,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         ],
@@ -302,12 +304,14 @@ class _SellerSection extends StatelessWidget {
                 size: 20,
               ),
               const SizedBox(width: 8),
-              const Text(
-                'Detalles del vendedor',
-                style: TextStyle(
-                  color: textoPrincipal,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+              const Expanded(
+                child: Text(
+                  'Detalles del vendedor',
+                  style: TextStyle(
+                    color: textoPrincipal,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
