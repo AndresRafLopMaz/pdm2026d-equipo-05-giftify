@@ -48,3 +48,59 @@ Implementar y validar la Pantalla 6 — Carrito de compras.
 - CartScreen conserva el contrato List<CartItem>.
 - La navegación a Checkout envía la lista actualizada mediante AppRoutes.checkout.
 - No se modificaron contratos compartidos ni otros módulos.
+
+## Sesión 2026-09-23 — Check-out
+
+### Objetivo
+Implementar y validar la Pantalla 7 — Check-out simulado.
+
+### Trabajo realizado
+- Se convirtió CheckoutScreen en StatefulWidget.
+- Se implementó el resumen de productos con nombre, cantidad, subtotal y total.
+- Se agregó formulario local para dirección de entrega.
+- Se validaron como obligatorios nombre del receptor, dirección, ciudad y departamento.
+- Se mantuvo la referencia como campo opcional.
+- Se construyó DeliveryAddress únicamente en memoria después de validar el formulario.
+- Se implementó selección de método de pago mediante PaymentMethodType.
+- Se agregó opción de tarjeta simulada.
+- Se agregó opción de pago contra entrega.
+- Se evitó solicitar o almacenar información financiera real.
+- Se implementó confirmación local con bloqueo temporal para evitar dobles envíos.
+- Se agregó diálogo de confirmación.
+- Se implementó estado seguro cuando no existen productos.
+- Se ajustó el diseño responsive para pantallas móviles estrechas.
+
+### Archivos modificados
+- `giftify/lib/features/cart/screens/checkout_screen.dart`
+- `giftify/test/checkout_screen_test.dart`
+
+### Decisiones técnicas
+- El estado se administra únicamente mediante StatefulWidget y setState().
+- DeliveryAddress se crea únicamente después de una validación correcta.
+- DeliveryAddress permanece únicamente en memoria.
+- El método de pago utiliza PaymentMethodType como fuente de estado.
+- La simulación de tarjeta utiliza únicamente un texto fijo con terminación 4242.
+- No se solicitan números completos de tarjeta, CVV, PIN ni credenciales.
+- No se implementó backend.
+- No se implementó persistencia.
+- No se implementó una pasarela de pagos.
+- No se creó una pantalla adicional de pedidos.
+- No se modificaron CartScreen, ProductDetailScreen, router ni modelos compartidos.
+
+### Pruebas realizadas
+- `flutter analyze` — OK, sin problemas.
+- `flutter test` — OK, 25 pruebas aprobadas.
+- `git diff --check` — OK.
+- 10 pruebas específicas de CheckoutScreen — OK.
+- Prueba responsive automatizada a 320x640 — OK.
+
+### Pendientes
+- Realizar integración completa desde ProductDetail cuando el módulo correspondiente esté disponible.
+- Revisar fidelidad visual cuando se disponga de la referencia V2.
+- Realizar validación integrada del flujo completo Cart → Checkout cuando las pantallas anteriores estén terminadas.
+
+### Impacto para otros módulos
+- CheckoutScreen conserva el contrato List<CartItem>.
+- Utiliza DeliveryAddress y PaymentMethodType existentes.
+- No se modificaron contratos compartidos.
+- No se introdujeron dependencias nuevas.
