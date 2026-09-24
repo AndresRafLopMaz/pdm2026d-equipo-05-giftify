@@ -104,3 +104,60 @@ Implementar y validar la Pantalla 7 — Check-out simulado.
 - Utiliza DeliveryAddress y PaymentMethodType existentes.
 - No se modificaron contratos compartidos.
 - No se introdujeron dependencias nuevas.
+
+## Sesión 2026-09-23 — Ajuste visual V2
+
+### Objetivo
+Ajustar visualmente las pantallas de Carrito y Check-out para acercarlas al prototipo V2 sin modificar la lógica funcional existente.
+
+### Trabajo realizado
+- Se ajustó CartScreen tomando V2 como referencia visual.
+- Se añadió divisor bajo el encabezado.
+- Se estilizaron las tarjetas de productos con bordes redondeados y apariencia más compacta.
+- Se aplicó el color rosa a las acciones principales del módulo.
+- Se redujo visualmente el tamaño de controles de cantidad.
+- Se destacó el total y el botón inferior de continuación.
+- Se reorganizó CheckoutScreen con el orden: dirección, método de pago, resumen y confirmación.
+- Se estilizó el formulario de dirección mediante tarjetas y detalles visuales rosas.
+- Los métodos de pago dejaron de representarse mediante ChoiceChip y pasaron a tarjetas seleccionables.
+- Se mantuvo PaymentMethodType como fuente real del estado.
+- Se añadió una barra inferior estable para Confirmar pedido.
+- Se ajustó el estado vacío de Checkout para utilizar rosaPrincipal.
+- Se corrigieron problemas de overflow detectados en pantallas estrechas.
+- Se validó el comportamiento con teclado simulado.
+
+### Archivos modificados
+- `giftify/lib/features/cart/screens/cart_screen.dart`
+- `giftify/lib/features/cart/screens/checkout_screen.dart`
+- `giftify/test/checkout_screen_test.dart`
+
+### Decisiones técnicas
+- El prototipo V2 se utilizó únicamente como referencia visual.
+- No se modificaron contratos, modelos ni navegación.
+- No se modificó el tema global.
+- Los colores rosas se aplicaron localmente al módulo.
+- No se agregaron ratings, navegación a ProductDetail ni datos inexistentes.
+- No se agregaron direcciones persistentes.
+- No se agregaron datos financieros ni pagos reales.
+- El botón final se mantiene como "Confirmar pedido" porque el flujo representa una simulación y no un cobro real.
+
+### Pruebas realizadas
+- `dart format lib test` — OK.
+- `flutter analyze` — OK, sin problemas.
+- `flutter test` — OK, 26 pruebas aprobadas.
+- `git diff --check` — OK.
+- Responsive 320x640 — OK.
+- Teclado simulado con viewInsets — OK.
+- Validación visual manual a 390x844 — OK.
+
+### Pendientes
+- Integrar ProductDetail → Cart cuando el módulo correspondiente esté disponible.
+- Realizar prueba visual completa con productos cuando exista integración entre pantallas.
+- Validar el flujo completo ProductDetail → Cart → Checkout con los demás integrantes.
+
+### Impacto para otros módulos
+- No se modificaron otros módulos.
+- CartScreen mantiene List<CartItem>.
+- CheckoutScreen mantiene List<CartItem>.
+- Se conservan DeliveryAddress y PaymentMethodType.
+- No se agregaron dependencias.

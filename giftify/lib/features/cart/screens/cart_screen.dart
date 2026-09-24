@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/app_router.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/cart_item.dart';
 
 /// Pantalla 6 — Carrito de compras.
@@ -80,8 +81,8 @@ class _CartScreenState extends State<CartScreen> {
     if (_hasValidImageUrl(imageUrl)) {
       return Image.network(
         imageUrl!,
-        width: 88,
-        height: 88,
+        width: 80,
+        height: 80,
         fit: BoxFit.cover,
         errorBuilder: (_, _, _) => _buildImagePlaceholder(),
       );
@@ -91,29 +92,31 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildImagePlaceholder() {
-    final colors = Theme.of(context).colorScheme;
-
     return Container(
       key: const ValueKey('product-image-placeholder'),
-      width: 88,
-      height: 88,
-      color: colors.surfaceContainerHighest,
+      width: 80,
+      height: 80,
+      color: rosaClaro,
       alignment: Alignment.center,
-      child: Icon(
-        Icons.card_giftcard_rounded,
-        color: colors.onSurfaceVariant,
-        size: 36,
-      ),
+      child: Icon(Icons.card_giftcard_rounded, color: rosaPrincipal, size: 32),
     );
   }
 
   Widget _buildCartItem(BuildContext context, int index) {
     final item = _items[index];
     final product = item.product;
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: colors.surface,
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.7)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -145,6 +148,8 @@ class _CartScreenState extends State<CartScreen> {
                             key: ValueKey('remove-${product.id}'),
                             tooltip: 'Eliminar ${product.name}',
                             onPressed: () => _removeItem(index),
+                            visualDensity: VisualDensity.compact,
+                            color: rosaPrincipal,
                             icon: const Icon(Icons.delete_outline_rounded),
                           ),
                         ],
@@ -168,12 +173,22 @@ class _CartScreenState extends State<CartScreen> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton.filledTonal(
+                    IconButton(
                       key: ValueKey('decrease-${product.id}'),
                       tooltip: 'Disminuir cantidad',
                       onPressed: item.quantity > 1
                           ? () => _decreaseQuantity(index)
                           : null,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 36,
+                        height: 36,
+                      ),
+                      padding: EdgeInsets.zero,
+                      style: IconButton.styleFrom(
+                        backgroundColor: rosaClaro,
+                        foregroundColor: rosaPrincipal,
+                        disabledBackgroundColor: colors.surfaceContainerHighest,
+                      ),
                       icon: const Icon(Icons.remove_rounded),
                     ),
                     SizedBox(
@@ -185,10 +200,19 @@ class _CartScreenState extends State<CartScreen> {
                         style: textTheme.titleMedium,
                       ),
                     ),
-                    IconButton.filledTonal(
+                    IconButton(
                       key: ValueKey('increase-${product.id}'),
                       tooltip: 'Aumentar cantidad',
                       onPressed: () => _increaseQuantity(index),
+                      constraints: const BoxConstraints.tightFor(
+                        width: 36,
+                        height: 36,
+                      ),
+                      padding: EdgeInsets.zero,
+                      style: IconButton.styleFrom(
+                        backgroundColor: rosaClaro,
+                        foregroundColor: rosaPrincipal,
+                      ),
                       icon: const Icon(Icons.add_rounded),
                     ),
                   ],
@@ -224,7 +248,11 @@ class _CartScreenState extends State<CartScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.shopping_cart_outlined, size: 72, color: colors.primary),
+            const Icon(
+              Icons.shopping_cart_outlined,
+              size: 72,
+              color: rosaPrincipal,
+            ),
             const SizedBox(height: 20),
             Text(
               'Tu carrito está vacío',
@@ -248,14 +276,15 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildCheckoutBar(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return SafeArea(
-      top: false,
-      child: Material(
-        elevation: 8,
+    return Material(
+      color: colors.surface,
+      child: SafeArea(
+        top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -268,6 +297,7 @@ class _CartScreenState extends State<CartScreen> {
                       _formatPrice(_total),
                       key: const ValueKey('cart-total'),
                       style: textTheme.titleLarge?.copyWith(
+                        color: rosaPrincipal,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -280,6 +310,15 @@ class _CartScreenState extends State<CartScreen> {
                 child: FilledButton(
                   key: const ValueKey('checkout-button'),
                   onPressed: _items.isEmpty ? null : _continueToCheckout,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: rosaPrincipal,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: colors.surfaceContainerHighest,
+                    minimumSize: const Size.fromHeight(52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
                   child: const Text('Continuar al pago'),
                 ),
               ),
@@ -293,13 +332,25 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Carrito')),
+      appBar: AppBar(
+        title: const Text('Carrito'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+      ),
       body: _items.isEmpty
           ? _buildEmptyCart(context)
           : ListView.separated(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               itemCount: _items.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: _buildCartItem,
             ),
       bottomNavigationBar: _buildCheckoutBar(context),

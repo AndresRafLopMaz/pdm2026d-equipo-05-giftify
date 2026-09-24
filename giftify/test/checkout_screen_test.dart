@@ -57,6 +57,12 @@ void main() {
       CartItem(product: mockProducts.first, quantity: 2),
       CartItem(product: mockProducts[1]),
     ]);
+    await tester.scrollUntilVisible(
+      find.text('Resumen del pedido'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
 
     expect(find.text('Pulsera artesanal × 2'), findsOneWidget);
     expect(find.text('Caja de chocolates artesanales × 1'), findsOneWidget);
@@ -119,6 +125,12 @@ void main() {
       tester,
       find.byKey(const ValueKey('confirm-order-button')),
     );
+    await tester.scrollUntilVisible(
+      find.text('Selecciona un método de pago.'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
 
     expect(find.text('Selecciona un método de pago.'), findsOneWidget);
     expect(find.text('Pedido confirmado'), findsNothing);
@@ -130,10 +142,13 @@ void main() {
     await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
     await tapVisible(tester, find.byKey(const ValueKey('payment-card')));
 
-    final chip = tester.widget<ChoiceChip>(
-      find.byKey(const ValueKey('payment-card')),
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('payment-card')),
+        matching: find.byIcon(Icons.check_circle_rounded),
+      ),
+      findsOneWidget,
     );
-    expect(chip.selected, isTrue);
     expect(
       find.text(
         'Tarjeta •••• 4242 (simulación, no se procesarán datos reales).',
@@ -150,10 +165,13 @@ void main() {
     await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
     await tapVisible(tester, find.byKey(const ValueKey('payment-cash')));
 
-    final chip = tester.widget<ChoiceChip>(
-      find.byKey(const ValueKey('payment-cash')),
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('payment-cash')),
+        matching: find.byIcon(Icons.check_circle_rounded),
+      ),
+      findsOneWidget,
     );
-    expect(chip.selected, isTrue);
     expect(find.text('Pagarás al recibir el pedido.'), findsOneWidget);
   });
 
@@ -216,6 +234,27 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('confirm-order-button')), findsOneWidget);
+  });
+
+  testWidgets('permite desplazar el formulario con el teclado abierto', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    tester.view.viewInsets = const FakeViewPadding(bottom: 260);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+
+    await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
+    await tester.tap(find.byKey(const ValueKey('recipient-field')));
+    await tester.pump();
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('city-field')), findsOneWidget);
     expect(find.byKey(const ValueKey('confirm-order-button')), findsOneWidget);
   });
 }
