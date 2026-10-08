@@ -12,13 +12,7 @@ class GiftifyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Giftify',
       theme: appTheme,
-
-      // Temporalmente iniciamos en Home para conservar
-      // el comportamiento de la versión actual.
-      // Cuando el flujo de autenticación esté terminado,
-      // esta decisión se actualizará.
-      initialRoute: AppRoutes.home,
-
+      initialRoute: AppRoutes.register,
       onGenerateRoute: AppRouter.onGenerateRoute,
     );
   }
