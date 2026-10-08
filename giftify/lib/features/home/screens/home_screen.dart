@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../app/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 
 // ============================================================
@@ -17,12 +19,12 @@ class _HomeScreenState extends State<HomeScreen> {
   // VARIABLES
   // ==========================================================
 
-  String ocasionSeleccionada = 'CumpleaÃ±os';
+  String ocasionSeleccionada = 'Cumpleaños';
 
   final List<String> ocasiones = [
-    'CumpleaÃ±os',
+    'Cumpleaños',
     'Aniversario',
-    'GraduaciÃ³n',
+    'Graduación',
     'Amistad',
   ];
 
@@ -70,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 14),
                 const Text(
-                  'JosÃ© MarÃ­a',
+                  'José María',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -104,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () {
                           Navigator.pop(context);
                           mostrarMensaje(
-                            'AquÃ­ se administrarÃ­an las direcciones.',
+                            'Aquí se administrarían las direcciones.',
                           );
                         },
                       ),
@@ -117,13 +119,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: rosaPrincipal,
                           ),
                         ),
-                        title: const Text('MÃ©todos de pago'),
+                        title: const Text('Métodos de pago'),
                         subtitle: const Text('Administrar formas de pago'),
                         trailing: const Icon(Icons.chevron_right_rounded),
                         onTap: () {
                           Navigator.pop(context);
                           mostrarMensaje(
-                            'AquÃ­ se administrarÃ­an los mÃ©todos de pago.',
+                            'Aquí se administrarían los métodos de pago.',
                           );
                         },
                       ),
@@ -143,75 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ==========================================================
 
   void mostrarBusqueda() {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: Colors.white,
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 5, 24, 30),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: rosaClaro,
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: const Icon(
-                  Icons.card_giftcard_rounded,
-                  color: rosaPrincipal,
-                  size: 38,
-                ),
-              ),
-              const SizedBox(height: 18),
-              const Text(
-                'Â¡Empecemos!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textoPrincipal,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'En la aplicaciÃ³n completa, este botÃ³n abrirÃ¡ la pantalla donde podrÃ¡s indicar para quiÃ©n es el regalo, la ocasiÃ³n y tu presupuesto.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  height: 1.5,
-                  color: textoSecundario,
-                ),
-              ),
-              const SizedBox(height: 22),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-
-                    mostrarMensaje(
-                      'Se abrirÃ­a la pantalla de personalizaciÃ³n.',
-                    );
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: rosaPrincipal,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: const Text(
-                    'Continuar',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    Navigator.pushNamed(context, AppRoutes.search);
   }
 
   // ==========================================================
@@ -242,15 +176,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             onSelected: (opcion) {
               if (opcion == 'vista') {
-                mostrarMensaje('ConfiguraciÃ³n de vista seleccionada.');
+                mostrarMensaje('Configuración de vista seleccionada.');
               }
 
               if (opcion == 'soporte') {
-                mostrarMensaje('Se abrirÃ­a la secciÃ³n de soporte.');
+                mostrarMensaje('Se abriría la sección de soporte.');
               }
 
               if (opcion == 'salir') {
-                mostrarMensaje('Cerrar sesiÃ³n seleccionado.');
+                mostrarMensaje('Cerrar sesión seleccionado.');
               }
             },
             itemBuilder: (context) {
@@ -276,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   value: 'salir',
                   child: ListTile(
                     leading: Icon(Icons.logout_rounded),
-                    title: Text('Cerrar sesiÃ³n'),
+                    title: Text('Cerrar sesión'),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -322,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Â¿QuÃ© estÃ¡s\nbuscando?',
+                '¿Qué estás\nbuscando?',
                 style: TextStyle(
                   color: verdePrincipal,
                   fontSize: 34,
@@ -332,8 +266,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
               const Text(
-                'Encontrar el regalo ideal puede ser mÃ¡s sencillo. '
-                'Personaliza tu bÃºsqueda y descubre diferentes opciones.',
+                'Encontrar el regalo ideal puede ser más sencillo. '
+                'Personaliza tu búsqueda y descubre diferentes opciones.',
                 style: TextStyle(
                   color: textoSecundario,
                   fontSize: 15,
@@ -401,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 8),
                             const Text(
-                              'Ideas para cada persona y ocasiÃ³n.',
+                              'Ideas para cada persona y ocasión.',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 13,
@@ -435,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // OCASIONES
               // ==================================================
               const Text(
-                'Â¿Tienes una ocasiÃ³n en mente?',
+                '¿Tienes una ocasión en mente?',
                 style: TextStyle(
                   color: textoPrincipal,
                   fontSize: 19,
@@ -444,7 +378,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Selecciona una opciÃ³n para personalizar la experiencia.',
+                'Selecciona una opción para personalizar la experiencia.',
                 style: TextStyle(color: textoSecundario, fontSize: 13),
               ),
               const SizedBox(height: 14),
@@ -495,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Visita nuestro catÃ¡logo',
+                        'Visita nuestro catálogo',
                         style: TextStyle(
                           color: textoPrincipal,
                           fontSize: 20,
@@ -511,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      mostrarMensaje('Se abrirÃ­a el catÃ¡logo completo.');
+                      mostrarMensaje('Se abriría el catálogo completo.');
                     },
                     child: const Text('Ver todo'),
                   ),
@@ -552,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ProductoCard(
                       icono: Icons.local_cafe_rounded,
                       nombre: 'Detalles',
-                      descripcion: 'PequeÃ±os regalos',
+                      descripcion: 'Pequeños regalos',
                       color: Color(0xFFFFF5D8),
                       colorIcono: Color(0xFFC58D16),
                     ),
@@ -561,7 +495,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: ProductoCard(
                       icono: Icons.devices_rounded,
-                      nombre: 'TecnologÃ­a',
+                      nombre: 'Tecnología',
                       descripcion: 'Ideas modernas',
                       color: Color(0xFFEDEBFF),
                       colorIcono: Color(0xFF6759C8),
@@ -576,7 +510,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // COMO FUNCIONA
               // ==================================================
               const Text(
-                'Â¿CÃ³mo funciona?',
+                '¿Cómo funciona?',
                 style: TextStyle(
                   color: textoPrincipal,
                   fontSize: 20,
@@ -585,7 +519,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Conoce rÃ¡pidamente el proceso para encontrar tu regalo.',
+                'Conoce rápidamente el proceso para encontrar tu regalo.',
                 style: TextStyle(color: textoSecundario, fontSize: 13),
               ),
               const SizedBox(height: 15),
@@ -600,16 +534,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     PasoTile(
                       numero: '1',
-                      titulo: 'CuÃ©ntanos quÃ© necesitas',
+                      titulo: 'Cuéntanos qué necesitas',
                       descripcion:
-                          'Selecciona la ocasiÃ³n, destinatario, tipo de regalo y presupuesto.',
+                          'Selecciona la ocasión, destinatario, tipo de regalo y presupuesto.',
                     ),
                     Divider(height: 1, indent: 70),
                     PasoTile(
                       numero: '2',
                       titulo: 'Recibe recomendaciones',
                       descripcion:
-                          'La aplicaciÃ³n mostrarÃ¡ diferentes opciones relacionadas con tu bÃºsqueda.',
+                          'La aplicación mostrará diferentes opciones relacionadas con tu búsqueda.',
                     ),
                     Divider(height: 1, indent: 70),
                     PasoTile(
@@ -650,14 +584,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  subtitle: Text('Conoce el propÃ³sito de la aplicaciÃ³n'),
+                  subtitle: Text('Conoce el propósito de la aplicación'),
                   childrenPadding: EdgeInsets.fromLTRB(20, 0, 20, 20),
                   children: [
                     Text(
-                      'Giftify estÃ¡ pensado para ayudar al usuario '
-                      'a descubrir opciones de regalos segÃºn la persona, '
-                      'ocasiÃ³n y presupuesto. TambiÃ©n permite explorar '
-                      'un catÃ¡logo y administrar datos relacionados con '
+                      'Giftify está pensado para ayudar al usuario '
+                      'a descubrir opciones de regalos según la persona, '
+                      'ocasión y presupuesto. También permite explorar '
+                      'un catálogo y administrar datos relacionados con '
                       'la compra desde el perfil.',
                       style: TextStyle(
                         color: textoSecundario,
@@ -688,7 +622,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   icon: const Icon(Icons.search_rounded),
                   label: const Text(
-                    'Encontrar mi regalo',
+                    'Encontrar tu regalo',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -699,10 +633,10 @@ class _HomeScreenState extends State<HomeScreen> {
               Center(
                 child: TextButton.icon(
                   onPressed: () {
-                    mostrarMensaje('Se abrirÃ­a directamente el catÃ¡logo.');
+                    mostrarMensaje('Se abriría directamente el catálogo.');
                   },
                   icon: const Icon(Icons.storefront_outlined),
-                  label: const Text('Explorar catÃ¡logo sin personalizar'),
+                  label: const Text('Explorar catálogo sin personalizar'),
                 ),
               ),
             ],
@@ -749,7 +683,7 @@ class ProductoCard extends StatelessWidget {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('CategorÃ­a seleccionada: $nombre'),
+              content: Text('Categoría seleccionada: $nombre'),
               behavior: SnackBarBehavior.floating,
             ),
           );
