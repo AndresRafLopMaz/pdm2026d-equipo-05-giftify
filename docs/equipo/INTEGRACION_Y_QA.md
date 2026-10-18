@@ -183,3 +183,44 @@ git diff --stat
 - No agregar dependencias sin justificación.
 - Cualquier problema de integración se corrige en una rama temporal, no
   directamente en `main`.
+
+## 9. Orden de integración del MVP local
+
+Los cuatro integrantes pueden desarrollar en paralelo. El orden recomendado para
+integrar es:
+
+```text
+1. Diego
+2. Brayan
+3. Catherine
+4. Andrés / PR #21
+```
+
+Motivo: integrar primero los cambios pequeños y validar el PR del laboratorio
+contra el `main` más reciente. Este orden no bloquea el desarrollo paralelo.
+
+Durante el trabajo no se exige PR. El PR final de Issue #21 sí es necesario como
+evidencia del laboratorio.
+
+## 10. Punto de parada del desarrollo paralelo
+
+Cada integrante se detiene cuando:
+
+- terminó sus tareas P0 y P1;
+- ejecutó `dart format`, `flutter analyze`, `flutter test` y
+  `git diff --check`;
+- actualizó su bitácora;
+- hizo commit y push a su rama.
+
+En ese punto no se integra todavía. El equipo revisa el estado conjunto y luego
+hace la integración controlada a `main`, dejando el PR de Andrés para el final.
+
+Evitar modificar concurrentemente:
+
+```text
+giftify/lib/app/app_router.dart
+giftify/lib/shared/models/
+giftify/lib/shared/data/mock_products.dart
+giftify/pubspec.yaml
+docs/bitacora-ia.md
+```
