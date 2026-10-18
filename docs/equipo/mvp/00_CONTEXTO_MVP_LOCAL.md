@@ -4,11 +4,13 @@ ESTADO: TRABAJO ACTUAL — MVP LOCAL
 
 ## 1. Objetivo de la entrega actual
 
-Cerrar Giftify como un MVP **completamente local**, estable, probado y
+Cerrar Giftify como un MVP **completamente local**, estable, probado e
 integrable: siete pantallas, navegación completa, datos locales y suite de
 pruebas en verde.
 
-No se implementa backend remoto en esta entrega.
+No se implementa backend remoto en esta entrega. La planificación futura vive en
+`docs/equipo/backend/` y en `docs/fases/FASE_6_BACKEND_REMOTO_FUTURO.md`
+(cuando esa fase se integre). No forma parte del trabajo actual.
 
 ## 2. Arquitectura local
 
@@ -16,7 +18,7 @@ No se implementa backend remoto en esta entrega.
 Registro → Home → Personalización → Resultados → Detalle → Carrito → Checkout
 ```
 
-Datos:
+Datos de productos:
 
 ```text
 ProductResultsScreen
@@ -28,60 +30,67 @@ MockProductRepository
 mockProducts
 ```
 
-- `giftify/lib/app/`: `MaterialApp`, router y ruta inicial.
-- `giftify/lib/core/`: tema y configuración de backend (sin HTTP real).
-- `giftify/lib/shared/`: modelos, enums y catálogo mock.
-- `giftify/lib/features/`: módulos por pantalla.
-- `giftify/test/`: pruebas unitarias y de widget.
+La rama `feat/21-estados-resultados` ya incorpora `ProductRepository`,
+`MockProductRepository` y sus pruebas unitarias. Hasta que esa tarea termine,
+`ProductResultsScreen` sigue usando `mockProducts` directamente. El objetivo de
+Andrés es completar ese desacople.
 
-La rama `feat/21-estados-resultados` incorpora `ProductRepository` y
-`MockProductRepository`; se integrarán al cerrar el Issue #21. Hasta entonces,
-la pantalla de resultados sigue usando `mockProducts` directamente.
+## 3. Estado real del repositorio
 
-## 3. Sin backend remoto
-
-Todavía no existe:
-
-- Supabase;
-- Firebase;
-- API REST;
-- SQLite;
-- autenticación remota;
-- persistencia remota;
-- pagos reales;
-- Riverpod.
-
-`BackendClient` y `BackendConfig` son solo configuración reservada. No realizan
-peticiones HTTP.
+- `main` contiene las siete pantallas, `docs/equipo/mvp/`, CI, CODEOWNERS y
+  plantilla de PR.
+- `feat/21-estados-resultados` contiene BUILD 5A del repositorio local.
+- Las ramas personales están atrasadas respecto a `main`; deben sincronizarse
+  antes de trabajar.
+- `FASE_4` y `FASE_6` están en `feat/21` y llegarán a `main` con su PR; no son
+  código pendiente.
+- No existen tests específicos de Home ni Search.
+- `ProductResultsScreen` todavía no tiene estados asíncronos.
+- Cart y Checkout ya están implementados y con buena cobertura.
 
 ## 4. Flujo de trabajo Git
 
-Cada integrante:
+Cada integrante, al comenzar:
 
 ```powershell
 git fetch --all --prune
 git switch <rama-personal>
 git pull --ff-only origin <rama-personal>
 git merge origin/main
-git switch -c <rama-de-tarea>
+```
+
+Durante el trabajo:
+
+```powershell
+dart format lib test
+flutter analyze
+flutter test
+git diff --check
 ```
 
 Al terminar:
 
 ```powershell
-git add <archivos>
+git status
+git diff --stat
+git add <solo archivos propios>
 git diff --cached --name-status
 git diff --cached --check
 git commit -m "<mensaje semántico>"
-git push -u origin <rama-de-tarea>
+git push origin <rama-personal>
 ```
 
-Abrir PR hacia `main`. No hacer merge sin revisión.
+No se exige PR durante el desarrollo. El único PR obligatorio es el de Issue #21
+al finalizar los estados asíncronos. La integración a `main` se hará de forma
+controlada después.
 
 ## 5. Nunca trabajar directamente en `main`
 
-`main` es la rama de integración. Todo cambio pasa por rama y PR. No se usa
-`force push` ni se reescribe historia compartida.
+Aunque el ruleset esté temporalmente deshabilitado, la regla humana sigue
+vigente: no se trabaja directamente en `main`. Todo cambio de código pasa por
+rama personal o rama feature.
+
+La única excepción autorizada es la actualización documental de estas guías.
 
 ## 6. Propiedad de los módulos
 
@@ -92,8 +101,7 @@ Abrir PR hacia `main`. No hacer merge sin revisión.
 | Andrés | `features/products/` | Results y Detail |
 | Catherine | `features/cart/` | Cart y Checkout |
 
-Cada persona trabaja principalmente en su módulo. `app/`, `core/` y `shared/`
-son áreas compartidas y requieren coordinación.
+Cada persona modifica principalmente su módulo, sus tests y su bitácora.
 
 ## 7. Contratos compartidos
 
@@ -118,21 +126,55 @@ AppRoutes
 - Cambios en un módulo de otro integrante.
 - Agregar una dependencia.
 - Cambiar el contrato de un repositorio.
-- Introducir un estado global o persistencia.
+- Introducir estado global o persistencia.
 
-## 9. PLAN antes de BUILD
+Durante el trabajo paralelo, **evitar modificar concurrentemente**:
+
+```text
+giftify/lib/app/app_router.dart
+giftify/lib/shared/models/
+giftify/lib/shared/data/mock_products.dart
+giftify/pubspec.yaml
+docs/bitacora-ia.md
+```
+
+Si una tarea necesita uno de esos archivos, detenerse y coordinar.
+
+## 9. Trabajo paralelo
+
+Los cuatro pueden comenzar en paralelo. Ninguno depende funcionalmente de otro
+para empezar:
+
+- Diego: prueba responsive de Registro.
+- Brayan: pruebas de Home y Search.
+- Andrés: estados asíncronos de Results.
+- Catherine: integración Cart → Checkout.
+
+Orden recomendado de integración posterior:
+
+```text
+1. Diego
+2. Brayan
+3. Catherine
+4. Andrés / PR #21
+```
+
+Motivo: integrar primero los cambios pequeños y validar el PR del laboratorio
+contra el `main` más reciente. Este orden **no bloquea** el desarrollo paralelo.
+
+## 10. PLAN antes de BUILD
 
 Antes de implementar:
 
-1. leer la guía de la tarea y la bitácora propia;
-2. leer las guías de los módulos dependientes;
-3. identificar archivos permitidos y restringidos;
-4. revisar el código y los tests reales;
+1. leer la guía propia y la bitácora propia;
+2. leer las guías de módulos dependientes;
+3. revisar el código y los tests reales;
+4. identificar archivos permitidos y restringidos;
 5. proponer alcance y pruebas;
-6. pedir aprobación si hay cambios compartidos;
+6. coordinar si hay cambios compartidos;
 7. solo entonces implementar.
 
-## 10. Bitácoras
+## 11. Bitácoras
 
 Cada integrante actualiza su bitácora:
 
@@ -144,9 +186,22 @@ docs/bitacoras/CATHERINE.md
 ```
 
 Registrar: objetivo, archivos, decisiones, pruebas, limitaciones y pendientes.
-El uso de IA se registra en `docs/bitacora-ia.md`.
 
-## 11. Comandos obligatorios
+Durante el trabajo paralelo, **Diego, Brayan y Catherine no deben modificar
+`docs/bitacora-ia.md`**. Andrés conservará la entrada relacionada con Issue #21.
+La consolidación transversal de IA se hará en la integración final.
+
+## 12. Reglas de calidad y alcance
+
+- No eliminar tests para hacer pasar el CI.
+- No usar `continue-on-error`.
+- No introducir secretos ni datos financieros reales.
+- No agregar dependencias sin justificación y coordinación.
+- No implementar funcionalidades fuera del alcance del MVP local.
+- No modificar módulos ajenos sin justificarlo.
+- No cerrar un Issue antes de integrar su PR.
+
+## 13. Comandos obligatorios
 
 Desde `giftify/`:
 
@@ -162,23 +217,6 @@ Desde la raíz:
 git diff --check
 ```
 
-## 12. Reglas de calidad y alcance
-
-- No eliminar tests para hacer pasar el CI.
-- No usar `continue-on-error` en analyze o test.
-- No introducir secretos ni datos financieros reales.
-- No agregar dependencias sin justificación y coordinación.
-- No implementar funcionalidades fuera del alcance del MVP local.
-- No modificar módulos ajenos sin justificarlo.
-- No cerrar un Issue antes de integrar su PR.
-
-## 13. PR y CI
-
-- Todo trabajo termina en un PR hacia `main`.
-- El check `Formato, análisis y pruebas` debe quedar verde.
-- Otro integrante revisa antes de integrar cuando corresponda.
-- El PR debe describir qué cambió, cómo se probó y qué queda pendiente.
-
 ## 14. Issue y documentación
 
 ```text
@@ -186,8 +224,34 @@ Issue = trazabilidad
 .md   = instrucciones operativas detalladas
 ```
 
-El Issue no reemplaza la guía de trabajo. Las instrucciones concretas viven en
+El Issue no reemplaza esta guía. Las instrucciones concretas viven en
 `docs/equipo/mvp/`.
 
-La planificación futura de backend vive en `docs/equipo/backend/` y en
-`docs/fases/FASE_6_BACKEND_REMOTO_FUTURO.md`. No se implementa en esta entrega.
+## 15. Evidencias de cierre
+
+Cada integrante conserva:
+
+- salida de `flutter analyze`;
+- cantidad total de tests;
+- `All tests passed`;
+- `git diff --check` limpio;
+- `git status` final;
+- SHA del commit;
+- rama remota actualizada.
+
+Andrés conserva además capturas de loading, error + `Reintentar`, empty +
+`Modificar búsqueda` y data.
+
+## 16. Fuera de alcance
+
+No implementar:
+
+- backend remoto;
+- Supabase;
+- Firebase;
+- API REST;
+- SQLite;
+- Riverpod;
+- autenticación remota;
+- persistencia remota;
+- pagos reales.

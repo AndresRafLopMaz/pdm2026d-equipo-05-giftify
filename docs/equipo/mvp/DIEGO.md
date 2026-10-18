@@ -7,10 +7,11 @@ Rama personal: `diego`
 ## 1. Objetivo
 
 Cerrar `features/auth/` para un MVP local estable, sin autenticación remota.
+El módulo ya funciona; el trabajo restante es una verificación responsive.
 
-## 2. Estado real verificado
+## 2. Estado actual que NO debe reimplementarse
 
-`RegisterScreen` ya implementa:
+`RegisterScreen` ya tiene:
 
 - formulario con nombre, correo, contraseña y fecha de nacimiento;
 - validaciones locales;
@@ -18,16 +19,52 @@ Cerrar `features/auth/` para un MVP local estable, sin autenticación remota.
 - mostrar/ocultar contraseña;
 - registro simulado con `Future.delayed` de 600 ms;
 - `UserProfile` sin almacenar contraseña;
-- navegación a Home con `pushReplacementNamed`;
+- bloqueo del botón durante el envío;
+- navegación Register → Home con `pushReplacementNamed`;
 - ruta inicial `AppRoutes.register`;
-- bloqueo del botón mientras `_isSubmitting` es verdadero.
+- 8 pruebas de Registro más `app_smoke_test.dart`.
 
-Pruebas actuales: 8 en `register_screen_test.dart`, más `app_smoke_test.dart`.
-Cubren renderizado, formulario vacío, correo inválido, contraseña corta,
-visibilidad, apertura del selector de fecha, registro válido con navegación y
-SnackBar de login.
+No volver a implementar nada de esa lista.
 
-## 3. Lecturas obligatorias
+## 3. Trabajo requerido
+
+### P0
+
+Ninguno. El módulo cumple el comportamiento funcional del MVP local.
+
+### P1
+
+1. Agregar una prueba responsive a 320×640.
+2. Verificar específicamente la fila:
+
+```text
+"¿Ya tienes una cuenta?" + "Inicia sesión aquí"
+```
+
+3. Corregir la UI **solo si la prueba demuestra overflow**. No rediseñar la
+   pantalla.
+
+### Fuera de alcance
+
+- Aserción explícita del texto de la fecha (P2).
+- Refactorizar el camino de error del registro simulado (P2).
+- Autenticación real, persistencia o backend.
+
+## 4. Flujo funcional
+
+```text
+AppRoutes.register
+        ↓
+RegisterScreen
+        ↓
+validación local
+        ↓
+registro simulado (600 ms)
+        ↓
+AppRoutes.home
+```
+
+## 5. Archivos que debe leer
 
 ```text
 docs/equipo/00_REGLAS_COMUNES.md
@@ -41,26 +78,7 @@ giftify/test/register_screen_test.dart
 giftify/test/app_smoke_test.dart
 ```
 
-## 4. Tareas pertinentes
-
-1. **Regresión Register → Home:** confirmar que un registro válido navega a Home
-   y que la ruta inicial sigue siendo Registro.
-2. **Responsive:** agregar una prueba de widget a 320×640. Si aparece overflow
-   —por ejemplo, en la fila “¿Ya tienes una cuenta?”— corregirlo con un layout
-   flexible, sin cambiar el flujo.
-3. **Fecha:** ampliar la prueba del selector para confirmar que una fecha
-   seleccionada queda escrita en el campo y permite continuar.
-4. **Prevención de duplicados:** el botón ya se deshabilita durante el envío y
-   la prueba de registro válido ya lo verifica. No duplicar esa prueba; solo
-   conservarla.
-5. **Errores:** el registro simulado no lanza errores de forma inyectable. No
-   agregar backend ni un repositorio de autenticación para forzar ese estado en
-   esta entrega.
-
-No hay que “arreglar” lo que ya funciona. Las tareas 2 y 3 son las brechas
-reales de cobertura.
-
-## 5. Archivos permitidos
+## 6. Archivos que puede modificar
 
 ```text
 giftify/lib/features/auth/screens/register_screen.dart
@@ -68,43 +86,151 @@ giftify/test/register_screen_test.dart
 docs/bitacoras/DIEGO.md
 ```
 
-## 6. Archivos compartidos o restringidos
-
-Requieren coordinación:
+## 7. Archivos que NO debe modificar
 
 ```text
-giftify/lib/app/giftify_app.dart
 giftify/lib/app/app_router.dart
+giftify/lib/app/giftify_app.dart
 giftify/lib/shared/models/user_profile.dart
+giftify/lib/features/home/
+giftify/lib/features/search/
+giftify/lib/features/products/
+giftify/lib/features/cart/
+giftify/pubspec.yaml
+docs/bitacora-ia.md
 ```
 
-No modificar Home, Search, Products ni Cart.
+Motivo: son áreas compartidas, dependen de otros módulos o no forman parte de
+esta tarea. Si un defecto real exige tocarlas, detenerse y coordinar.
 
-## 7. Criterios de aceptación
+## 8. Implementación esperada
+
+1. Sincronizar `diego` con `origin/main`.
+2. Ejecutar la línea base:
+   ```powershell
+   dart format lib test
+   flutter analyze
+   flutter test
+   ```
+3. En `register_screen_test.dart`, configurar la vista de prueba:
+
+```dart
+tester.view.physicalSize = const Size(320, 640);
+tester.view.devicePixelRatio = 1.0;
+addTearDown(tester.view.resetPhysicalSize);
+addTearDown(tester.view.resetDevicePixelRatio);
+```
+
+4. Renderizar `RegisterScreen` con el helper existente.
+5. Comprobar:
+   - `tester.takeException()` es `null`;
+   - existe “¿Ya tienes una cuenta?”;
+   - existe “Inicia sesión aquí”;
+   - el formulario sigue visible.
+6. Si aparece overflow:
+   - hacer el ajuste visual mínimo;
+   - preferir `Wrap`, `Flexible` o `Expanded` en la fila;
+   - no cambiar textos, validaciones ni navegación.
+7. Reejecutar toda la suite.
+
+## 9. Casos que debe cubrir
+
+- Pantalla estrecha 320×640 sin overflow.
+- La fila de login no rompe el layout.
+- El resto de pruebas de Registro sigue pasando.
+- No se altera la navegación ni la ruta inicial.
+
+## 10. Pruebas
+
+Agregar una prueba de widget responsive. Mantener las 8 existentes. No eliminar
+ni duplicar pruebas de validación, fecha o doble envío que ya existen.
+
+## 11. Validación visual
+
+- 320×640: formulario completo, sin overflow horizontal.
+- Verificar que el botón de registro sigue accesible con scroll.
+
+## 12. Validación técnica
+
+Desde `giftify/`:
+
+```powershell
+dart format lib test
+flutter analyze
+flutter test
+```
+
+Desde la raíz:
+
+```powershell
+git diff --check
+```
+
+## 13. Registro en bitácora
+
+Actualizar `docs/bitacoras/DIEGO.md` con:
+
+- objetivo de la sesión;
+- prueba responsive agregada;
+- si hubo ajuste visual y por qué;
+- resultado de format, analyze y test;
+- pendientes.
+
+No modificar `docs/bitacora-ia.md` durante el trabajo paralelo.
+
+## 14. Git
+
+```powershell
+git fetch --all --prune
+git switch diego
+git pull --ff-only origin diego
+git merge origin/main
+
+# trabajo y validación
+
+git status
+git diff --stat
+git add giftify/lib/features/auth/screens/register_screen.dart
+git add giftify/test/register_screen_test.dart
+git add docs/bitacoras/DIEGO.md
+git diff --cached --name-status
+git diff --cached --check
+git commit -m "test: cubrir registro en pantalla movil estrecha"
+git push origin diego
+```
+
+Si no se modifica la pantalla, no agregarla al commit.
+
+## 15. Evidencias
+
+- Salida de `flutter analyze`.
+- Total de tests y `All tests passed`.
+- `git diff --check` limpio.
+- `git status` final.
+- SHA del commit.
+- Captura o descripción del test responsive si hubo ajuste visual.
+
+## 16. Criterios de cierre
 
 ```text
-[ ] Registro sigue siendo la ruta inicial
-[ ] Un registro válido navega a Home
-[ ] El formulario inválido no navega
-[ ] El botón se deshabilita durante el envío
-[ ] No se almacena la contraseña
-[ ] La pantalla no desborda a 320×640
-[ ] La fecha seleccionada se refleja en el campo
-[ ] dart format, flutter analyze y flutter test pasan
+[ ] Prueba responsive 320×640 agregada
+[ ] Fila de login verificada
+[ ] Sin overflow
+[ ] Las 8 pruebas existentes siguen pasando
+[ ] dart format lib test correcto
+[ ] flutter analyze sin issues
+[ ] flutter test verde
+[ ] git diff --check limpio
+[ ] Bitácora actualizada
+[ ] Commit y push a diego
 ```
 
-## 8. Pruebas necesarias
+## 17. Prohibiciones
 
-- responsive 320×640;
-- selección real de fecha y valor del campo;
-- mantener las 8 pruebas existentes sin eliminar ninguna.
-
-## 9. Bitácora
-
-Actualizar `docs/bitacoras/DIEGO.md` con objetivo, archivos, decisiones,
-pruebas y limitaciones. Si se usa IA, registrar en `docs/bitacora-ia.md`.
-
-## 10. Resultado esperado del PR
-
-Un PR pequeño, sin autenticación real, con Registro estable, responsive
-verificado, pruebas nuevas y CI en verde.
+- No autenticación real.
+- No backend, Supabase, Firebase, API REST, SQLite ni Riverpod.
+- No persistencia.
+- No modificar módulos ajenos.
+- No agregar dependencias.
+- No tocar `app_router.dart` ni `giftify_app.dart` sin coordinación.
+- No modificar `docs/bitacora-ia.md` en esta fase.
