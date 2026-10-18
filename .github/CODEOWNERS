@@ -1,8 +1,8 @@
-# Quién revisa qué. Con "Require review from Code Owners" en la protección de
-# main, GitHub pide automáticamente la revisión de estas personas.
-# Formato: <ruta> <@usuario o @org/equipo>
+# Quién revisa qué. Con "Require review from Code Owners" en main,
+# GitHub solicita automáticamente la revisión de estas personas.
+# Formato: <ruta> <@usuario>
 
-*                    @AndresRafLopMaz
+* @AndresRafLopMaz @DiegoBarriosCifuentes @Catherine707 @Brayan11Hernandez
 
-# Protección del propio CODEOWNERS: solo el propietario decide quién revisa.
-/.github/CODEOWNERS  @AndresRafLopMaz
+# Cualquiera de los cuatro puede revisar cambios en este archivo.
+/.github/CODEOWNERS @AndresRafLopMaz @DiegoBarriosCifuentes @Catherine707 @Brayan11Hernandez

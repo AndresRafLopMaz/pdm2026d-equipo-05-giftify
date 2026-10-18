@@ -17,6 +17,41 @@ qué especificaste, qué revisaste y qué rechazaste.
 
 ---
 
+## 2026-10-17 · @AndresRafLopMaz — Verificación del laboratorio de CI y corrección de CODEOWNERS
+
+- **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
+- **Especificación:** "Revisar el PR #19 contra los requisitos del laboratorio de CI:
+  triggers, versión de Flutter, `working-directory`, pasos de formato, análisis y
+  pruebas, nombre del check, plantilla de PR, CODEOWNERS y bitácora de IA. Corregir
+  solo CODEOWNERS y la bitácora; no modificar `ci.yml`, la plantilla ni el código.
+  No fusionar."
+- **Resultado:** el workflow cumple el laboratorio; se amplió CODEOWNERS a los cuatro
+  integrantes y se completó el registro del PR #19.
+- **Aceptado:**
+  - `ci.yml` se mantiene sin cambios: triggers `pull_request`, `push` a `main` y
+    `workflow_dispatch`; `working-directory: giftify`; Flutter 3.44.8; check exacto
+    `Formato, análisis y pruebas`; sin `continue-on-error`.
+  - CODEOWNERS con los cuatro integrantes, para que cualquier revisor distinto del
+    autor pueda satisfacer la revisión de Code Owners.
+  - La plantilla de PR existente se considera suficiente para esta etapa.
+- **Rechazado / corregido:**
+  - Se corrigió CODEOWNERS, que solo tenía a `@AndresRafLopMaz` y habría bloqueado
+    los PR autorados por él al exigir revisión de Code Owners.
+  - Se rechazó copiar pasos de SQLite (`libsqlite3-dev`) heredados de Inkash.
+  - No se agregó persistencia local innecesaria ni SQLite.
+  - No se agregó Riverpod todavía; la decisión queda para la fase de estados
+    asíncronos.
+  - No se modificó `ci.yml` porque ya cumple el laboratorio.
+  - Se corrigió el registro histórico para enlazar el commit y el PR reales.
+- **Verificación:** con Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
+  `dart format --output=none --set-exit-if-changed lib test` → 33 archivos,
+  0 cambios; `flutter analyze` → No issues found!; `flutter test` → 59 pruebas
+  aprobadas. El PR #19 tenía el check `Formato, análisis y pruebas` en verde.
+- **Commit / PR:** corrección sobre la rama `chore/ci`; PR #19:
+  https://github.com/AndresRafLopMaz/pdm2026d-equipo-05-giftify/pull/19
+
+---
+
 ## 2026-10-15 · @DiegoBarriosCifuentes — Parte A de S14: CI, plantilla de PR y CODEOWNERS
 
 - **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
@@ -49,4 +84,5 @@ qué especificaste, qué revisaste y qué rechazaste.
 - **Verificación:** ejecutado en `giftify/` con Flutter 3.44.5 / Dart 3.12.2:
   `dart format --output=none --set-exit-if-changed lib test` → 33 archivos, 0 cambiados;
   `flutter analyze` → No issues found!; `flutter test` → 59 pruebas, todas aprobadas.
-- **Commit / PR:** pendiente (cambios locales, sin commit ni push en esta sesión).
+- **Commit / PR:** commit `50b0a4e` · PR #19:
+  https://github.com/AndresRafLopMaz/pdm2026d-equipo-05-giftify/pull/19
