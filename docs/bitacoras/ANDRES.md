@@ -144,3 +144,76 @@ No se implementaron peticiones HTTP, dependencias de red, ni persistencia.
   implementó en esta fase para evitar un estado global prematuro).
 - Ampliación de assets para imágenes de producto (requiere coordinar
   `pubspec.yaml`).
+
+---
+
+## Sesión 2026-10-17 — Preparación local de datos para estados asíncronos
+
+### Objetivo
+
+Desacoplar la pantalla de resultados de `mockProducts` mediante una frontera
+`ProductRepository`, manteniendo el MVP completamente local y preparando la
+integración de estados asíncronos en una tarea posterior.
+
+### Trabajo realizado
+
+- Se creó `ProductRepository` con el contrato mínimo:
+  `Future<List<GiftProduct>> fetchProducts()`.
+- Se creó `MockProductRepository` como implementación local.
+- El mock permite:
+  - usar `mockProducts` por defecto;
+  - recibir una lista alternativa;
+  - devolver una lista vacía;
+  - lanzar un error configurable;
+  - simular latencia con `Future.delayed`.
+- Se agregaron pruebas unitarias del repositorio.
+- Se documentó la guía `docs/equipo/21_ESTADOS_RESULTADOS.md`.
+- Se documentó la fase completada de frontend en
+  `docs/fases/FASE_4_DESARROLLO_FRONTENDS_EQUIPO.md`.
+- Se documentó el backend remoto como fase futura en
+  `docs/fases/FASE_6_BACKEND_REMOTO_FUTURO.md`.
+
+### Archivos creados
+
+- `giftify/lib/features/products/data/product_repository.dart`
+- `giftify/lib/features/products/data/mock_product_repository.dart`
+- `giftify/test/product_repository_test.dart`
+- `docs/equipo/21_ESTADOS_RESULTADOS.md`
+- `docs/fases/FASE_4_DESARROLLO_FRONTENDS_EQUIPO.md`
+- `docs/fases/FASE_6_BACKEND_REMOTO_FUTURO.md`
+
+### Decisiones técnicas
+
+- El MVP continúa local; no se implementó backend remoto.
+- El repositorio vive en `features/products/data/` porque es una
+  responsabilidad exclusiva del módulo de productos.
+- El contrato no recibe criterios todavía; el filtrado sigue siendo local en
+  `product_filters.dart`.
+- No se agregó SQLite.
+- No se agregó Riverpod.
+- No se modificaron `ProductResultsScreen`, `GiftProduct`, Search, Cart ni
+  Checkout en esta sesión.
+- No se agregaron dependencias.
+
+### Pruebas realizadas
+
+- `dart format lib test` — 36 archivos, 1 archivo formateado.
+- `flutter analyze` — No issues found!
+- `flutter test` — 63 pruebas aprobadas.
+- Se agregaron 4 pruebas de `MockProductRepository`: catálogo por defecto,
+  lista configurada, lista vacía y error configurable.
+
+### Pendientes
+
+- BUILD 5B: integrar el repositorio en `ProductResultsScreen`.
+- Implementar loading, error con Reintentar, vacío con acción y datos.
+- Agregar widget tests con repositorio falso.
+- Documentar FASE 5 al cerrar integración y QA.
+- No cerrar el Issue #21 hasta integrar el PR.
+
+### Impacto para otros módulos
+
+- No se modificaron Search, Cart, Checkout, `GiftProduct` ni el router.
+- La UI todavía sigue usando `mockProducts` directamente; el desacople completo
+  se hará en BUILD 5B.
+- El backend remoto queda planificado, no implementado.

@@ -17,6 +17,42 @@ qué especificaste, qué revisaste y qué rechazaste.
 
 ---
 
+## 2026-10-17 · @AndresRafLopMaz — Preparación local del repositorio de productos
+
+- **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
+- **Especificación:** "Entregar el MVP completamente local: crear
+  `ProductRepository` y `MockProductRepository`, agregar pruebas unitarias,
+  documentar la guía de estados, la FASE 4 completada y la FASE 6 futura. No
+  implementar backend remoto, SQLite ni Riverpod. No modificar todavía
+  `ProductResultsScreen`."
+- **Resultado:** se creó la frontera de repositorio local, su implementación
+  mock, cuatro pruebas unitarias y la documentación de la tarea y de las fases.
+- **Aceptado:**
+  - `ProductRepository` con `Future<List<GiftProduct>> fetchProducts()`.
+  - `MockProductRepository` con catálogo por defecto, lista alternativa, lista
+    vacía, error configurable y latencia simulada.
+  - Pruebas unitarias de catálogo, lista configurada, vacío y error.
+  - Documentación `21_ESTADOS_RESULTADOS.md`, FASE 4 completada y FASE 6
+    planificada.
+- **Rechazado / corregido:**
+  - No se implementó backend remoto ni se configuraron Supabase, Firebase o API
+    REST.
+  - No se agregó SQLite: es persistencia local, no backend, y no es necesaria
+    para este MVP.
+  - No se agregó Riverpod; la pantalla se preparará con FutureBuilder en la
+    siguiente etapa.
+  - No se modificó `ProductResultsScreen` en esta sesión; los cuatro estados se
+    implementarán en BUILD 5B.
+  - No se modificaron `GiftProduct`, Cart, Checkout ni Search.
+  - No se agregaron dependencias.
+- **Verificación:** con Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
+  `dart format lib test` → 36 archivos, 1 formateado; `flutter analyze` →
+  No issues found!; `flutter test` → 63 pruebas aprobadas.
+- **Commit / PR:** rama `feat/21-estados-resultados`; commit y PR pendientes al
+  cierre de esta sesión. Issue de referencia: #21 (solo trazabilidad).
+
+---
+
 ## 2026-10-17 · @AndresRafLopMaz — Verificación del laboratorio de CI y corrección de CODEOWNERS
 
 - **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
