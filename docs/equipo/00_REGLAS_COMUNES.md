@@ -4,6 +4,11 @@ Este documento resume cómo trabaja el equipo en la siguiente fase del MVP:
 integración, QA, CI, estados asíncronos, repositorios de datos y preparación
 para un backend futuro.
 
+## Documentos por etapa
+
+- `docs/equipo/mvp/`: instrucciones de trabajo **actuales** del MVP local.
+- `docs/equipo/backend/`: instrucciones **futuras**; no implementar todavía.
+
 ## 1. Qué es Giftify
 
 Giftify es una aplicación Flutter para elegir regalos bajo restricciones de
