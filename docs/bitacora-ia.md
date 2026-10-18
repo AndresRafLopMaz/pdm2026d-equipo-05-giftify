@@ -49,8 +49,10 @@ qué especificaste, qué revisaste y qué rechazaste.
 - **Verificación:** con Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
   `dart format lib test` → 37 archivos, 2 formateados en la primera pasada;
   `flutter analyze` → No issues found!; `flutter test` → 70 pruebas aprobadas.
-- **Commit / PR:** rama `feat/21-estados-resultados`; commit y PR final
-  pendientes al cierre de esta sesión. Issue #21.
+- **Commit / PR:** commit funcional `91c6b3f` en
+  `feat/21-estados-resultados`; push realizado a
+  `origin/feat/21-estados-resultados`. PR pendiente; integración a `main`
+  pendiente; evidencias visuales pendientes; FASE 5 pendiente. Issue #21.
 
 ---
 
@@ -85,8 +87,9 @@ qué especificaste, qué revisaste y qué rechazaste.
 - **Verificación:** con Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
   `dart format lib test` → 36 archivos, 1 formateado; `flutter analyze` →
   No issues found!; `flutter test` → 63 pruebas aprobadas.
-- **Commit / PR:** rama `feat/21-estados-resultados`; commit y PR pendientes al
-  cierre de esta sesión. Issue de referencia: #21 (solo trazabilidad).
+- **Commit / PR:** commit `cb59067` (BUILD 5A) integrado en la rama publicada
+  `origin/feat/21-estados-resultados`; PR pendiente. Issue de referencia: #21
+  (solo trazabilidad).
 
 ---
 

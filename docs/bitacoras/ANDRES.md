@@ -276,12 +276,14 @@ estados del laboratorio, manteniendo el MVP completamente local.
 - Se cubren loading, error sin crash, retry con incremento de `calls`, empty con
   acción, data, navegación a Detail y responsive.
 
-### Pendientes
+### Estado de cierre local y pendientes
 
-- Abrir el PR final de Issue #21 cuando el equipo lo autorice.
-- Conservar capturas de loading, error, empty y data.
-- Actualizar la evidencia del laboratorio.
-- Documentar FASE 5 al cerrar integración y QA.
+- Commit funcional realizado: `91c6b3f4df9a2495b500198a14ec27f1d7f93814`.
+- Push realizado a `origin/feat/21-estados-resultados`.
+- PR final de Issue #21: pendiente.
+- Integración a `main`: pendiente.
+- Evidencias visuales de loading, error, empty y data: pendientes.
+- FASE 5: pendiente de completar al cerrar integración y QA.
 
 ### Impacto para otros módulos
 
