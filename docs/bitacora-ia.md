@@ -17,6 +17,43 @@ qué especificaste, qué revisaste y qué rechazaste.
 
 ---
 
+## 2026-10-17 · @AndresRafLopMaz — Estados asíncronos de resultados (Issue #21)
+
+- **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
+- **Especificación:** "Integrar `ProductRepository` en `ProductResultsScreen`,
+  conservar `GiftSearchCriteria`, implementar loading, error con `Reintentar`,
+  vacío con `Modificar búsqueda` y datos. Crear fake repository y pruebas.
+  No tocar router, modelos, Search, Cart, Detail ni agregar backend, SQLite o
+  Riverpod."
+- **Resultado:** la pantalla consume el repositorio de forma asíncrona y muestra
+  los cuatro estados con reintento manual.
+- **Aceptado:**
+  - `ProductResultsScreen` como `StatefulWidget` con repositorio opcional y
+    `MockProductRepository` por defecto.
+  - Future creado en `initState` y conservado entre builds.
+  - Filtrado local dentro de `_loadResults()`.
+  - Loading, error, empty y data.
+  - `Reintentar` crea un nuevo Future y ejecuta una nueva consulta.
+  - `Modificar búsqueda` usa `pop` o navega a Search sin tocar el router.
+  - Fake con `success`, `empty`, `fail`, `failOnceThenSuccess` y contador
+    `calls`.
+- **Rechazado / corregido:**
+  - No se agregó retry automático; solo el botón manual.
+  - No se muestran detalles técnicos de la excepción.
+  - No se modificó `app_router.dart`; se usó inyección por constructor.
+  - No se modificaron modelos compartidos, Search, Cart, Detail ni
+    `mockProducts`.
+  - No se agregó backend, SQLite, HTTP ni Riverpod.
+  - Se ajustó el subtítulo del error a `Inténtalo de nuevo.` porque el MVP es
+    local y no depende de conectividad.
+- **Verificación:** con Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
+  `dart format lib test` → 37 archivos, 2 formateados en la primera pasada;
+  `flutter analyze` → No issues found!; `flutter test` → 70 pruebas aprobadas.
+- **Commit / PR:** rama `feat/21-estados-resultados`; commit y PR final
+  pendientes al cierre de esta sesión. Issue #21.
+
+---
+
 ## 2026-10-17 · @AndresRafLopMaz — Preparación local del repositorio de productos
 
 - **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).

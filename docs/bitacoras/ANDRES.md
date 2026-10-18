@@ -217,3 +217,76 @@ integración de estados asíncronos en una tarea posterior.
 - La UI todavía sigue usando `mockProducts` directamente; el desacople completo
   se hará en BUILD 5B.
 - El backend remoto queda planificado, no implementado.
+
+---
+
+## Sesión 2026-10-17 — Estados asíncronos de resultados (BUILD 5B)
+
+### Objetivo
+
+Integrar `ProductRepository` en `ProductResultsScreen` y representar los cuatro
+estados del laboratorio, manteniendo el MVP completamente local.
+
+### Trabajo realizado
+
+- `ProductResultsScreen` pasó a `StatefulWidget`.
+- Acepta `GiftSearchCriteria? criteria` y `ProductRepository? repository`.
+- Si no se inyecta repositorio, usa `MockProductRepository`.
+- El `Future` se crea en `initState` y se conserva entre builds.
+- `_loadResults()` obtiene productos y aplica
+  `filterAndPrioritizeProducts` antes de entregar el resultado.
+- Se implementaron:
+  - loading con `CircularProgressIndicator` y `Cargando…`;
+  - error con `No pudimos cargar los productos.` y `Reintentar`;
+  - vacío con `No encontramos productos.` y `Modificar búsqueda`;
+  - datos con `ProductCard`, resumen de criterios y navegación al detalle.
+- `Reintentar` crea un nuevo `Future` y ejecuta una nueva llamada a
+  `fetchProducts()`.
+- `Modificar búsqueda` usa `Navigator.pop` cuando es posible y, si no, navega a
+  `AppRoutes.search` sin modificar el router.
+- Se creó `giftify/test/helpers/fake_product_repository.dart` con modos
+  `success`, `empty`, `fail` y `failOnceThenSuccess`, y contador `calls`.
+- Se adaptaron los 5 tests existentes y se agregaron pruebas de loading, error,
+  retry, empty con acción y responsive.
+
+### Archivos modificados / creados
+
+- `giftify/lib/features/products/screens/product_results_screen.dart`
+- `giftify/test/product_results_screen_test.dart`
+- `giftify/test/helpers/fake_product_repository.dart`
+
+### Decisiones técnicas
+
+- Se usó `FutureBuilder` sin agregar Riverpod.
+- El repositorio se inyecta por constructor; el valor por defecto conserva la
+  compatibilidad con `AppRouter`.
+- No se modificó `app_router.dart`.
+- No se muestran detalles técnicos de la excepción al usuario.
+- No existe retry automático; solo el botón `Reintentar`.
+- El subtítulo del error se ajustó a `Inténtalo de nuevo.` porque el MVP es local
+  y no depende de conectividad.
+- El MVP continúa local; no se agregó backend, SQLite, HTTP ni persistencia.
+
+### Pruebas realizadas
+
+- `dart format lib test` — 37 archivos, 2 formateados en la primera pasada.
+- `flutter analyze` — No issues found!
+- `flutter test` — 70 pruebas aprobadas.
+- `product_results_screen_test.dart` quedó con 12 pruebas.
+- Se cubren loading, error sin crash, retry con incremento de `calls`, empty con
+  acción, data, navegación a Detail y responsive.
+
+### Pendientes
+
+- Abrir el PR final de Issue #21 cuando el equipo lo autorice.
+- Conservar capturas de loading, error, empty y data.
+- Actualizar la evidencia del laboratorio.
+- Documentar FASE 5 al cerrar integración y QA.
+
+### Impacto para otros módulos
+
+- No se modificaron Search, Cart, Checkout, `GiftProduct`, `ProductDetailScreen`
+  ni el router.
+- La pantalla ahora depende de `ProductRepository`, no de `mockProducts`
+  directamente.
+- No se agregaron dependencias.

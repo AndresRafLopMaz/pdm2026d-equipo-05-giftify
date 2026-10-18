@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../app/app_router.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/data/mock_products.dart';
 import '../../../shared/models/gift_product.dart';
 import '../../../shared/models/gift_search_criteria.dart';
+import '../data/mock_product_repository.dart';
+import '../data/product_repository.dart';
 import '../utils/product_filters.dart';
 import '../widgets/product_card.dart';
 
@@ -12,47 +13,101 @@ import '../widgets/product_card.dart';
 ///
 /// Responsable principal: Andrés.
 ///
-/// Recibe opcionalmente los criterios generados en la pantalla 3 y los
-/// aplica sobre el catálogo local [mockProducts]. La navegación hacia el
-/// detalle utiliza el contrato existente de [AppRoutes.productDetail].
-class ProductResultsScreen extends StatelessWidget {
-  const ProductResultsScreen({super.key, this.criteria});
+/// Recibe opcionalmente los criterios generados en la pantalla 3 y los aplica
+/// sobre los productos obtenidos de un [ProductRepository]. Por defecto usa
+/// [MockProductRepository] para conservar el MVP local.
+class ProductResultsScreen extends StatefulWidget {
+  const ProductResultsScreen({super.key, this.criteria, this.repository});
 
   final GiftSearchCriteria? criteria;
+  final ProductRepository? repository;
+
+  @override
+  State<ProductResultsScreen> createState() => _ProductResultsScreenState();
+}
+
+class _ProductResultsScreenState extends State<ProductResultsScreen> {
+  late final ProductRepository _repository;
+  late Future<List<GiftProduct>> _resultsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _repository = widget.repository ?? MockProductRepository();
+    _resultsFuture = _loadResults();
+  }
+
+  Future<List<GiftProduct>> _loadResults() async {
+    final products = await _repository.fetchProducts();
+    return filterAndPrioritizeProducts(products, widget.criteria);
+  }
+
+  void _retry() {
+    setState(() {
+      _resultsFuture = _loadResults();
+    });
+  }
+
+  void _modifySearch() {
+    final navigator = Navigator.of(context);
+
+    if (navigator.canPop()) {
+      navigator.pop();
+      return;
+    }
+
+    navigator.pushReplacementNamed(AppRoutes.search);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final results = filterAndPrioritizeProducts(mockProducts, criteria);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Resultados'),
         backgroundColor: fondoPrincipal,
       ),
       body: SafeArea(
-        child: results.isEmpty
-            ? const _EmptyResults()
-            : Column(
-                children: [
-                  if (criteria != null) _CriteriaSummary(criteria: criteria!),
-                  Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                      itemCount: results.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final product = results[index];
+        child: FutureBuilder<List<GiftProduct>>(
+          future: _resultsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const _LoadingResults();
+            }
 
-                        return ProductCard(
-                          product: product,
-                          onTap: () => _openDetail(context, product),
-                        );
-                      },
-                    ),
+            if (snapshot.hasError) {
+              return _ErrorResults(onRetry: _retry);
+            }
+
+            final results = snapshot.data ?? const <GiftProduct>[];
+
+            if (results.isEmpty) {
+              return _EmptyResults(onModifySearch: _modifySearch);
+            }
+
+            return Column(
+              children: [
+                if (widget.criteria != null)
+                  _CriteriaSummary(criteria: widget.criteria!),
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                    itemCount: results.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final product = results[index];
+
+                      return ProductCard(
+                        product: product,
+                        onTap: () => _openDetail(context, product),
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -60,6 +115,91 @@ class ProductResultsScreen extends StatelessWidget {
   /// Abre el detalle enviando el producto por el contrato central de rutas.
   void _openDetail(BuildContext context, GiftProduct product) {
     Navigator.pushNamed(context, AppRoutes.productDetail, arguments: product);
+  }
+}
+
+/// Estado de carga mientras el repositorio responde.
+class _LoadingResults extends StatelessWidget {
+  const _LoadingResults();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        key: ValueKey('results-loading'),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text(
+            'Cargando…',
+            style: TextStyle(color: textoPrincipal, fontSize: 15),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Estado de error con reintento manual.
+class _ErrorResults extends StatelessWidget {
+  const _ErrorResults({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        key: const ValueKey('results-error'),
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                color: rosaClaro,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Icon(
+                Icons.cloud_off_rounded,
+                color: rosaPrincipal,
+                size: 40,
+              ),
+            ),
+            const SizedBox(height: 18),
+            const Text(
+              'No pudimos cargar los productos.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: textoPrincipal,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Inténtalo de nuevo.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: textoSecundario,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              key: const ValueKey('retry-button'),
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -134,14 +274,17 @@ class _CriteriaSummary extends StatelessWidget {
   }
 }
 
-/// Estado informativo cuando ningún producto cumple el presupuesto.
+/// Estado informativo cuando no hay productos que mostrar.
 class _EmptyResults extends StatelessWidget {
-  const _EmptyResults();
+  const _EmptyResults({required this.onModifySearch});
+
+  final VoidCallback onModifySearch;
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
+        key: const ValueKey('results-empty'),
         padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -161,7 +304,7 @@ class _EmptyResults extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             const Text(
-              'No encontramos opciones que cumplan todos los criterios.',
+              'No encontramos productos.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: textoPrincipal,
@@ -178,6 +321,13 @@ class _EmptyResults extends StatelessWidget {
                 fontSize: 14,
                 height: 1.4,
               ),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              key: const ValueKey('modify-search-button'),
+              onPressed: onModifySearch,
+              icon: const Icon(Icons.tune_rounded),
+              label: const Text('Modificar búsqueda'),
             ),
           ],
         ),
