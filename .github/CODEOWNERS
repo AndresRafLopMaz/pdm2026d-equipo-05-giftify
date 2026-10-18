@@ -1,0 +1,8 @@
+# Quién revisa qué. Con "Require review from Code Owners" en main,
+# GitHub solicita automáticamente la revisión de estas personas.
+# Formato: <ruta> <@usuario>
+
+* @AndresRafLopMaz @DiegoBarriosCifuentes @Catherine707 @Brayan11Hernandez
+
+# Cualquiera de los cuatro puede revisar cambios en este archivo.
+/.github/CODEOWNERS @AndresRafLopMaz @DiegoBarriosCifuentes @Catherine707 @Brayan11Hernandez
