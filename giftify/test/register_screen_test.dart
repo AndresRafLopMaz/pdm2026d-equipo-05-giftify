@@ -184,4 +184,54 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'se adapta a 320x640 sin overflow y mantiene accesibles el formulario '
+    'y el botón',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpRegisterScreen(tester);
+
+      // Ausencia de overflow o excepciones en el primer render.
+      expect(tester.takeException(), isNull);
+
+      // La fila de inicio de sesión se mantiene dentro del formulario.
+      expect(find.text('¿Ya tienes una cuenta?'), findsOneWidget);
+      expect(find.text('Inicia sesión aquí'), findsOneWidget);
+
+      final Rect formRect = tester.getRect(find.byType(Form));
+      final Rect labelRect = tester.getRect(
+        find.text('¿Ya tienes una cuenta?'),
+      );
+      final Rect linkRect = tester.getRect(find.text('Inicia sesión aquí'));
+
+      expect(labelRect.left, greaterThanOrEqualTo(formRect.left));
+      expect(labelRect.right, lessThanOrEqualTo(formRect.right));
+      expect(linkRect.left, greaterThanOrEqualTo(formRect.left));
+      expect(linkRect.right, lessThanOrEqualTo(formRect.right));
+
+      // El formulario permanece dentro del contenedor desplazable.
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(_field('Nombre'), findsOneWidget);
+      expect(_field('Correo electrónico'), findsOneWidget);
+      expect(_field('Contraseña'), findsOneWidget);
+      expect(_field('Fecha de nacimiento'), findsOneWidget);
+
+      // El botón de registro sigue accesible mediante scroll.
+      final Finder submit = find.text('Regístrate');
+      await tester.ensureVisible(submit);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(submit.hitTestable(), findsOneWidget);
+      expect(
+        tester.getRect(find.byType(FilledButton)).bottom,
+        lessThanOrEqualTo(640),
+      );
+    },
+  );
 }
