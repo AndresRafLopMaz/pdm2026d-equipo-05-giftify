@@ -100,3 +100,58 @@ sin cambiar la funcionalidad existente.
 ### Pendientes
 
 - Ninguno dentro del alcance de Home y Search para esta tarea.
+
+### Detalle de cobertura
+
+Se agregaron **13 pruebas nuevas**. La suite completa quedó con **72 pruebas
+aprobadas**.
+
+Home:
+
+- renderizado de Home;
+- CTA principal;
+- navegación Home → Search;
+- responsive móvil;
+- responsive en ancho amplio.
+
+Search:
+
+- campos obligatorios;
+- presupuesto vacío;
+- presupuesto inválido;
+- presupuesto igual a `0`;
+- presupuesto negativo;
+- presupuesto decimal con punto;
+- presupuesto decimal con coma;
+- fecha opcional con valor `null`;
+- construcción de los seis campos de `GiftSearchCriteria`;
+- navegación Search → Results;
+- captura de `RouteSettings.arguments`;
+- responsive en móvil y ancho amplio.
+
+Campos verificados de `GiftSearchCriteria`:
+
+- `occasion`
+- `recipient`
+- `maxBudget`
+- `eventDate`
+- `giftType`
+- `size`
+
+No se modificó el modelo `GiftSearchCriteria` ni el módulo Products. La
+navegación Search → Results se probó capturando los argumentos, sin renderizar
+`ProductResultsScreen`.
+
+### Evidencia
+
+![Evidencia de pruebas de Home y Search](https://github.com/user-attachments/assets/e90d8747-39b1-46ac-9f9e-3e11ea12df68)
+
+### Cierre de la tarea
+
+- Commit funcional: `ad2a27518c5bbf67626cf4fbeb18229a206dff58`.
+- Mensaje: `test: cubrir home y busqueda de regalos`.
+- Push realizado a `origin/brayan`.
+- Formato: OK.
+- Analyze: sin issues.
+- Tests de la rama en esa validación: 72 aprobadas.
+- `git diff --check`: sin errores.
