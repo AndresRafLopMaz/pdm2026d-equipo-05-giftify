@@ -292,3 +292,47 @@ estados del laboratorio, manteniendo el MVP completamente local.
 - La pantalla ahora depende de `ProductRepository`, no de `mockProducts`
   directamente.
 - No se agregaron dependencias.
+
+---
+
+## Sesión 2026-10-18 — Sincronización final con el MVP integrado
+
+### Objetivo
+
+Incorporar a `feat/21-estados-resultados` el `main` que ya contiene las
+contribuciones de Diego, Catherine y Brayan, y validar la suite global.
+
+### Trabajo realizado
+
+- Se verificó `origin/main` en
+  `364acc7b191be2a71d2a800476d61dd22bdd2463`.
+- Se ejecutó `git merge origin/main` sobre `feat/21-estados-resultados`.
+- El merge se completó sin conflictos en el commit
+  `914ea02` (merge de main hacia la rama).
+- La rama resultante contiene simultáneamente:
+  - corrección responsive de Register y su test 320×640;
+  - tests de Home y Search;
+  - test de integración Cart → Checkout;
+  - repositorio local de productos, estados asíncronos y fake repository.
+
+### Validación global
+
+- `dart format --output=none --set-exit-if-changed lib test` — 40 archivos,
+  0 cambios.
+- `flutter analyze` — No issues found!
+- `flutter test` — 86 pruebas aprobadas, `All tests passed!`.
+- `git diff --check` — sin errores.
+
+### Estado de cierre local y pendientes
+
+- PR final de Issue #21: pendiente.
+- Integración a `main`: pendiente.
+- Evidencias visuales de loading, error, empty y data: pendientes.
+- FASE 5: pendiente de completar al cerrar integración y QA.
+
+### Impacto para otros módulos
+
+- El merge incorporó los cambios ya validados de los otros módulos sin
+  modificarlos.
+- No se agregaron funcionalidades ni dependencias.
+- El MVP continúa local; no se agregó backend, SQLite, HTTP ni Riverpod.

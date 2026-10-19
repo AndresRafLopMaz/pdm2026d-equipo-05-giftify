@@ -17,6 +17,33 @@ qué especificaste, qué revisaste y qué rechazaste.
 
 ---
 
+## 2026-10-18 · @AndresRafLopMaz — Sincronización final con el MVP integrado
+
+- **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
+- **Especificación:** "Sincronizar `feat/21-estados-resultados` con `main`, que
+  ya contiene Diego, Catherine y Brayan. No resolver conflictos automáticamente,
+  no abrir PR, no integrar a main y no agregar funcionalidades."
+- **Resultado:** el merge de `main` hacia `feat/21` se completó sin conflictos y
+  la suite global quedó en verde.
+- **Aceptado:**
+  - `origin/main` en `364acc7`, con las tres contribuciones integradas.
+  - Merge `914ea02` de `main` hacia `feat/21-estados-resultados`.
+  - Suite combinada con las pruebas de los cuatro integrantes.
+- **Rechazado / corregido:**
+  - No se eligió automáticamente una versión del conflicto porque no hubo
+    conflicto.
+  - No se modificó `main`, no se abrió PR y no se integró `feat/21`.
+  - No se agregó backend, SQLite, HTTP, Riverpod ni persistencia.
+  - No se marcó el laboratorio como terminado.
+- **Verificación:** con Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
+  `dart format --output=none --set-exit-if-changed lib test` → 40 archivos,
+  0 cambios; `flutter analyze` → No issues found!; `flutter test` → 86 pruebas
+  aprobadas; `git diff --check` limpio.
+- **Commit / PR:** merge `914ea02` en `feat/21-estados-resultados`; PR final
+  pendiente. Evidencias visuales, integración a `main` y FASE 5 pendientes.
+
+---
+
 ## 2026-10-17 · @AndresRafLopMaz — Estados asíncronos de resultados (Issue #21)
 
 - **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
