@@ -161,3 +161,63 @@ Ajustar visualmente las pantallas de Carrito y Check-out para acercarlas al prot
 - CheckoutScreen mantiene List<CartItem>.
 - Se conservan DeliveryAddress y PaymentMethodType.
 - No se agregaron dependencias.
+
+## Sesión 2026-10-18 — Integración Cart → Checkout
+
+### Objetivo
+Cerrar Cart y Checkout del MVP local mediante una prueba de integración del flujo real entre ambas pantallas.
+
+### Trabajo realizado
+- Se sincronizó `catherine` con `origin/catherine` y `origin/main` sin conflictos.
+- Se creó `giftify/test/cart_checkout_flow_test.dart`.
+- Se construyó un `CartItem` conocido con cantidad inicial 1.
+- Se incrementó la cantidad a 2 mediante la interacción real de CartScreen.
+- Se verificaron subtotal y total actualizados a `Q 250.00`.
+- Se navegó mediante `AppRoutes.checkout` y `AppRouter.onGenerateRoute`.
+- Se comprobó que CheckoutScreen recibió el mismo producto con cantidad 2.
+- Se comprobó que los totales de Cart y Checkout coinciden.
+- Se repitió el flujo completo a 320x640 sin overflow.
+
+### Archivos modificados
+- `giftify/test/cart_checkout_flow_test.dart`
+- `docs/bitacoras/CATHERINE.md`
+
+### Decisiones técnicas
+- La prueba utiliza únicamente constructores, propiedades públicas y ValueKey existentes.
+- El total esperado utiliza `CartItem.subtotal`; no se accede a estado privado.
+- Se utiliza la navegación real del router, sin mocks ni rutas alternativas.
+- No fue necesario modificar CartScreen ni CheckoutScreen porque la prueba no reveló defectos.
+- No se modificaron modelos compartidos, router ni módulos de otros integrantes.
+- No se agregó backend, persistencia ni pagos reales.
+
+### Pruebas realizadas
+- Línea base después de sincronizar: 59 pruebas aprobadas.
+- `dart format lib test` — OK.
+- `flutter analyze` — OK, sin problemas.
+- `flutter test test/cart_checkout_flow_test.dart` — OK, 2 pruebas aprobadas.
+- `flutter test` — OK, 61 pruebas aprobadas.
+- Flujo normal Cart → Checkout — OK.
+- Flujo Cart → Checkout a 320x640 — OK, sin overflow.
+
+### Pendientes
+- Integrar posteriormente la rama `catherine` al MVP del equipo según el orden acordado.
+- Mantener pagos y persistencia fuera de alcance hasta una decisión futura del equipo.
+
+### Impacto para otros módulos
+- No se modificaron otros módulos.
+- Se conservaron `List<CartItem>`, `CartItem`, `DeliveryAddress`, `PaymentMethodType` y `AppRoutes`.
+- No se agregaron dependencias.
+
+### Cierre de la tarea
+
+- Commit funcional: `1744a5f872de43ad685d0c40f4f773c843dac7b2`.
+- Mensaje: `test: verificar flujo de carrito a checkout`.
+- Push realizado a `origin/catherine`.
+- Prueba Cart → Checkout con cantidad modificada.
+- Subtotal y total verificados tras el cambio de cantidad.
+- Checkout recibe la lista actualizada y el total coincide con Cart.
+- Responsive 320×640 sin overflow.
+- Formato: OK.
+- Analyze: sin problemas.
+- Tests de la rama en esa validación: 61 aprobadas.
+- `git diff --check`: sin errores.
