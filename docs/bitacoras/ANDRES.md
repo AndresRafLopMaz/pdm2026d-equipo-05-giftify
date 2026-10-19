@@ -336,3 +336,53 @@ contribuciones de Diego, Catherine y Brayan, y validar la suite global.
   modificarlos.
 - No se agregaron funcionalidades ni dependencias.
 - El MVP continúa local; no se agregó backend, SQLite, HTTP ni Riverpod.
+
+---
+
+## Sesión 2026-10-19 — Cierre del laboratorio y QA global
+
+### Objetivo
+
+Cerrar el MVP local, documentar FASE 5 y verificar el estado final de `main`
+después de integrar el PR de estados asíncronos.
+
+### Trabajo realizado
+
+- Se verificó `origin/main` con el squash merge del PR #24:
+  `1741d01fe87aca6731038a03ce5ee86eb97db31e`.
+- Se comprobó que `main` contiene las contribuciones de Diego, Brayan,
+  Catherine y Andrés.
+- Se ejecutó el QA global sobre `main`:
+  - formato;
+  - analyze;
+  - suite completa;
+  - `git diff --check`.
+- Se documentó `docs/fases/FASE_5_MVP_LOCAL_INTEGRACION_QA.md`.
+- Se registró que las evidencias visuales fueron tomadas fuera del repositorio y
+  que el entrypoint temporal fue eliminado sin versionarse.
+
+### Resultado del QA
+
+- `dart format --output=none --set-exit-if-changed lib test` — 40 archivos,
+  0 cambios.
+- `flutter analyze` — No issues found!
+- `flutter test` — 86 pruebas aprobadas, `All tests passed!`.
+- `git diff --check` — sin errores.
+
+### Estado del laboratorio
+
+- PR #24 integrado mediante squash en `main`.
+- Issue #21 cerrado automáticamente por el PR.
+- CI del PR final: `Formato, análisis y pruebas` en verde.
+- Evidencias visuales: loading, error + Reintentar, recuperación, empty y data.
+- FASE 5 completada.
+- Backend remoto continúa como fase futura.
+- La aprobación adicional de otro integrante no se realizó en el cierre
+  inmediato; queda pendiente de proceso.
+- La reactivación/verificación manual del ruleset queda pendiente.
+
+### Impacto para otros módulos
+
+- El cierre es documental y de QA; no se modificó código funcional.
+- No se agregaron dependencias ni backend.
+- El MVP local queda completo.
