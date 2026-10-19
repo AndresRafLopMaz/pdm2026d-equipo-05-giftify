@@ -17,6 +17,109 @@ qué especificaste, qué revisaste y qué rechazaste.
 
 ---
 
+## 2026-10-18 · @AndresRafLopMaz — Sincronización final con el MVP integrado
+
+- **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
+- **Especificación:** "Sincronizar `feat/21-estados-resultados` con `main`, que
+  ya contiene Diego, Catherine y Brayan. No resolver conflictos automáticamente,
+  no abrir PR, no integrar a main y no agregar funcionalidades."
+- **Resultado:** el merge de `main` hacia `feat/21` se completó sin conflictos y
+  la suite global quedó en verde.
+- **Aceptado:**
+  - `origin/main` en `364acc7`, con las tres contribuciones integradas.
+  - Merge `914ea02` de `main` hacia `feat/21-estados-resultados`.
+  - Suite combinada con las pruebas de los cuatro integrantes.
+- **Rechazado / corregido:**
+  - No se eligió automáticamente una versión del conflicto porque no hubo
+    conflicto.
+  - No se modificó `main`, no se abrió PR y no se integró `feat/21`.
+  - No se agregó backend, SQLite, HTTP, Riverpod ni persistencia.
+  - No se marcó el laboratorio como terminado.
+- **Verificación:** con Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
+  `dart format --output=none --set-exit-if-changed lib test` → 40 archivos,
+  0 cambios; `flutter analyze` → No issues found!; `flutter test` → 86 pruebas
+  aprobadas; `git diff --check` limpio.
+- **Commit / PR:** merge `914ea02` en `feat/21-estados-resultados`; PR final
+  pendiente. Evidencias visuales, integración a `main` y FASE 5 pendientes.
+
+---
+
+## 2026-10-17 · @AndresRafLopMaz — Estados asíncronos de resultados (Issue #21)
+
+- **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
+- **Especificación:** "Integrar `ProductRepository` en `ProductResultsScreen`,
+  conservar `GiftSearchCriteria`, implementar loading, error con `Reintentar`,
+  vacío con `Modificar búsqueda` y datos. Crear fake repository y pruebas.
+  No tocar router, modelos, Search, Cart, Detail ni agregar backend, SQLite o
+  Riverpod."
+- **Resultado:** la pantalla consume el repositorio de forma asíncrona y muestra
+  los cuatro estados con reintento manual.
+- **Aceptado:**
+  - `ProductResultsScreen` como `StatefulWidget` con repositorio opcional y
+    `MockProductRepository` por defecto.
+  - Future creado en `initState` y conservado entre builds.
+  - Filtrado local dentro de `_loadResults()`.
+  - Loading, error, empty y data.
+  - `Reintentar` crea un nuevo Future y ejecuta una nueva consulta.
+  - `Modificar búsqueda` usa `pop` o navega a Search sin tocar el router.
+  - Fake con `success`, `empty`, `fail`, `failOnceThenSuccess` y contador
+    `calls`.
+- **Rechazado / corregido:**
+  - No se agregó retry automático; solo el botón manual.
+  - No se muestran detalles técnicos de la excepción.
+  - No se modificó `app_router.dart`; se usó inyección por constructor.
+  - No se modificaron modelos compartidos, Search, Cart, Detail ni
+    `mockProducts`.
+  - No se agregó backend, SQLite, HTTP ni Riverpod.
+  - Se ajustó el subtítulo del error a `Inténtalo de nuevo.` porque el MVP es
+    local y no depende de conectividad.
+- **Verificación:** con Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
+  `dart format lib test` → 37 archivos, 2 formateados en la primera pasada;
+  `flutter analyze` → No issues found!; `flutter test` → 70 pruebas aprobadas.
+- **Commit / PR:** commit funcional `91c6b3f` en
+  `feat/21-estados-resultados`; push realizado a
+  `origin/feat/21-estados-resultados`. PR pendiente; integración a `main`
+  pendiente; evidencias visuales pendientes; FASE 5 pendiente. Issue #21.
+
+---
+
+## 2026-10-17 · @AndresRafLopMaz — Preparación local del repositorio de productos
+
+- **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
+- **Especificación:** "Entregar el MVP completamente local: crear
+  `ProductRepository` y `MockProductRepository`, agregar pruebas unitarias,
+  documentar la guía de estados, la FASE 4 completada y la FASE 6 futura. No
+  implementar backend remoto, SQLite ni Riverpod. No modificar todavía
+  `ProductResultsScreen`."
+- **Resultado:** se creó la frontera de repositorio local, su implementación
+  mock, cuatro pruebas unitarias y la documentación de la tarea y de las fases.
+- **Aceptado:**
+  - `ProductRepository` con `Future<List<GiftProduct>> fetchProducts()`.
+  - `MockProductRepository` con catálogo por defecto, lista alternativa, lista
+    vacía, error configurable y latencia simulada.
+  - Pruebas unitarias de catálogo, lista configurada, vacío y error.
+  - Documentación `21_ESTADOS_RESULTADOS.md`, FASE 4 completada y FASE 6
+    planificada.
+- **Rechazado / corregido:**
+  - No se implementó backend remoto ni se configuraron Supabase, Firebase o API
+    REST.
+  - No se agregó SQLite: es persistencia local, no backend, y no es necesaria
+    para este MVP.
+  - No se agregó Riverpod; la pantalla se preparará con FutureBuilder en la
+    siguiente etapa.
+  - No se modificó `ProductResultsScreen` en esta sesión; los cuatro estados se
+    implementarán en BUILD 5B.
+  - No se modificaron `GiftProduct`, Cart, Checkout ni Search.
+  - No se agregaron dependencias.
+- **Verificación:** con Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
+  `dart format lib test` → 36 archivos, 1 formateado; `flutter analyze` →
+  No issues found!; `flutter test` → 63 pruebas aprobadas.
+- **Commit / PR:** commit `cb59067` (BUILD 5A) integrado en la rama publicada
+  `origin/feat/21-estados-resultados`; PR pendiente. Issue de referencia: #21
+  (solo trazabilidad).
+
+---
+
 ## 2026-10-17 · @AndresRafLopMaz — Verificación del laboratorio de CI y corrección de CODEOWNERS
 
 - **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
