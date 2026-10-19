@@ -207,3 +207,17 @@ Cerrar Cart y Checkout del MVP local mediante una prueba de integración del flu
 - No se modificaron otros módulos.
 - Se conservaron `List<CartItem>`, `CartItem`, `DeliveryAddress`, `PaymentMethodType` y `AppRoutes`.
 - No se agregaron dependencias.
+
+### Cierre de la tarea
+
+- Commit funcional: `1744a5f872de43ad685d0c40f4f773c843dac7b2`.
+- Mensaje: `test: verificar flujo de carrito a checkout`.
+- Push realizado a `origin/catherine`.
+- Prueba Cart → Checkout con cantidad modificada.
+- Subtotal y total verificados tras el cambio de cantidad.
+- Checkout recibe la lista actualizada y el total coincide con Cart.
+- Responsive 320×640 sin overflow.
+- Formato: OK.
+- Analyze: sin problemas.
+- Tests de la rama en esa validación: 61 aprobadas.
+- `git diff --check`: sin errores.
