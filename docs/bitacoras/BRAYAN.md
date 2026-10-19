@@ -1,4 +1,4 @@
-<img width="1280" height="800" alt="image" src="https://github.com/user-attachments/assets/e90d8747-39b1-46ac-9f9e-3e11ea12df68" /># Bitácora — Brayan Hernández
+# Bitácora — Brayan Hernández
 
 Responsable de las **Pantallas 2 y 3** de Giftify, correspondientes a los módulos:
 
@@ -47,66 +47,74 @@ Archivo:
 
 Se utilizó el router existente:
 
-dart
-`
+```dart
 Navigator.pushNamed(
   context,
   AppRoutes.search,
-);`
+);
+```
 
 ---
 
-## Sesión 2026-10-18 — Cierre de Home y Search
+## Sesión 2026-10-18
 
 ### Objetivo
 
-Completar la cobertura de pruebas correspondiente a las pantallas Home y Search del MVP local de Giftify, sin reimplementar funcionalidades existentes y respetando los límites del módulo asignado.
+Cerrar la cobertura de Home y Search para el MVP local sin reimplementar sus
+funcionalidades ni depender de `ProductResultsScreen` en las pruebas de
+navegación.
 
-### Trabajo realizado
-
-Se revisó el estado actual de:
-
-- `features/home/`
-- `features/search/`
-- `GiftSearchCriteria`
-- pruebas relacionadas con Home y Search.
-
-La implementación existente se mantuvo y el trabajo se enfocó principalmente en agregar cobertura automatizada.
-
-### Pruebas agregadas
-
-Se crearon los siguientes archivos:
+### Archivos creados
 
 - `giftify/test/home_screen_test.dart`
 - `giftify/test/gift_search_screen_test.dart`
 
-Se agregaron **13 pruebas nuevas**.
+### Trabajo realizado
 
-La suite completa del proyecto quedó con:
+- Se cubrió el renderizado de Home y el CTA `Encontrar tu regalo`.
+- Se verificó la navegación Home → Search mediante `AppRoutes.search`.
+- Se cubrieron los seis campos del formulario de Search.
+- Se verificaron las validaciones de campos obligatorios y presupuestos vacío,
+  inválido, cero y negativo.
+- Se verificaron presupuestos decimales con punto y con coma.
+- Se comprobó que la fecha opcional se envía como `null` cuando no se elige.
+- Se construyó y comprobó un `GiftSearchCriteria` con `occasion`, `recipient`,
+  `maxBudget`, `eventDate`, `giftType` y `size`.
+- Se capturaron `AppRoutes.productResults` y `RouteSettings.arguments` con un
+  router de prueba, sin renderizar `ProductResultsScreen`.
+- Se verificó Home y Search en 320×640, además de Search en 800×800.
 
-- **72 pruebas aprobadas**
+### Defecto encontrado y corregido
 
-### Cobertura de Home
+La prueba móvil detectó un overflow horizontal en el encabezado del catálogo de
+Home. Se restringió su columna de textos con `Expanded`, conservando el diseño y
+sin cambiar la funcionalidad existente.
 
-Se comprobó:
+### Validación
 
-- renderizado correcto de Home;
-- funcionamiento del CTA principal;
-- navegación `Home → Search`;
-- comportamiento responsive en pantalla móvil;
-- comportamiento responsive en ancho amplio.
+- `dart format lib test`: 35 archivos revisados, 0 cambios pendientes.
+- `flutter analyze`: sin issues.
+- `flutter test`: 72 pruebas aprobadas.
+- `git diff --check`: limpio.
 
-Se realizó un ajuste mínimo en:
+### Pendientes
 
-`giftify/lib/features/home/screens/home_screen.dart`
+- Ninguno dentro del alcance de Home y Search para esta tarea.
 
-El cambio consistió únicamente en mejorar el comportamiento responsive utilizando `Expanded` para evitar overflow en el encabezado del catálogo.
+### Detalle de cobertura
 
-No se reimplementó Home.
+Se agregaron **13 pruebas nuevas**. La suite completa quedó con **72 pruebas
+aprobadas**.
 
-### Cobertura de Search
+Home:
 
-Se agregaron pruebas para:
+- renderizado de Home;
+- CTA principal;
+- navegación Home → Search;
+- responsive móvil;
+- responsive en ancho amplio.
+
+Search:
 
 - campos obligatorios;
 - presupuesto vacío;
@@ -117,14 +125,11 @@ Se agregaron pruebas para:
 - presupuesto decimal con coma;
 - fecha opcional con valor `null`;
 - construcción de los seis campos de `GiftSearchCriteria`;
-- navegación `Search → Results`;
+- navegación Search → Results;
 - captura de `RouteSettings.arguments`;
-- responsive en pantalla móvil;
-- responsive en ancho amplio.
+- responsive en móvil y ancho amplio.
 
-### GiftSearchCriteria
-
-Se verificó la construcción correcta de los seis campos:
+Campos verificados de `GiftSearchCriteria`:
 
 - `occasion`
 - `recipient`
@@ -133,36 +138,20 @@ Se verificó la construcción correcta de los seis campos:
 - `giftType`
 - `size`
 
-No se modificó el modelo `GiftSearchCriteria`.
+No se modificó el modelo `GiftSearchCriteria` ni el módulo Products. La
+navegación Search → Results se probó capturando los argumentos, sin renderizar
+`ProductResultsScreen`.
 
-### Navegación Search → Results
+### Evidencia
 
-La navegación fue probada sin depender directamente de `ProductResultsScreen`.
+![Evidencia de pruebas de Home y Search](https://github.com/user-attachments/assets/e90d8747-39b1-46ac-9f9e-3e11ea12df68)
 
-Los tests capturan los argumentos enviados mediante:
+### Cierre de la tarea
 
-`RouteSettings.arguments`
-
-Esto permite validar que Search envía correctamente un objeto `GiftSearchCriteria` al flujo de resultados sin modificar el módulo Products.
-
-### Responsive comprobado
-
-Se realizaron pruebas en tamaños equivalentes a:
-
-- móvil: `320x640`
-- ancho amplio: `800x820`
-
-No se detectaron problemas de overflow después del ajuste realizado en Home.
-
-### Validaciones ejecutadas
-
-Se ejecutaron:
-
-```powershell
-dart format lib test
-flutter analyze
-flutter test
-git diff --check
-
-
-
+- Commit funcional: `ad2a27518c5bbf67626cf4fbeb18229a206dff58`.
+- Mensaje: `test: cubrir home y busqueda de regalos`.
+- Push realizado a `origin/brayan`.
+- Formato: OK.
+- Analyze: sin issues.
+- Tests de la rama en esa validación: 72 aprobadas.
+- `git diff --check`: sin errores.

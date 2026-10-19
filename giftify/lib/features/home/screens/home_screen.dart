@@ -425,23 +425,28 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Visita nuestro catálogo',
-                        style: TextStyle(
-                          color: textoPrincipal,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Visita nuestro catálogo',
+                          style: TextStyle(
+                            color: textoPrincipal,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Algunas ideas para ti',
-                        style: TextStyle(color: textoSecundario, fontSize: 13),
-                      ),
-                    ],
+                        SizedBox(height: 4),
+                        Text(
+                          'Algunas ideas para ti',
+                          style: TextStyle(
+                            color: textoSecundario,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
