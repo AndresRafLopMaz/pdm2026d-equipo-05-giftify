@@ -148,3 +148,15 @@ estilos, validaciones, navegación ni la estructura general de la pantalla.
   como modificaciones a archivos compartidos o módulos ajenos.
 - No se actualizó `docs/bitacora-ia.md` durante el trabajo paralelo; esta
   sección queda para la consolidación final del equipo.
+
+### Cierre de la tarea
+
+- Commit funcional: `4c712d1738943038ab6085dc9ba5a1d2ed7ef39a`.
+- Mensaje: `test: cubrir registro en pantalla movil estrecha`.
+- Push realizado a `origin/diego`.
+- Resultado: la prueba 320×640 detectó un overflow real.
+- Corrección: `Row` → `Wrap` en la fila de inicio de sesión.
+- Formato: 33 archivos revisados, 0 cambios.
+- Analyze: `No issues found!`.
+- Tests de la rama en esa validación: 60 aprobadas.
+- `git diff --check`: sin errores.
