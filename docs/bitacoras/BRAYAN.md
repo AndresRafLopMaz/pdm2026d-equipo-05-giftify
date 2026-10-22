@@ -155,3 +155,41 @@ navegación Search → Results se probó capturando los argumentos, sin renderiz
 - Analyze: sin issues.
 - Tests de la rama en esa validación: 72 aprobadas.
 - `git diff --check`: sin errores.
+
+---
+
+## Sesión 2026-10-22 — Pareja 1: filtros y Deshacer en Products
+
+### Objetivo
+
+Aportar la interfaz de filtros y la cobertura de interacción para el catálogo de
+productos, verificando que `GiftSearchCriteria` y Results → Detail siguen
+funcionando.
+
+### Trabajo realizado
+
+- Issue #26, rama `feat/26-filtro-productos`.
+- Se agregó `ProductFilterBar` con filtros de categoría y disponibilidad.
+- Se verificó que cambiar filtro actualiza el listado sin botón Recargar.
+- Se cubrió el empty por filtro y `Limpiar filtros`.
+- Se probó `Dismissible` con key igual al id del producto.
+- Se probaron delete, fallo de delete, SnackBar y Deshacer.
+- Se verificó que Results → Detail continúa funcionando.
+- Se mantuvo el contrato de `GiftSearchCriteria`.
+
+### Pruebas realizadas
+
+- `flutter test` — 104 pruebas aprobadas.
+- `flutter analyze` — No issues found!
+- `git diff --check` — sin errores.
+
+### Pendientes
+
+- PR de Products con CI y review.
+- Consolidación de IA en QA.
+- FASE 7 no está completada; Cart sigue pendiente.
+
+### Impacto para otros módulos
+
+- No se modificaron Cart, Checkout, Search ni modelos compartidos.
+- No se agregaron dependencias ni backend.
