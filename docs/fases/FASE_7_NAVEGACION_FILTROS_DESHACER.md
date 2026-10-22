@@ -124,16 +124,29 @@ Cart: `CartRepository`, `CartFilter`, `cartFilterProvider`,
 ## Estado actual
 
 - Bloque A: navegación base, Riverpod, `MainShell`, tabs y documentación.
-- Pareja 1: pendiente.
-- Pareja 2: pendiente.
-- Persistencia: pendiente de implementación en las parejas.
+- Navegación integrada en `main` mediante PR #25.
+- Issue de Products: #26.
+- Rama Products: `feat/26-filtro-productos`.
+- Pareja 1 (Products): implementada localmente.
+  - `ProductFilter` inmutable;
+  - `ProductFilterNotifier` y `productFilterProvider`;
+  - `productsProvider` con `ref.watch` del filtro;
+  - delete/restore repository-first;
+  - `Dismissible` con key = id;
+  - SnackBar con Deshacer;
+  - persistencia de IDs eliminados con `shared_preferences`;
+  - loading/error/retry/empty/data;
+  - 104 pruebas locales.
+- Issue de Cart: #27.
+- Rama Cart publicada: `feat/27-filtro-carrito`.
+- Pareja 2 (Cart): pendiente.
+- La prueba de cerrar/reabrir está cubierta para Products mediante SharedPreferences.
 - FASE 7 no está completada.
 
 ## Pendientes
 
-- PR de navegación con CI y review.
-- Crear Issues de parejas.
-- Implementar filtros, delete/undo y persistencia.
+- Abrir PR de Products con CI y review.
+- Implementar Pareja 2 (Cart).
 - QA global.
 - Actualizar FASE 7 a COMPLETADA al cerrar.
 

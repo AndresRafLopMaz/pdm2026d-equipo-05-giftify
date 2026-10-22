@@ -446,3 +446,53 @@ parejas.
 - Cambios en `main.dart`, `app/`, Home y Results.
 - `Detail`, `Cart` y `Checkout` conservan sus rutas.
 - No se modificaron modelos compartidos ni backend.
+
+---
+
+## Sesión 2026-10-22 — Pareja 1: filtros, borrado y Deshacer en Products
+
+### Objetivo
+
+Implementar el laboratorio de filtros, borrado con Deshacer y persistencia
+local en el catálogo de productos, sin backend ni cambios en Cart.
+
+### Trabajo realizado
+
+- Issue #26 y rama `feat/26-filtro-productos`.
+- `ProductFilter` inmutable con categoría y disponibilidad.
+- `ProductFilterNotifier` y `productFilterProvider`.
+- `productsProvider` con `AsyncNotifier` y `ref.watch` del filtro.
+- `productRepositoryProvider` con `MockProductRepository` y
+  `SharedPreferencesDeletedProductsStore`.
+- `ProductRepository` extendido con `deleteProduct` y `restoreProduct`.
+- `ProductResultsScreen` migrada a Riverpod:
+  - loading, error, retry, empty y data;
+  - filtro reactivo sin botón Recargar;
+  - empty por filtro con `Limpiar filtros`;
+  - `Dismissible` con `ValueKey(product.id)`;
+  - delete repository-first;
+  - error de borrado conserva la fila;
+  - SnackBar con `Deshacer`;
+  - restauración del mismo producto/id.
+- Persistencia de IDs eliminados con `shared_preferences`.
+- Fake repository extendido para pruebas de filtro y borrado.
+
+### Pruebas realizadas
+
+- `dart format lib test` — 51 archivos, 8 formateados en la primera pasada.
+- `flutter analyze` — No issues found!
+- `flutter test` — 104 pruebas aprobadas.
+- `git diff --check` — sin errores.
+
+### Pendientes
+
+- Abrir PR de Products con CI y review.
+- Pareja 2 (Cart) queda pendiente.
+- Consolidación de `docs/bitacora-ia.md` en QA.
+- FASE 7 sigue EN DESARROLLO.
+
+### Impacto para otros módulos
+
+- No se modificó Cart, Checkout, Search, Detail ni el router.
+- El catálogo ahora usa providers y persistencia local.
+- No se agregaron backend, SQLite ni nuevas dependencias.
