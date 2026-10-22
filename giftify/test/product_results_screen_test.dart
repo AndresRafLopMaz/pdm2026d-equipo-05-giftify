@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
+import 'package:giftify/app/app_tab.dart';
+import 'package:giftify/app/app_tab_notifier.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
 import 'package:giftify/features/products/screens/product_results_screen.dart';
 import 'package:giftify/features/products/utils/product_filters.dart';
 import 'package:giftify/features/products/widgets/product_card.dart';
-import 'package:giftify/features/search/screens/gift_search_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/models/gift_search_criteria.dart';
 
 import 'helpers/fake_product_repository.dart';
 
+Widget _testApp({required Widget home, RouteFactory? onGenerateRoute}) {
+  return ProviderScope(
+    child: MaterialApp(home: home, onGenerateRoute: onGenerateRoute),
+  );
+}
+
 void main() {
   testWidgets('sin criterios muestra el catálogo general', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
+      _testApp(
         home: ProductResultsScreen(
           repository: FakeProductRepository.success(mockProducts),
         ),
@@ -34,7 +42,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
+      _testApp(
         home: ProductResultsScreen(
           criteria: criteria,
           repository: FakeProductRepository.success(mockProducts),
@@ -57,7 +65,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
+      _testApp(
         home: ProductResultsScreen(
           criteria: criteria,
           repository: FakeProductRepository.success(mockProducts),
@@ -74,7 +82,11 @@ void main() {
     await tester.tap(find.text('Modificar búsqueda'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(GiftSearchScreen), findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(ProductResultsScreen)),
+      listen: false,
+    );
+    expect(container.read(appTabProvider), AppTab.search);
   });
 
   testWidgets('al pulsar una tarjeta navega al detalle con el producto', (
@@ -88,7 +100,7 @@ void main() {
     final expected = filterAndPrioritizeProducts(mockProducts, criteria).first;
 
     await tester.pumpWidget(
-      MaterialApp(
+      _testApp(
         home: ProductResultsScreen(
           criteria: criteria,
           repository: FakeProductRepository.success(mockProducts),
@@ -117,7 +129,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(home: ProductResultsScreen(repository: repository)),
+      _testApp(home: ProductResultsScreen(repository: repository)),
     );
     await tester.pump();
 
@@ -132,7 +144,7 @@ void main() {
 
   testWidgets('muestra error humano sin crash', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
+      _testApp(
         home: ProductResultsScreen(repository: FakeProductRepository.error()),
       ),
     );
@@ -150,7 +162,7 @@ void main() {
     final repository = FakeProductRepository.failOnceThenSuccess(mockProducts);
 
     await tester.pumpWidget(
-      MaterialApp(home: ProductResultsScreen(repository: repository)),
+      _testApp(home: ProductResultsScreen(repository: repository)),
     );
     await tester.pumpAndSettle();
 
@@ -170,7 +182,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
+      _testApp(
         home: ProductResultsScreen(repository: FakeProductRepository.empty()),
         onGenerateRoute: AppRouter.onGenerateRoute,
       ),
@@ -184,7 +196,11 @@ void main() {
     await tester.tap(find.text('Modificar búsqueda'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(GiftSearchScreen), findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(ProductResultsScreen)),
+      listen: false,
+    );
+    expect(container.read(appTabProvider), AppTab.search);
   });
 
   testWidgets('loading no desborda en pantalla móvil pequeña', (tester) async {
@@ -199,7 +215,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(home: ProductResultsScreen(repository: repository)),
+      _testApp(home: ProductResultsScreen(repository: repository)),
     );
     await tester.pump();
 
@@ -216,7 +232,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      MaterialApp(
+      _testApp(
         home: ProductResultsScreen(repository: FakeProductRepository.error()),
       ),
     );
@@ -234,7 +250,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      MaterialApp(
+      _testApp(
         home: ProductResultsScreen(repository: FakeProductRepository.empty()),
       ),
     );
@@ -258,7 +274,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
+      _testApp(
         home: ProductResultsScreen(
           criteria: criteria,
           repository: FakeProductRepository.success(mockProducts),

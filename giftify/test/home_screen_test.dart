@@ -1,26 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:giftify/app/app_router.dart';
+import 'package:giftify/app/app_tab.dart';
+import 'package:giftify/app/app_tab_notifier.dart';
 import 'package:giftify/features/home/screens/home_screen.dart';
-import 'package:giftify/features/search/screens/gift_search_screen.dart';
 
-Future<void> _pumpHomeScreen(
-  WidgetTester tester, {
-  ValueChanged<RouteSettings>? onRoute,
-}) async {
+Future<ProviderContainer> _pumpHomeScreen(WidgetTester tester) async {
+  final container = ProviderContainer();
+  addTearDown(container.dispose);
+
   await tester.pumpWidget(
-    MaterialApp(
-      home: const HomeScreen(),
-      onGenerateRoute: (settings) {
-        onRoute?.call(settings);
-
-        return MaterialPageRoute<void>(
-          settings: settings,
-          builder: (_) => const GiftSearchScreen(),
-        );
-      },
+    UncontrolledProviderScope(
+      container: container,
+      child: const MaterialApp(home: HomeScreen()),
     ),
   );
+
+  return container;
 }
 
 void main() {
@@ -32,21 +28,32 @@ void main() {
     expect(find.text('Encontrar tu regalo'), findsOneWidget);
   });
 
-  testWidgets('el CTA navega de Home a Search', (tester) async {
-    RouteSettings? capturedSettings;
-    await _pumpHomeScreen(
-      tester,
-      onRoute: (settings) => capturedSettings = settings,
-    );
+  testWidgets('el CTA navega de Home a Search mediante el provider', (
+    tester,
+  ) async {
+    final container = await _pumpHomeScreen(tester);
 
     final cta = find.text('Encontrar tu regalo');
     await tester.ensureVisible(cta);
     await tester.pumpAndSettle();
     await tester.tap(cta);
-    await tester.pumpAndSettle();
+    await tester.pump();
 
-    expect(capturedSettings?.name, AppRoutes.search);
-    expect(find.byType(GiftSearchScreen), findsOneWidget);
+    expect(container.read(appTabProvider), AppTab.search);
+  });
+
+  testWidgets('Ver todo cambia a la pestaña Catálogo mediante el provider', (
+    tester,
+  ) async {
+    final container = await _pumpHomeScreen(tester);
+
+    final verTodo = find.text('Ver todo');
+    await tester.ensureVisible(verTodo);
+    await tester.pumpAndSettle();
+    await tester.tap(verTodo);
+    await tester.pump();
+
+    expect(container.read(appTabProvider), AppTab.catalog);
   });
 
   testWidgets('Home no desborda en pantalla movil de 320x640', (tester) async {

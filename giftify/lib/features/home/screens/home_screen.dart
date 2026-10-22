@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/app_router.dart';
+import '../../../app/app_tab.dart';
+import '../../../app/app_tab_notifier.dart';
 import '../../../core/theme/app_theme.dart';
 
 // ============================================================
 // MAIN SCREEN
 // ============================================================
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ==========================================================
   // VARIABLES
   // ==========================================================
@@ -105,9 +107,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         trailing: const Icon(Icons.chevron_right_rounded),
                         onTap: () {
                           Navigator.pop(context);
-                          mostrarMensaje(
-                            'Aquí se administrarían las direcciones.',
-                          );
+                          ref
+                              .read(appTabProvider.notifier)
+                              .select(AppTab.comingSoon);
                         },
                       ),
                       const Divider(height: 1),
@@ -124,9 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         trailing: const Icon(Icons.chevron_right_rounded),
                         onTap: () {
                           Navigator.pop(context);
-                          mostrarMensaje(
-                            'Aquí se administrarían los métodos de pago.',
-                          );
+                          ref
+                              .read(appTabProvider.notifier)
+                              .select(AppTab.comingSoon);
                         },
                       ),
                     ],
@@ -145,7 +147,11 @@ class _HomeScreenState extends State<HomeScreen> {
   // ==========================================================
 
   void mostrarBusqueda() {
-    Navigator.pushNamed(context, AppRoutes.search);
+    ref.read(appTabProvider.notifier).select(AppTab.search);
+  }
+
+  void mostrarCatalogo() {
+    ref.read(appTabProvider.notifier).select(AppTab.catalog);
   }
 
   // ==========================================================
@@ -238,6 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // ======================================================
       body: SafeArea(
         child: SingleChildScrollView(
+          key: const PageStorageKey('home-scroll'),
           padding: const EdgeInsets.fromLTRB(22, 10, 22, 35),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -449,9 +456,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      mostrarMensaje('Se abriría el catálogo completo.');
-                    },
+                    onPressed: mostrarCatalogo,
                     child: const Text('Ver todo'),
                   ),
                 ],
@@ -637,9 +642,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               Center(
                 child: TextButton.icon(
-                  onPressed: () {
-                    mostrarMensaje('Se abriría directamente el catálogo.');
-                  },
+                  onPressed: mostrarCatalogo,
                   icon: const Icon(Icons.storefront_outlined),
                   label: const Text('Explorar catálogo sin personalizar'),
                 ),

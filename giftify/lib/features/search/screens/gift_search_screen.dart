@@ -180,6 +180,7 @@ class _GiftSearchScreenState extends State<GiftSearchScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
+              key: const PageStorageKey('search-scroll'),
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
               child: Center(
                 child: ConstrainedBox(

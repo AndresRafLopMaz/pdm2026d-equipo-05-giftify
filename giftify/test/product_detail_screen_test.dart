@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
@@ -152,10 +153,12 @@ void main() {
     final navigatorKey = GlobalKey<NavigatorState>();
 
     await tester.pumpWidget(
-      MaterialApp(
-        navigatorKey: navigatorKey,
-        initialRoute: AppRoutes.home,
-        onGenerateRoute: AppRouter.onGenerateRoute,
+      ProviderScope(
+        child: MaterialApp(
+          navigatorKey: navigatorKey,
+          initialRoute: AppRoutes.home,
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
       ),
     );
 
