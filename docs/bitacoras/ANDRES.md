@@ -386,3 +386,63 @@ después de integrar el PR de estados asíncronos.
 - El cierre es documental y de QA; no se modificó código funcional.
 - No se agregaron dependencias ni backend.
 - El MVP local queda completo.
+
+---
+
+## Sesión 2026-10-20 — Navegación principal del nuevo laboratorio
+
+### Objetivo
+
+Implementar el Bloque A del laboratorio de navegación, filtros y Deshacer:
+infraestructura común de Riverpod, `MainShell`, tabs e instrucciones para las
+parejas.
+
+### Trabajo realizado
+
+- Se agregaron `flutter_riverpod` 3.0.0 y `shared_preferences` 2.5.0.
+- Se envolvió `GiftifyApp` en `ProviderScope`.
+- Se crearon:
+  - `AppTab`;
+  - `AppTabNotifier`;
+  - `appTabProvider`;
+  - `MainShell` con `IndexedStack` y `NavigationBar`;
+  - `ComingSoonScreen`.
+- `AppRouter.home` ahora abre `MainShell`.
+- Home usa el provider para:
+  - `Encontrar tu regalo` → Search;
+  - `Ver todo` → Catálogo;
+  - accesos sin pantalla → Próximamente.
+- Results conserva `pop` para rutas y cambia a Search cuando está dentro del
+  shell.
+- Se agregaron claves de scroll y pruebas de navegación.
+
+### Decisiones
+
+- Riverpod 3 + Notifier + IndexedStack.
+- `go_router` rechazado.
+- `shared_preferences` para la persistencia local obligatoria.
+- SQLite rechazado.
+- Backend remoto rechazado.
+- Ruleset de `main` conservado activo.
+- Filtros y delete/undo quedan para las parejas; no se implementaron en este
+  bloque.
+
+### Pruebas
+
+- `dart format lib test` — 45 archivos, 1 formateado en la primera pasada.
+- `flutter analyze` — No issues found!
+- `flutter test` — 93 pruebas aprobadas.
+- `git diff --check` — sin errores.
+
+### Pendientes
+
+- PR de navegación con CI y review.
+- Issues y ramas de Pareja 1 y Pareja 2.
+- Implementar filtros, delete/undo y persistencia.
+- Completar FASE 7.
+
+### Impacto para otros módulos
+
+- Cambios en `main.dart`, `app/`, Home y Results.
+- `Detail`, `Cart` y `Checkout` conservan sus rutas.
+- No se modificaron modelos compartidos ni backend.

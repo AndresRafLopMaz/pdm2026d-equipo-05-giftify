@@ -17,6 +17,37 @@ qué especificaste, qué revisaste y qué rechazaste.
 
 ---
 
+## 2026-10-20 · @AndresRafLopMaz — Navegación principal del nuevo laboratorio
+
+- **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
+- **Especificación:** "Implementar solo el Bloque A del laboratorio: Riverpod,
+  `ProviderScope`, `AppTab`/Notifier, `MainShell` con `IndexedStack`, tabs,
+  Home con navegación por provider, `ComingSoonScreen`, dependencias comunes y
+  documentación para las parejas. No implementar filtros, delete/undo ni Cart."
+- **Resultado:** la navegación principal funciona con Riverpod e IndexedStack y
+  quedaron preparadas las instrucciones para las dos parejas.
+- **Aceptado:**
+  - `flutter_riverpod` 3.0.0 y `shared_preferences` 2.5.0.
+  - `ProviderScope`, `AppTabNotifier` y `appTabProvider`.
+  - `MainShell` con tabs Inicio, Buscar, Catálogo y Próximamente.
+  - Home CTA → Search y “Ver todo” → Catálogo mediante provider.
+  - `AppRouter.home` → `MainShell`; Detail/Cart/Checkout conservan sus rutas.
+  - Documentación `docs/equipo/lab-navegacion-filtros/` y FASE 7.
+- **Rechazado / corregido:**
+  - `go_router` rechazado.
+  - SQLite rechazado; se eligió `shared_preferences`.
+  - Backend remoto rechazado.
+  - No se implementaron filtros ni delete/undo en este bloque.
+  - No se desactivó la protección de `main`.
+  - Se conservaron las rutas de Detail, Cart y Checkout.
+- **Verificación:** con Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
+  `dart format lib test` → 45 archivos; `flutter analyze` → No issues found!;
+  `flutter test` → 93 pruebas aprobadas; `git diff --check` limpio.
+- **Commit / PR:** rama `feat/navegacion`; commit y PR pendientes al cierre de
+  esta entrada.
+
+---
+
 ## 2026-10-19 · @AndresRafLopMaz — Cierre del MVP local, QA y FASE 5
 
 - **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
