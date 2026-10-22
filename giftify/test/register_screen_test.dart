@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/features/auth/screens/register_screen.dart';
@@ -44,6 +45,8 @@ Future<void> _selectBirthDate(WidgetTester tester) async {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
   testWidgets('renderiza el formulario de registro', (tester) async {
     await _pumpRegisterScreen(tester);
 

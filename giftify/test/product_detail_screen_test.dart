@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
@@ -38,6 +39,8 @@ GiftProduct _buildProduct({
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
   testWidgets('renderiza nombre, precio y descripción', (tester) async {
     final product = _buildProduct(
       name: 'Pulsera artesanal',

@@ -7,14 +7,19 @@ import 'package:giftify/shared/models/gift_product.dart';
 /// falla siempre o falla una sola vez antes de responder correctamente.
 class FakeProductRepository implements ProductRepository {
   FakeProductRepository({
-    this.products = const [],
+    List<GiftProduct>? products,
     this.error,
     this.failures = 0,
     this.delay = Duration.zero,
-  });
+    this.deleteError,
+  }) : products = List<GiftProduct>.of(products ?? const []),
+       _deletedIds = <String>{};
 
-  factory FakeProductRepository.success(List<GiftProduct> products) {
-    return FakeProductRepository(products: products);
+  factory FakeProductRepository.success(
+    List<GiftProduct> products, {
+    Object? deleteError,
+  }) {
+    return FakeProductRepository(products: products, deleteError: deleteError);
   }
 
   factory FakeProductRepository.empty() {
@@ -49,8 +54,16 @@ class FakeProductRepository implements ProductRepository {
 
   final Duration delay;
 
+  /// Error opcional que se lanzará al intentar eliminar un producto.
+  final Object? deleteError;
+
+  final Set<String> _deletedIds;
+
   /// Número de veces que se ejecutó [fetchProducts].
   int calls = 0;
+
+  /// Número de veces que se intentó eliminar un producto.
+  int deleteCalls = 0;
 
   @override
   Future<List<GiftProduct>> fetchProducts() async {
@@ -67,6 +80,31 @@ class FakeProductRepository implements ProductRepository {
       throw failure;
     }
 
-    return List<GiftProduct>.unmodifiable(products);
+    return List<GiftProduct>.unmodifiable(
+      products.where((product) => !_deletedIds.contains(product.id)),
+    );
+  }
+
+  @override
+  Future<DeletedProduct> deleteProduct(String id) async {
+    deleteCalls++;
+
+    if (deleteError != null) {
+      throw deleteError!;
+    }
+
+    final index = products.indexWhere((product) => product.id == id);
+
+    if (index < 0) {
+      throw StateError('No existe el producto $id.');
+    }
+
+    _deletedIds.add(id);
+    return DeletedProduct(product: products[index], index: index);
+  }
+
+  @override
+  Future<void> restoreProduct(DeletedProduct deletion) async {
+    _deletedIds.remove(deletion.product.id);
   }
 }
