@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/app_router.dart';
+import '../../../app/app_tab.dart';
+import '../../../app/app_tab_notifier.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/gift_product.dart';
 import '../../../shared/models/gift_search_criteria.dart';
@@ -16,17 +19,18 @@ import '../widgets/product_card.dart';
 /// Recibe opcionalmente los criterios generados en la pantalla 3 y los aplica
 /// sobre los productos obtenidos de un [ProductRepository]. Por defecto usa
 /// [MockProductRepository] para conservar el MVP local.
-class ProductResultsScreen extends StatefulWidget {
+class ProductResultsScreen extends ConsumerStatefulWidget {
   const ProductResultsScreen({super.key, this.criteria, this.repository});
 
   final GiftSearchCriteria? criteria;
   final ProductRepository? repository;
 
   @override
-  State<ProductResultsScreen> createState() => _ProductResultsScreenState();
+  ConsumerState<ProductResultsScreen> createState() =>
+      _ProductResultsScreenState();
 }
 
-class _ProductResultsScreenState extends State<ProductResultsScreen> {
+class _ProductResultsScreenState extends ConsumerState<ProductResultsScreen> {
   late final ProductRepository _repository;
   late Future<List<GiftProduct>> _resultsFuture;
 
@@ -56,7 +60,7 @@ class _ProductResultsScreenState extends State<ProductResultsScreen> {
       return;
     }
 
-    navigator.pushReplacementNamed(AppRoutes.search);
+    ref.read(appTabProvider.notifier).select(AppTab.search);
   }
 
   @override
@@ -90,6 +94,7 @@ class _ProductResultsScreenState extends State<ProductResultsScreen> {
                   _CriteriaSummary(criteria: widget.criteria!),
                 Expanded(
                   child: ListView.separated(
+                    key: const PageStorageKey('results-list'),
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                     itemCount: results.length,
                     separatorBuilder: (context, index) =>

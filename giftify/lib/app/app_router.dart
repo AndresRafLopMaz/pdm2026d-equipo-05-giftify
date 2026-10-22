@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/cart/screens/cart_screen.dart';
 import '../features/cart/screens/checkout_screen.dart';
-import '../features/home/screens/home_screen.dart';
 import '../features/products/screens/product_detail_screen.dart';
 import '../features/products/screens/product_results_screen.dart';
 import '../features/search/screens/gift_search_screen.dart';
 import '../shared/models/cart_item.dart';
 import '../shared/models/gift_product.dart';
 import '../shared/models/gift_search_criteria.dart';
+import 'main_shell.dart';
 
 /// Nombres centralizados de las rutas de Giftify.
 ///
@@ -36,7 +36,7 @@ abstract final class AppRouter {
         return _buildRoute(settings, const RegisterScreen());
 
       case AppRoutes.home:
-        return _buildRoute(settings, const HomeScreen());
+        return _buildRoute(settings, const MainShell());
 
       case AppRoutes.search:
         return _buildRoute(settings, const GiftSearchScreen());

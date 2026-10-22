@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
+import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/features/auth/screens/register_screen.dart';
 import 'package:giftify/features/home/screens/home_screen.dart';
 
@@ -8,9 +10,11 @@ Finder _field(String label) => find.widgetWithText(TextFormField, label);
 
 Future<void> _pumpRegisterScreen(WidgetTester tester) async {
   await tester.pumpWidget(
-    MaterialApp(
-      initialRoute: AppRoutes.register,
-      onGenerateRoute: AppRouter.onGenerateRoute,
+    ProviderScope(
+      child: MaterialApp(
+        initialRoute: AppRoutes.register,
+        onGenerateRoute: AppRouter.onGenerateRoute,
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -166,6 +170,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.byType(MainShell), findsOneWidget);
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(find.byType(RegisterScreen), findsNothing);
   });
