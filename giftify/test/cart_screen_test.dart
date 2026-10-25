@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/core/theme/app_theme.dart';
+import 'package:giftify/features/cart/data/cart_store.dart';
+import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
+import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
@@ -10,12 +14,20 @@ import 'package:giftify/shared/models/cart_item.dart';
 void main() {
   Future<void> pumpCart(WidgetTester tester, List<CartItem> items) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: appTheme,
-        home: CartScreen(initialItems: items),
-        onGenerateRoute: AppRouter.onGenerateRoute,
+      ProviderScope(
+        overrides: [
+          cartRepositoryProvider.overrideWithValue(
+            PersistentCartRepository(store: InMemoryCartStore()),
+          ),
+        ],
+        child: MaterialApp(
+          theme: appTheme,
+          home: CartScreen(initialItems: items),
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
       ),
     );
+    await tester.pumpAndSettle();
   }
 
   String textForKey(WidgetTester tester, String key) {
@@ -42,7 +54,7 @@ void main() {
 
     await pumpCart(tester, [CartItem(product: product)]);
     await tester.tap(find.byKey(ValueKey('increase-${product.id}')));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(textForKey(tester, 'quantity-${product.id}'), '2');
     expect(textForKey(tester, 'subtotal-${product.id}'), 'Q 250.00');
@@ -54,7 +66,7 @@ void main() {
 
     await pumpCart(tester, [CartItem(product: product, quantity: 2)]);
     await tester.tap(find.byKey(ValueKey('decrease-${product.id}')));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(textForKey(tester, 'quantity-${product.id}'), '1');
     expect(textForKey(tester, 'subtotal-${product.id}'), 'Q 125.00');
@@ -84,7 +96,7 @@ void main() {
       CartItem(product: secondProduct),
     ]);
     await tester.tap(find.byKey(ValueKey('remove-${firstProduct.id}')));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text(firstProduct.name), findsNothing);
     expect(find.text(secondProduct.name), findsOneWidget);
@@ -98,7 +110,7 @@ void main() {
 
     await pumpCart(tester, [CartItem(product: product)]);
     await tester.tap(find.byKey(ValueKey('remove-${product.id}')));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Tu carrito está vacío'), findsOneWidget);
     expect(find.byKey(const ValueKey('cart-total')), findsNothing);
@@ -147,7 +159,7 @@ void main() {
 
     await pumpCart(tester, [CartItem(product: product)]);
     await tester.tap(find.byKey(ValueKey('increase-${product.id}')));
-    await tester.pump();
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('checkout-button')));
     await tester.pumpAndSettle();
 
