@@ -160,3 +160,121 @@ estilos, validaciones, navegación ni la estructura general de la pantalla.
 - Analyze: `No issues found!`.
 - Tests de la rama en esa validación: 60 aprobadas.
 - `git diff --check`: sin errores.
+
+## Sesión 2026-10-25 — QA del Issue #27 (filtro, borrado y Deshacer en Cart)
+
+### Objetivo
+Completar la responsabilidad de Diego en el Issue #27: ampliar la cobertura
+automatizada del filtro, delete/undo, persistencia, estados asíncronos,
+integración con Checkout y responsive 320×640, sin duplicar la implementación
+de Catherine.
+
+### Base utilizada
+- Rama: `feat/27-filtro-carrito`.
+- Commit base de Catherine: `18f5ab389516cc1397deaa3be7f4940b8c207c3f`.
+- `HEAD` y `origin/feat/27-filtro-carrito` coincidieron en ese commit durante
+  toda la sesión.
+- El commit de Catherine es ancestro de `HEAD`; la rama está 1 commit por
+  delante de `origin/main` (`2e3689d`).
+- No se modificó código de producción de Cart, Products, Router, `shared/`,
+  `main.dart` ni `pubspec.yaml`.
+
+### Archivos de pruebas modificados
+- `giftify/test/cart_filter_test.dart`
+- `giftify/test/cart_items_provider_test.dart`
+- `giftify/test/cart_screen_test.dart`
+- `giftify/test/cart_checkout_flow_test.dart`
+
+### Archivos de documentación modificados
+- `docs/bitacoras/DIEGO.md`
+
+### Escenarios agregados
+Pruebas de filtro:
+- filtro sin coincidencias con lista inmutable y sin alterar el original;
+- filtro por categoría en UI, cambio reactivo de categoría y conservación del
+  total general;
+- ausencia de botón `Recargar` en cambios normales de filtro;
+- filtro sin resultados frente a carrito realmente vacío;
+- acción `Limpiar filtro` y recuperación de la lista completa;
+- verificación de que filtrar no modifica los datos persistidos.
+
+Pruebas de estados asíncronos:
+- loading con un `CartStore` que difiere la carga;
+- data después de completar la carga;
+- error visible con `Reintentar`;
+- recuperación manual después de reintentar;
+- ausencia de reintento automático con `retry` desactivado.
+
+Pruebas de `Dismissible`, borrado y Deshacer:
+- `ValueKey(product.id)` en todos los `Dismissible`, sin keys por índice;
+- conservación de la identidad al borrar la fila intermedia;
+- swipe de eliminación;
+- borrado primero en repositorio y luego en UI;
+- fallo de borrado: la fila permanece y se comunica el error;
+- SnackBar con `Deshacer` después de un borrado exitoso;
+- Deshacer restaura el mismo producto, id, cantidad y total;
+- fallo de Deshacer: se comunica el error y no se muestra un estado persistido
+  falso;
+- fallo de actualización de cantidad: el valor mostrado no cambia.
+
+Pruebas de persistencia:
+- carga inicial que se fusiona con el carrito persistido y suma cantidades por
+  id;
+- eliminación persistida al recrear repositorio y contenedor;
+- Deshacer persistido al recrear repositorio y contenedor;
+- conservación de cantidades tras reapertura;
+- verificación de que un filtro activo no altera los datos persistidos.
+
+Pruebas de Cart y Checkout:
+- Checkout recibe `allItems`, incluidos los elementos ocultos por un filtro;
+- cantidades y total completo en Checkout con filtro activo;
+- flujo real ProductDetail → Cart → Checkout con el mismo producto y total;
+- flujo responsive 320×640 con filtros, borrado, SnackBar `Deshacer`, total y
+  navegación a Checkout sin overflow.
+
+### Errores encontrados y correcciones
+- No se encontraron defectos en el código de producción de Catherine.
+- Error propio en una prueba nueva: `find.byType(Dismissible)` incluía el
+  `Dismissible` interno del SnackBar. Se corrigió la prueba dentro de
+  `giftify/test/cart_screen_test.dart`, acotando la búsqueda a la lista del
+  carrito mediante `PageStorageKey('cart-list')`. No fue necesario modificar
+  código de producción.
+- No se modificaron archivos fuera del alcance autorizado por `DIEGO.md`.
+
+### Pruebas realizadas
+- Línea base confirmada antes de los cambios: **120 pruebas aprobadas**, 0
+  fallidas y 0 omitidas.
+- Pruebas dirigidas de los cuatro archivos de Cart: **36 aprobadas**.
+- Suite completa final: **137 pruebas aprobadas**, 0 fallidas y 0 omitidas.
+- Pruebas nuevas: **17** (1 en filtro, 3 en provider, 12 en widget de Cart y 1
+  en flujo ProductDetail → Cart → Checkout).
+- `dart format --output=none --set-exit-if-changed` solo sobre los cuatro
+  archivos Dart modificados: sin cambios.
+- `flutter analyze`: `No issues found!`.
+- `git diff --check`: sin errores.
+
+### Pruebas manuales realizadas y no realizadas
+- No se ejecutó la app en emulador ni dispositivo físico durante esta sesión.
+- Por lo tanto, **no se declara validado manualmente** el ciclo real de
+  cerrar/reabrir la aplicación en un dispositivo.
+- La persistencia se validó con `SharedPreferences` simulado en pruebas
+  automatizadas, recreando repositorio y contenedor de Riverpod.
+- Queda pendiente la QA manual en emulador o dispositivo con evidencia visual.
+
+### Pendientes reales
+- Ejecutar QA manual en emulador o dispositivo, incluida la persistencia real
+  de cerrar/reabrir, con evidencias.
+- Revisar el resultado de QA con Catherine y abrir el PR cuando el equipo lo
+  autorice.
+- Abrir PR cuando el equipo lo autorice, con CI, review y respuesta a la
+  pregunta del `Dismissible`.
+- Coordinar la actualización de `docs/fases/FASE_7_NAVEGACION_FILTROS_DESHACER.md`;
+  en esta sesión no se modificó porque no está en los archivos autorizados para
+  Diego. FASE 7 no se declara completada.
+- Registrar la consolidación final en `docs/bitacora-ia.md`, fuera del alcance
+  individual actual.
+
+### Estado
+- Cobertura automatizada del Issue #27 completada localmente.
+- Commit y push preparados al cierre de la sesión; PR pendiente de autorización.
+- Issue #27, FASE 7, CI y review permanecen pendientes de cierre conjunto.

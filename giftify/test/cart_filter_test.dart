@@ -36,6 +36,30 @@ void main() {
     expect(items, hasLength(3));
   });
 
+  test('sin coincidencias devuelve una lista vacía e inmutable', () {
+    final items = [
+      CartItem(product: mockProducts[0]),
+      CartItem(product: mockProducts[1]),
+    ];
+
+    final withoutMatches = applyCartFilter(
+      items,
+      const CartFilter(category: 'Categoría inexistente'),
+    );
+    final unfiltered = applyCartFilter(items, const CartFilter());
+
+    expect(withoutMatches, isEmpty);
+    expect(unfiltered, hasLength(2));
+    expect(
+      () => withoutMatches.add(CartItem(product: mockProducts[0])),
+      throwsUnsupportedError,
+    );
+    expect(
+      () => unfiltered.add(CartItem(product: mockProducts[0])),
+      throwsUnsupportedError,
+    );
+  });
+
   test('CartFilterNotifier establece y limpia la categoría', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
