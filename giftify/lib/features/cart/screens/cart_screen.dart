@@ -1,66 +1,194 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/cart_item.dart';
+import '../data/cart_repository.dart';
+import '../providers/cart_filter_provider.dart';
+import '../providers/cart_items_provider.dart';
 
 /// Pantalla 6 — Carrito de compras.
 ///
 /// Responsable principal: Catherine.
-///
-/// La lista inicial permite recibir productos seleccionados desde
-/// otras pantallas sin definir todavía un gestor global de estado.
-class CartScreen extends StatefulWidget {
+class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key, this.initialItems = const []});
 
   final List<CartItem> initialItems;
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
+  ConsumerState<CartScreen> createState() => _CartScreenState();
 }
 
-class _CartScreenState extends State<CartScreen> {
-  late final List<CartItem> _items;
+class _CartScreenState extends ConsumerState<CartScreen> {
+  final Map<String, RemovedCartItem> _pendingDeletions = {};
+  final Set<String> _updatingIds = {};
+  final Set<String> _deletingIds = {};
+  late bool _isSeeding;
+  bool _seedFailed = false;
 
-  double get _total => _items.fold(0, (total, item) => total + item.subtotal);
+  bool get _hasPendingOperation =>
+      _updatingIds.isNotEmpty ||
+      _deletingIds.isNotEmpty ||
+      _pendingDeletions.isNotEmpty;
 
   @override
   void initState() {
     super.initState();
-    _items = List<CartItem>.of(widget.initialItems);
+    _isSeeding = widget.initialItems.isNotEmpty;
+    if (_isSeeding) {
+      _seedInitialItems();
+    }
+  }
+
+  Future<void> _seedInitialItems() async {
+    try {
+      await ref
+          .read(cartItemsProvider.notifier)
+          .addIncoming(widget.initialItems);
+      if (mounted) {
+        setState(() {
+          _isSeeding = false;
+          _seedFailed = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isSeeding = false;
+          _seedFailed = true;
+        });
+      }
+    }
+  }
+
+  void _retry() {
+    if (_seedFailed) {
+      setState(() {
+        _isSeeding = true;
+        _seedFailed = false;
+      });
+      _seedInitialItems();
+      return;
+    }
+
+    ref.invalidate(cartItemsProvider);
   }
 
   String _formatPrice(double price) => 'Q ${price.toStringAsFixed(2)}';
 
-  void _increaseQuantity(int index) {
-    setState(() {
-      final item = _items[index];
-      _items[index] = item.copyWith(quantity: item.quantity + 1);
-    });
-  }
-
-  void _decreaseQuantity(int index) {
-    final item = _items[index];
-    if (item.quantity == 1) {
+  Future<void> _changeQuantity(CartItem item, int quantity) async {
+    final productId = item.product.id;
+    if (quantity < 1 || _updatingIds.contains(productId)) {
       return;
     }
 
-    setState(() {
-      _items[index] = item.copyWith(quantity: item.quantity - 1);
-    });
+    setState(() => _updatingIds.add(productId));
+    try {
+      await ref
+          .read(cartItemsProvider.notifier)
+          .changeQuantity(productId, quantity);
+    } catch (_) {
+      if (mounted) {
+        _showMessage('No se pudo actualizar la cantidad. Inténtalo de nuevo.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _updatingIds.remove(productId));
+      }
+    }
   }
 
-  void _removeItem(int index) {
-    setState(() {
-      _items.removeAt(index);
-    });
+  Future<RemovedCartItem?> _persistRemoval(CartItem item) async {
+    final productId = item.product.id;
+    if (_deletingIds.contains(productId)) {
+      return null;
+    }
+
+    setState(() => _deletingIds.add(productId));
+    try {
+      return await ref
+          .read(cartItemsProvider.notifier)
+          .deleteFromRepository(productId);
+    } catch (_) {
+      if (mounted) {
+        _showMessage('No se pudo eliminar el producto. Inténtalo de nuevo.');
+      }
+      return null;
+    } finally {
+      if (mounted) {
+        setState(() => _deletingIds.remove(productId));
+      }
+    }
   }
 
-  void _continueToCheckout() {
+  Future<bool> _confirmDismiss(CartItem item) async {
+    final removal = await _persistRemoval(item);
+    if (removal == null) {
+      return false;
+    }
+
+    if (mounted) {
+      setState(() => _pendingDeletions[item.product.id] = removal);
+    }
+    return true;
+  }
+
+  void _onDismissed(CartItem item) {
+    final removal = _pendingDeletions.remove(item.product.id);
+    if (removal == null) {
+      return;
+    }
+
+    ref.read(cartItemsProvider.notifier).removeLocal(removal);
+    _showDeletedMessage(removal);
+  }
+
+  Future<void> _removeWithButton(CartItem item) async {
+    final removal = await _persistRemoval(item);
+    if (removal == null || !mounted) {
+      return;
+    }
+
+    ref.read(cartItemsProvider.notifier).removeLocal(removal);
+    _showDeletedMessage(removal);
+  }
+
+  void _showDeletedMessage(RemovedCartItem removal) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Producto eliminado.'),
+        action: SnackBarAction(
+          label: 'Deshacer',
+          onPressed: () => _restore(removal),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _restore(RemovedCartItem removal) async {
+    try {
+      await ref.read(cartItemsProvider.notifier).restore(removal);
+    } catch (_) {
+      if (mounted) {
+        _showMessage('No se pudo deshacer la eliminación. Inténtalo de nuevo.');
+      }
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  void _continueToCheckout(CartSnapshot snapshot) {
     Navigator.pushNamed(
       context,
       AppRoutes.checkout,
-      arguments: List<CartItem>.of(_items),
+      arguments: List<CartItem>.of(snapshot.allItems),
     );
   }
 
@@ -102,11 +230,12 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartItem(BuildContext context, int index) {
-    final item = _items[index];
+  Widget _buildCartItem(BuildContext context, CartItem item) {
     final product = item.product;
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isUpdating = _updatingIds.contains(product.id);
+    final isDeleting = _deletingIds.contains(product.id);
 
     return Card(
       margin: EdgeInsets.zero,
@@ -147,7 +276,9 @@ class _CartScreenState extends State<CartScreen> {
                           IconButton(
                             key: ValueKey('remove-${product.id}'),
                             tooltip: 'Eliminar ${product.name}',
-                            onPressed: () => _removeItem(index),
+                            onPressed: isDeleting
+                                ? null
+                                : () => _removeWithButton(item),
                             visualDensity: VisualDensity.compact,
                             color: rosaPrincipal,
                             icon: const Icon(Icons.delete_outline_rounded),
@@ -176,8 +307,8 @@ class _CartScreenState extends State<CartScreen> {
                     IconButton(
                       key: ValueKey('decrease-${product.id}'),
                       tooltip: 'Disminuir cantidad',
-                      onPressed: item.quantity > 1
-                          ? () => _decreaseQuantity(index)
+                      onPressed: item.quantity > 1 && !isUpdating
+                          ? () => _changeQuantity(item, item.quantity - 1)
                           : null,
                       constraints: const BoxConstraints.tightFor(
                         width: 36,
@@ -203,7 +334,9 @@ class _CartScreenState extends State<CartScreen> {
                     IconButton(
                       key: ValueKey('increase-${product.id}'),
                       tooltip: 'Aumentar cantidad',
-                      onPressed: () => _increaseQuantity(index),
+                      onPressed: isUpdating
+                          ? null
+                          : () => _changeQuantity(item, item.quantity + 1),
                       constraints: const BoxConstraints.tightFor(
                         width: 36,
                         height: 36,
@@ -235,6 +368,69 @@ class _CartScreenState extends State<CartScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFilters(CartSnapshot snapshot) {
+    final selectedCategory = snapshot.filter.category;
+    final categories = snapshot.categories.toList()..sort();
+
+    return SizedBox(
+      height: 52,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        children: [
+          FilterChip(
+            key: const ValueKey('cart-filter-all'),
+            label: const Text('Todos'),
+            selected: selectedCategory == null,
+            onSelected: _hasPendingOperation
+                ? null
+                : (_) {
+                    ref.read(cartFilterProvider.notifier).clear();
+                  },
+          ),
+          for (final category in categories) ...[
+            const SizedBox(width: 8),
+            FilterChip(
+              key: ValueKey('cart-filter-category-$category'),
+              label: Text(category),
+              selected: selectedCategory == category,
+              onSelected: _hasPendingOperation
+                  ? null
+                  : (_) {
+                      ref
+                          .read(cartFilterProvider.notifier)
+                          .setCategory(category);
+                    },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItems(CartSnapshot snapshot) {
+    return ListView(
+      key: const PageStorageKey('cart-list'),
+      padding: const EdgeInsets.only(bottom: 12),
+      children: [
+        _buildFilters(snapshot),
+        const SizedBox(height: 6),
+        for (final item in snapshot.visibleItems)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+            child: Dismissible(
+              key: ValueKey(item.product.id),
+              direction: DismissDirection.endToStart,
+              background: const _DeleteBackground(),
+              confirmDismiss: (_) => _confirmDismiss(item),
+              onDismissed: (_) => _onDismissed(item),
+              child: _buildCartItem(context, item),
+            ),
+          ),
+      ],
     );
   }
 
@@ -275,9 +471,94 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCheckoutBar(BuildContext context) {
+  Widget _buildFilteredEmpty(CartSnapshot snapshot) {
+    return Column(
+      children: [
+        _buildFilters(snapshot),
+        Expanded(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.filter_alt_off_rounded,
+                    size: 64,
+                    color: rosaPrincipal,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'No hay productos en esta categoría.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    key: const ValueKey('clear-cart-filter-empty'),
+                    onPressed: () {
+                      ref.read(cartFilterProvider.notifier).clear();
+                    },
+                    icon: const Icon(Icons.filter_alt_off_rounded),
+                    label: const Text('Limpiar filtro'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoading() {
+    return const Center(
+      child: Column(
+        key: ValueKey('cart-loading'),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Cargando carrito…'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Padding(
+        key: const ValueKey('cart-error'),
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.cloud_off_rounded, size: 64, color: rosaPrincipal),
+            const SizedBox(height: 16),
+            const Text(
+              'No pudimos cargar el carrito.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            const Text('Inténtalo de nuevo.'),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              key: const ValueKey('cart-retry-button'),
+              onPressed: _retry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCheckoutBar(BuildContext context, CartSnapshot? snapshot) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final hasItems = snapshot != null && snapshot.allItems.isNotEmpty;
 
     return Material(
       color: colors.surface,
@@ -288,13 +569,13 @@ class _CartScreenState extends State<CartScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (_items.isNotEmpty) ...[
+              if (hasItems) ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Total', style: textTheme.titleMedium),
                     Text(
-                      _formatPrice(_total),
+                      _formatPrice(snapshot.total),
                       key: const ValueKey('cart-total'),
                       style: textTheme.titleLarge?.copyWith(
                         color: rosaPrincipal,
@@ -309,7 +590,9 @@ class _CartScreenState extends State<CartScreen> {
                 width: double.infinity,
                 child: FilledButton(
                   key: const ValueKey('checkout-button'),
-                  onPressed: _items.isEmpty ? null : _continueToCheckout,
+                  onPressed: hasItems && !_hasPendingOperation
+                      ? () => _continueToCheckout(snapshot)
+                      : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: rosaPrincipal,
                     foregroundColor: Colors.white,
@@ -331,6 +614,26 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cart = ref.watch(cartItemsProvider);
+    final snapshot = cart.asData?.value;
+    final body = _isSeeding
+        ? _buildLoading()
+        : _seedFailed
+        ? _buildError()
+        : cart.when(
+            loading: _buildLoading,
+            error: (error, stackTrace) => _buildError(),
+            data: (data) {
+              if (data.isEmpty) {
+                return _buildEmptyCart(context);
+              }
+              if (data.hasNoVisibleItems) {
+                return _buildFilteredEmpty(data);
+              }
+              return _buildItems(data);
+            },
+          );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Carrito'),
@@ -345,15 +648,32 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ),
       ),
-      body: _items.isEmpty
-          ? _buildEmptyCart(context)
-          : ListView.separated(
-              padding: const EdgeInsets.all(12),
-              itemCount: _items.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemBuilder: _buildCartItem,
-            ),
-      bottomNavigationBar: _buildCheckoutBar(context),
+      body: body,
+      bottomNavigationBar: _buildCheckoutBar(
+        context,
+        _isSeeding || _seedFailed ? null : snapshot,
+      ),
+    );
+  }
+}
+
+class _DeleteBackground extends StatelessWidget {
+  const _DeleteBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 24),
+      decoration: BoxDecoration(
+        color: rosaClaro,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: const Icon(
+        Icons.delete_outline_rounded,
+        color: rosaPrincipal,
+        size: 28,
+      ),
     );
   }
 }

@@ -221,3 +221,85 @@ Cerrar Cart y Checkout del MVP local mediante una prueba de integración del flu
 - Analyze: sin problemas.
 - Tests de la rama en esa validación: 61 aprobadas.
 - `git diff --check`: sin errores.
+
+## Sesión 2026-10-25 — Filtro, persistencia y Deshacer en Cart
+
+### Objetivo
+Implementar la parte principal del Issue #27 en
+`feat/27-filtro-carrito`, conservando ProductDetail → Cart → Checkout y el
+diseño V2.
+
+### Trabajo realizado
+- Se creó `CartRepository` con carga, incorporación, actualización de cantidad,
+  eliminación y restauración.
+- Se implementó `PersistentCartRepository` con operaciones serializadas para
+  evitar escrituras concurrentes y pérdida de cantidades.
+- Se persistieron únicamente `productId` y `quantity` mediante
+  `shared_preferences`.
+- Se reconstruyeron los `CartItem` con los productos canónicos de
+  `mockProducts`; los IDs desconocidos producen error en lugar de descartarse.
+- Se agregó `CartFilter` inmutable y `CartFilterNotifier` por categoría.
+- Se implementó `cartItemsProvider` asíncrono y reactivo al filtro, con retry
+  automático desactivado.
+- Se creó `CartSnapshot` con `allItems`, `visibleItems`, categorías y total.
+- Se migró `CartScreen` a `ConsumerStatefulWidget` sin cambiar su contrato
+  `List<CartItem> initialItems`.
+- Los elementos entrantes se fusionan una sola vez y suman cantidades por ID.
+- Se añadieron loading, error con Reintentar y empty específico por filtro.
+- Se agregó filtro horizontal por categoría y acción Limpiar filtro.
+- Se agregó `Dismissible` con `ValueKey(product.id)`.
+- El botón de eliminar y el swipe comparten eliminación repository-first.
+- Se agregó SnackBar con Deshacer y restauración persistente en la posición
+  original.
+- Los errores de cantidad, delete y restore no muestran cambios no persistidos.
+- El total y Checkout utilizan `allItems`; el filtro solo modifica
+  `visibleItems`.
+
+### Archivos creados
+- `giftify/lib/features/cart/data/cart_filter.dart`
+- `giftify/lib/features/cart/data/cart_repository.dart`
+- `giftify/lib/features/cart/data/cart_store.dart`
+- `giftify/lib/features/cart/data/persistent_cart_repository.dart`
+- `giftify/lib/features/cart/providers/cart_filter_provider.dart`
+- `giftify/lib/features/cart/providers/cart_items_provider.dart`
+- `giftify/test/cart_filter_test.dart`
+- `giftify/test/cart_items_provider_test.dart`
+- `giftify/test/cart_repository_test.dart`
+
+### Archivos modificados
+- `giftify/lib/features/cart/screens/cart_screen.dart`
+- `giftify/test/cart_screen_test.dart`
+- `giftify/test/cart_checkout_flow_test.dart`
+- `docs/bitacoras/CATHERINE.md`
+
+### Pruebas realizadas
+- Línea base: 104 pruebas aprobadas.
+- Pruebas técnicas y regresiones dirigidas: 27 aprobadas.
+- Suite completa tras la implementación: 120 pruebas aprobadas.
+- `flutter analyze` — OK, sin problemas.
+- Persistencia y reapertura con `SharedPreferences` — OK.
+- Operaciones concurrentes del repositorio — OK.
+- Flujo Cart → Checkout normal y 320x640 — OK.
+
+### Decisiones técnicas
+- Las operaciones del repositorio se serializan sobre una cola interna.
+- Cada escritura construye el nuevo estado, persiste primero y solo entonces
+  actualiza la UI.
+- El almacenamiento usa un JSON atómico con pares `productId`/`quantity`.
+- `CartFilter` no altera la fuente persistida ni el total general.
+- Checkout recibe una copia de `allItems`, incluso cuando hay un filtro activo.
+- No se modificaron ProductDetail, Checkout, AppRouter, modelos compartidos,
+  dependencias ni módulos de Products.
+
+### Pendientes para Diego
+- Ampliar widget tests de filtros, empty filtrado, Dismissible, delete fallido,
+  SnackBar y Deshacer fallido.
+- Verificar en widget test que Checkout recibe todos los elementos con un filtro
+  activo.
+- Repetir QA responsive 320x640 y regresión global.
+- Ejecutar CI conjunto y registrar sus resultados en su propia bitácora.
+
+### Estado
+- Implementación principal de Catherine terminada y validada localmente.
+- Issue #27 y FASE 7 permanecen abiertos hasta completar el trabajo de Diego,
+  QA conjunto, CI y review.

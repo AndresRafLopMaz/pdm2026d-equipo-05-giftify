@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/core/theme/app_theme.dart';
+import 'package:giftify/features/cart/data/cart_store.dart';
+import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
+import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
+import 'package:giftify/features/products/screens/product_detail_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+import 'package:giftify/shared/enums/gift_availability.dart';
 import 'package:giftify/shared/models/cart_item.dart';
 
 void main() {
@@ -19,19 +25,27 @@ void main() {
     final expectedTotalText = 'Q ${expectedItem.subtotal.toStringAsFixed(2)}';
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: appTheme,
-        home: CartScreen(initialItems: [initialItem]),
-        onGenerateRoute: AppRouter.onGenerateRoute,
+      ProviderScope(
+        overrides: [
+          cartRepositoryProvider.overrideWithValue(
+            PersistentCartRepository(store: InMemoryCartStore()),
+          ),
+        ],
+        child: MaterialApp(
+          theme: appTheme,
+          home: CartScreen(initialItems: [initialItem]),
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
       ),
     );
+    await tester.pumpAndSettle();
 
     final cart = tester.widget<CartScreen>(find.byType(CartScreen));
     expect(cart.initialItems, hasLength(1));
     expect(cart.initialItems.single, same(initialItem));
 
     await tester.tap(find.byKey(ValueKey('increase-${product.id}')));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(textForKey(tester, 'quantity-${product.id}'), '2');
     expect(textForKey(tester, 'subtotal-${product.id}'), expectedTotalText);
@@ -80,5 +94,52 @@ void main() {
     await verifyCartToCheckoutFlow(tester);
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('ProductDetail a Cart a Checkout conserva el producto', (
+    tester,
+  ) async {
+    final product = mockProducts.firstWhere(
+      (item) => item.availability == GiftAvailability.inStock,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cartRepositoryProvider.overrideWithValue(
+            PersistentCartRepository(store: InMemoryCartStore()),
+          ),
+        ],
+        child: MaterialApp(
+          theme: appTheme,
+          home: ProductDetailScreen(product: product),
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final addButton = find.widgetWithText(FilledButton, 'Agregar al carrito');
+    await tester.ensureVisible(addButton);
+    await tester.pumpAndSettle();
+    await tester.tap(addButton);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CartScreen), findsOneWidget);
+    expect(find.text(product.name), findsOneWidget);
+    expect(textForKey(tester, 'quantity-${product.id}'), '1');
+    expect(
+      textForKey(tester, 'cart-total'),
+      'Q ${product.price.toStringAsFixed(2)}',
+    );
+
+    await tester.tap(find.byKey(const ValueKey('checkout-button')));
+    await tester.pumpAndSettle();
+
+    final checkout = tester.widget<CheckoutScreen>(find.byType(CheckoutScreen));
+    expect(checkout.items, hasLength(1));
+    expect(checkout.items.single.product, same(product));
+    expect(checkout.items.single.quantity, 1);
+    expect(checkout.items.single.subtotal, product.price);
   });
 }
