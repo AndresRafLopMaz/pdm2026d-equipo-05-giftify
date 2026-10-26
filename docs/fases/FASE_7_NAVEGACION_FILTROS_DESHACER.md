@@ -127,7 +127,7 @@ Cart: `CartRepository`, `CartFilter`, `cartFilterProvider`,
 - Navegación integrada en `main` mediante PR #25.
 - Issue de Products: #26.
 - Rama Products: `feat/26-filtro-productos`.
-- Pareja 1 (Products): implementada localmente.
+- Pareja 1 (Products): implementada e integrada mediante PR #28.
   - `ProductFilter` inmutable;
   - `ProductFilterNotifier` y `productFilterProvider`;
   - `productsProvider` con `ref.watch` del filtro;
@@ -135,19 +135,30 @@ Cart: `CartRepository`, `CartFilter`, `cartFilterProvider`,
   - `Dismissible` con key = id;
   - SnackBar con Deshacer;
   - persistencia de IDs eliminados con `shared_preferences`;
-  - loading/error/retry/empty/data;
-  - 104 pruebas locales.
+  - loading/error/retry/empty/data.
 - Issue de Cart: #27.
-- Rama Cart publicada: `feat/27-filtro-carrito`.
-- Pareja 2 (Cart): pendiente.
-- La prueba de cerrar/reabrir está cubierta para Products mediante SharedPreferences.
+- Rama Cart: `feat/27-filtro-carrito`.
+- Pareja 2 (Cart): implementada en la rama, pendiente de integración por PR.
+  - `CartRepository` y `PersistentCartRepository`;
+  - `CartFilter` inmutable y `cartFilterProvider`;
+  - `cartItemsProvider` con `ref.watch` del filtro;
+  - `CartSnapshot` con `allItems`, `visibleItems`, total y categorías;
+  - filtro no altera el total general;
+  - Checkout recibe todos los ítems reales;
+  - `Dismissible` con key = id;
+  - delete repository-first, fallo conserva la fila;
+  - SnackBar con Deshacer;
+  - restauración de mismo id, producto y cantidad;
+  - persistencia con `shared_preferences`;
+  - loading/error/retry/empty/data;
+  - carrito vacío diferenciado de filtro sin resultados.
+- Validación local actual: 137 pruebas aprobadas.
 - FASE 7 no está completada.
 
 ## Pendientes
 
-- Abrir PR de Products con CI y review.
-- Implementar Pareja 2 (Cart).
-- QA global.
+- Abrir PR de Cart con CI y review.
+- QA global e integración de Cart.
 - Actualizar FASE 7 a COMPLETADA al cerrar.
 
 No modificar FASE 6.
