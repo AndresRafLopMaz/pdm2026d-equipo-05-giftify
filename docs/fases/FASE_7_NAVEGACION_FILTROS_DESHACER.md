@@ -1,6 +1,6 @@
 # FASE 7 — Navegación, filtros y Deshacer
 
-ESTADO: EN DESARROLLO
+ESTADO: COMPLETADA
 
 ## Objetivo
 
@@ -138,7 +138,7 @@ Cart: `CartRepository`, `CartFilter`, `cartFilterProvider`,
   - loading/error/retry/empty/data.
 - Issue de Cart: #27.
 - Rama Cart: `feat/27-filtro-carrito`.
-- Pareja 2 (Cart): implementada en la rama, pendiente de integración por PR.
+- Pareja 2 (Cart): implementada e integrada mediante PR #29.
   - `CartRepository` y `PersistentCartRepository`;
   - `CartFilter` inmutable y `cartFilterProvider`;
   - `cartItemsProvider` con `ref.watch` del filtro;
@@ -152,13 +152,44 @@ Cart: `CartRepository`, `CartFilter`, `cartFilterProvider`,
   - persistencia con `shared_preferences`;
   - loading/error/retry/empty/data;
   - carrito vacío diferenciado de filtro sin resultados.
-- Validación local actual: 137 pruebas aprobadas.
-- FASE 7 no está completada.
+- Validación global final: 137 pruebas aprobadas.
+- FASE 7 completada técnicamente.
+
+## PRs integrados
+
+| PR | Rama | Commit en main | CI | Review |
+|---|---|---|---|---|
+| #25 | `feat/navegacion` | `2e8db0a` | Verde | 0 reviews |
+| #28 | `feat/26-filtro-productos` | `2e3689d` | Verde | 0 reviews |
+| #29 | `feat/27-filtro-carrito` | `7e4871a` | Verde | 0 reviews |
+
+Los tres PR fueron integrados como commit squash. El check
+`Formato, análisis y pruebas` quedó en verde en cada uno.
+
+### Excepción de proceso
+
+Los PR #25, #28 y #29 no recibieron reviews/aprobaciones antes de integrarse.
+El ruleset de `main` está deshabilitado. Esta es una excepción de proceso que
+debe regularizarse si el laboratorio exige la aprobación formal de otro
+integrante.
+
+## QA global
+
+- `dart format --output=none --set-exit-if-changed lib test` — 60 archivos,
+  0 cambios.
+- `flutter analyze` — No issues found!.
+- `flutter test` — 137 pruebas aprobadas.
+- `git diff --check` — sin errores.
+- Navegación: MainShell, tabs, Home → Search, Ver todo → Catálogo y scroll.
+- Products: filtros, delete/undo, persistencia, estados y Results → Detail.
+- Cart: filtros, delete/undo, persistencia, total completo y Checkout con todos
+  los ítems.
+- Responsive cubierto por tests donde existe.
 
 ## Pendientes
 
-- Abrir PR de Cart con CI y review.
-- QA global e integración de Cart.
-- Actualizar FASE 7 a COMPLETADA al cerrar.
+- Regularizar la review/aprobación de los PR si el laboratorio la exige.
+- Reactivar/verificar manualmente el ruleset de `main`.
+- Completar la consolidación final de `docs/bitacora-ia.md`.
 
 No modificar FASE 6.
