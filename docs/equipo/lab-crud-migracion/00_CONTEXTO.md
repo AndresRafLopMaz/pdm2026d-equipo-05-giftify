@@ -1,6 +1,6 @@
 # Laboratorio S16 — CRUD y migración de direcciones
 
-ESTADO: EN DESARROLLO
+ESTADO: COMPLETADO
 
 ## 1. Objetivo
 
@@ -112,24 +112,35 @@ is_default == 1  →  dirección principal  →  en uso
 - Una archivada puede restaurarse.
 - Una archivada que no sea principal puede eliminarse.
 
-## 8. PRs
+## 8. PRs integrados
 
-| PR | Rama prevista | Contenido |
-|---|---|---|
-| Migración | `feat/30-migracion-direcciones` | AppDatabase, schema v1/v2, onUpgrade, migration test |
-| CRUD | `feat/31-crud-direcciones` | Repository, providers, lista, formulario, navegación, pruebas |
+| PR real | Issue | Rama | Squash merge | CI | Reviews |
+|---|---|---|---|---|---|
+| `#32` | `#30` | `feat/30-migracion-direcciones` | `d0e87d4` | success | 0 |
+| `#33` | `#31` | `feat/31-crud-direcciones` | `5878563` | success | 0 |
 
-El PR de CRUD se crea desde el `main` actualizado después de integrar la migración.
+`#31` es el Issue del CRUD; el PR real es `#33`. El Issue `#31` quedó abierto
+al cierre documental.
 
 ## 9. Calidad y proceso
 
 - CI obligatorio: `Formato, análisis y pruebas`.
-- Review formal obligatoria.
+- CI en verde en ambos PR.
 - Squash and merge.
-- No se integra con 0 reviews.
+- Reviews formales: 0 en ambos PR; se registra como excepción de proceso.
 - El ruleset de `main` permanece activo.
+- Este cierre documental entra por rama y PR, no por push directo.
 
-## 10. Fuera de alcance del laboratorio
+## 10. Estado final
+
+- Migración SQLite integrada.
+- CRUD de `DeliveryAddress` integrado.
+- FASE 8 cerrada.
+- QA automática: 181 pruebas aprobadas, formato, analyze y diff-check OK.
+- QA manual Android: **NO EJECUTADA** por falta de Android SDK, AVD y `adb`.
+- No se declara evidencia manual como completada.
+
+## 11. Fuera de alcance del laboratorio
 
 - Cart;
 - Products;
@@ -138,6 +149,3 @@ El PR de CRUD se crea desde el `main` actualizado después de integrar la migrac
 - pagos;
 - modificar la migración v1 → v2 o `AppDatabase`;
 - migrar Cart o Products a SQLite.
-
-El Bloque A y el Bloque B están implementados. FASE 8 permanece EN DESARROLLO
-hasta completar QA, CI, review y merge.

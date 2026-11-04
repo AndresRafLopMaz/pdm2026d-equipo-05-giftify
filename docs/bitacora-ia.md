@@ -17,6 +17,38 @@ qué especificaste, qué revisaste y qué rechazaste.
 
 ---
 
+## 2026-11-04 · @AndresRafLopMaz — Cierre S16 / FASE 8
+
+- **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).
+- **Especificación:** "Actualizar `main`, ejecutar QA automatizado final, cerrar
+  documentalmente FASE 8 y registrar PRs, CI, reviews y limitaciones reales. No
+  inventar QA manual Android."
+- **Resultado:** FASE 8 quedó cerrada documentalmente con 181 pruebas aprobadas,
+  migración SQLite y CRUD integrados, y la ausencia de QA manual Android
+  registrada explícitamente.
+- **Aceptado:**
+  - PR `#32` de migración, integrado por squash en `d0e87d4`.
+  - PR `#33` de CRUD, integrado por squash en `5878563`.
+  - `AppDatabase` v2, migración v1 → v2, `AddressRepository`,
+    `SqfliteAddressRepository`, providers, formulario único, lista
+    Activas/Archivadas, UNIQUE, principal en uso, delete libre y archivado.
+  - QA final: 181 tests, formato, analyze y diff-check.
+- **Rechazado / corregido:**
+  - No se declaró QA manual Android: el entorno no tenía Android SDK, AVD ni
+    `adb`.
+  - No se afirmó que hubiera reviews: PR `#32` y `#33` tienen 0 reviews.
+  - No se identificó un PR `#31`: `#31` es el Issue; el PR real del CRUD es
+    `#33`.
+  - No se hizo push directo a `main`; el cierre documental va por rama y PR.
+  - No se modificó código funcional ni la migración v1 → v2 en este cierre.
+- **Verificación:** Flutter 3.44.8 / Dart 3.12.2 en `giftify/`:
+  `dart format` → 75 archivos, 0 cambios; `flutter analyze` → No issues found!;
+  `flutter test` → 181 pruebas aprobadas; `git diff --check` → limpio.
+- **Commit / PR:** PRs `#32` y `#33` integrados; PR documental de cierre
+  pendiente.
+
+---
+
 ## 2026-10-26 · @AndresRafLopMaz — Cierre global de FASE 7
 
 - **Herramienta:** OpenCode (asistente de código, modelo deepseek-flash).

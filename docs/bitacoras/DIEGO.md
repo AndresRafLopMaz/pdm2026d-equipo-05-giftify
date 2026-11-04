@@ -350,13 +350,27 @@ Home, con cobertura de widget del CRUD de `DeliveryAddress`.
 - CI, review y merge del PR de CRUD.
 - FASE 8 permanece EN DESARROLLO.
 
-## Correcci��n 2026-11-04 - delete e invalidaci��n del listado
+## Corrección 2026-11-04 - delete e invalidación del listado
 
-- La tarjeta de una direcci��n activa no principal vuelve a mostrar Eliminar.
+- La tarjeta de una dirección activa no principal vuelve a mostrar Eliminar.
 - Eliminar una activa no principal no requiere archivarla primero.
-- La principal sigue mostrando el di��logo de direcci��n en uso y las salidas de
+- La principal sigue mostrando el diálogo de dirección en uso y las salidas de
   cambiar principal o archivar.
-- `AddressListScreen` invalida expl��citamente `addressesProvider` despu��s de
+- `AddressListScreen` invalida explícitamente `addressesProvider` después de
   crear, editar, borrar, archivar, restaurar o cambiar principal.
 - El test de widget de activa no principal ahora verifica el borrado real y la
-  desaparici��n de la lista.
+  desaparición de la lista.
+
+## Cierre 2026-11-04 — FASE 8
+
+- PR real del CRUD: `#33`, integrado por Squash and merge en
+  `58785636af14054f442a30facaa8505e36c9df8a`.
+- Issue del CRUD: `#31`; permanece abierto al cierre documental.
+- Migración: PR `#32`, Issue `#30`, integrada en
+  `d0e87d4094209f53af4e56957c5fd9bfb7b8b4a0`.
+- QA automatizado final: 181 pruebas aprobadas, formato sin cambios, analyze sin
+  issues y diff-check limpio.
+- CI de ambos PR: 2 checks en success.
+- Reviews formales: 0 en ambos PR; se documenta como excepción de proceso.
+- QA manual Android: **NO EJECUTADA** por falta de Android SDK, AVD y `adb`.
+- FASE 8 cerrada documentalmente con esa limitación explícita.
