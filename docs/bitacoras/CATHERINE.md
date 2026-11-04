@@ -303,3 +303,70 @@ diseño V2.
 - Implementación principal de Catherine terminada y validada localmente.
 - Issue #27 y FASE 7 permanecen abiertos hasta completar el trabajo de Diego,
   QA conjunto, CI y review.
+
+## Sesión 2026-11-04 — Issue #31: repositorio y providers de direcciones
+
+### Objetivo
+Implementar la capa de datos y estado del CRUD de `DeliveryAddress` sobre la
+migración SQLite v1 → v2 ya integrada, sin modificar `AppDatabase`.
+
+### Base utilizada
+- Rama: `feat/31-crud-direcciones`.
+- SHA base: `d0e87d4094209f53af4e56957c5fd9bfb7b8b4a0`.
+- La rama local y `origin/feat/31-crud-direcciones` coincidieron en ese SHA.
+
+### Trabajo realizado
+- Se extendió `DeliveryAddress` con `isDefault`, `isArchived` y `copyWith`.
+- Se creó `AddressDraft` para desacoplar el formulario de la persistencia.
+- Se creó `AddressBook` con `addresses`, `defaultAddressId`, `active` y
+  `archived`.
+- Se definió `AddressRepository` con `loadBook`, `create`, `update`, `delete`,
+  `archive`, `restore` y `setDefault`.
+- Se implementó `SqfliteAddressRepository` sobre `AppDatabase`.
+- La etiqueta se normaliza con `trim` y espacios internos colapsados.
+- El UNIQUE de SQLite se traduce a `DuplicateAddressLabelException` con el
+  mensaje humano acordado; nunca se exponen errores SQL.
+- La primera dirección activa queda como principal.
+- `update` conserva exactamente el id recibido.
+- La principal no se puede eliminar.
+- Archivar la principal reasigna la siguiente activa o deja la principal en
+  `null`.
+- Restaurar convierte la dirección en principal solo si no existe otra.
+- `setDefault` y las operaciones de principal/archivado usan transacciones.
+- Las operaciones del repositorio se serializan por instancia de `AppDatabase`.
+- Se crearon `addressRepositoryProvider`, `AddressesNotifier` y
+  `addressesProvider`; cada mutación invalida el provider para volver a
+  consultar SQLite.
+- El retry automático del provider quedó desactivado.
+
+### Archivos creados
+- `giftify/lib/features/addresses/data/address_book.dart`
+- `giftify/lib/features/addresses/data/address_repository.dart`
+- `giftify/lib/features/addresses/data/sqflite_address_repository.dart`
+- `giftify/lib/features/addresses/providers/addresses_provider.dart`
+- `giftify/test/address_repository_test.dart`
+
+### Archivos modificados
+- `giftify/lib/shared/models/delivery_address.dart`
+- `docs/bitacoras/CATHERINE.md`
+
+### Decisiones técnicas
+- No se modificó `AppDatabase` ni la migración publicada.
+- No se duplicó `DeliveryAddress`.
+- La UI no recibe excepciones SQL.
+- No se modificaron Cart, Products ni Checkout.
+- No se agregaron dependencias.
+
+### Pruebas realizadas
+- Línea base: 139 pruebas aprobadas.
+- Pruebas nuevas del repositorio: 16.
+- Suite completa final: 169 pruebas aprobadas.
+- `dart format --output=none --set-exit-if-changed lib test` — OK.
+- `flutter analyze` — `No issues found!`.
+- `git diff --check` — OK.
+- Persistencia verificada cerrando y reabriendo SQLite con los mismos datos.
+
+### Pendientes
+- Integración y QA conjunto con la UI de Diego.
+- CI, review y merge del PR de CRUD.
+- FASE 8 permanece EN DESARROLLO.

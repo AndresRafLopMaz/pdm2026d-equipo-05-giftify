@@ -168,10 +168,15 @@ is_default = 1  →  dirección principal  →  en uso
 
 ## Estado actual
 
-- Bloque A: infraestructura SQLite y migración v1 → v2.
-- Migración implementada en la rama `feat/30-migracion-direcciones`.
-- Pendiente: PR, CI, review y merge.
-- El CRUD no se implementa todavía.
+- Bloque A: infraestructura SQLite y migración v1 → v2 integrada en `main`.
+- Bloque B: CRUD de `DeliveryAddress` implementado en
+  `feat/31-crud-direcciones`.
+- Completado localmente: modelo extendido, `AddressBook`, repository SQLite,
+  providers, lista, formulario único, navegación desde Home, UNIQUE,
+  principal/en uso y archivado/restauración.
+- Pruebas: repositorio con SQLite real, formulario, lista, navegación y Home.
+- FASE 8 permanece **EN DESARROLLO**: faltan integración final, QA manual,
+  CI, review y merge del PR de CRUD.
 
 ## Fuera de alcance
 
