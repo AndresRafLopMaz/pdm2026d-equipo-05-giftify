@@ -1,6 +1,6 @@
 # Laboratorio S16 — CRUD y migración de direcciones
 
-ESTADO: BLOQUE A EN DESARROLLO
+ESTADO: EN DESARROLLO
 
 ## 1. Objetivo
 
@@ -103,6 +103,7 @@ is_default == 1  →  dirección principal  →  en uso
 - La principal no se puede eliminar.
 - Se ofrece cambiarla de principal o archivarla.
 - Al archivar la principal se reasigna la siguiente activa o se deja sin principal.
+- Una activa que no sea principal puede eliminarse directamente.
 
 ### Archivado
 
@@ -128,12 +129,15 @@ El PR de CRUD se crea desde el `main` actualizado después de integrar la migrac
 - No se integra con 0 reviews.
 - El ruleset de `main` permanece activo.
 
-## 10. Fuera de alcance del Bloque A
+## 10. Fuera de alcance del laboratorio
 
-- `AddressRepository`;
-- providers de direcciones;
-- lista;
-- formulario;
-- navegación;
-- CRUD;
-- archivado desde UI.
+- Cart;
+- Products;
+- Checkout;
+- backend;
+- pagos;
+- modificar la migración v1 → v2 o `AppDatabase`;
+- migrar Cart o Products a SQLite.
+
+El Bloque A y el Bloque B están implementados. FASE 8 permanece EN DESARROLLO
+hasta completar QA, CI, review y merge.

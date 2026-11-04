@@ -278,3 +278,85 @@ Pruebas de Cart y Checkout:
 - Cobertura automatizada del Issue #27 completada localmente.
 - Commit y push preparados al cierre de la sesión; PR pendiente de autorización.
 - Issue #27, FASE 7, CI y review permanecen pendientes de cierre conjunto.
+
+## Sesión 2026-11-04 — Issue #31: UI, navegación y widget tests de direcciones
+
+### Objetivo
+Implementar lista, formulario único, acciones de dirección y navegación desde
+Home, con cobertura de widget del CRUD de `DeliveryAddress`.
+
+### Base utilizada
+- Rama: `feat/31-crud-direcciones`.
+- SHA base: `d0e87d4094209f53af4e56957c5fd9bfb7b8b4a0`.
+- No se modificó la migración v1 → v2, Cart ni Products.
+
+### Trabajo realizado
+- Se creó `AddressCard` con etiqueta, destinatario, dirección, referencia,
+  badges `Principal` y `Archivada`, y menú de acciones.
+- Se creó `AddressFormScreen` único para crear y editar.
+- El formulario recibe `initialAddress` opcional y `onSubmit`; no conoce SQL,
+  Sqflite ni providers.
+- Crear muestra `Crear`; editar muestra `Guardar cambios` y conserva el id
+  mediante la lista.
+- Se agregaron validaciones de campos obligatorios y mensaje humano para
+  etiquetas duplicadas.
+- Se creó `AddressListScreen` con loading, error y `Reintentar`, vacío, datos,
+  selector `Activas | Archivadas`, acciones y FAB `Nueva dirección`.
+- Eliminar la principal muestra el diálogo `Dirección en uso` con opciones para
+  archivar o cambiar la principal.
+- Se agregó `AppRoutes.addresses` y el caso correspondiente en `AppRouter`.
+- `Mis direcciones` en Home navega a la lista; `Métodos de pago` sigue en
+  Próximamente.
+- El refresco posterior a cada mutación se realiza invalidando
+  `addressesProvider`; la UI no agrega ni edita elementos manualmente.
+- Se corrigió el contenedor de ListTiles del perfil de Home por una aserción de
+  Flutter sobre el color de fondo, sin cambiar su comportamiento.
+
+### Archivos creados
+- `giftify/lib/features/addresses/widgets/address_card.dart`
+- `giftify/lib/features/addresses/screens/address_form_screen.dart`
+- `giftify/lib/features/addresses/screens/address_list_screen.dart`
+- `giftify/test/helpers/fake_address_repository.dart`
+- `giftify/test/address_form_screen_test.dart`
+- `giftify/test/address_list_screen_test.dart`
+
+### Archivos modificados
+- `giftify/lib/app/app_router.dart`
+- `giftify/lib/features/home/screens/home_screen.dart`
+- `giftify/test/navigation_contract_test.dart`
+- `giftify/test/home_screen_test.dart`
+- `docs/bitacoras/DIEGO.md`
+
+### Pruebas realizadas
+- Línea base: 139 pruebas aprobadas.
+- Pruebas nuevas de formulario, lista, navegación y Home: 14.
+- Suite completa final: 169 pruebas aprobadas.
+- Flujo widget obligatorio: lista con `Casa`, formulario lleno, edición,
+  guardado, nuevo dato visible y mismo id conservado.
+- También cubiertos: crear, duplicado, borrado bloqueado de la principal,
+  archivar, restaurar, cambiar principal, loading, error y `Reintentar`.
+- `dart format --output=none --set-exit-if-changed lib test` — OK.
+- `flutter analyze` — `No issues found!`.
+- `git diff --check` — OK.
+
+### Pruebas manuales realizadas y no realizadas
+- No se ejecutó la app en emulador ni dispositivo físico.
+- La persistencia de cerrar y reabrir se verificó con SQLite real en pruebas
+  automatizadas, no con QA manual en dispositivo.
+- Queda pendiente la QA visual/manual final.
+
+### Pendientes
+- QA manual en emulador o dispositivo con evidencia.
+- CI, review y merge del PR de CRUD.
+- FASE 8 permanece EN DESARROLLO.
+
+## Correcci��n 2026-11-04 - delete e invalidaci��n del listado
+
+- La tarjeta de una direcci��n activa no principal vuelve a mostrar Eliminar.
+- Eliminar una activa no principal no requiere archivarla primero.
+- La principal sigue mostrando el di��logo de direcci��n en uso y las salidas de
+  cambiar principal o archivar.
+- `AddressListScreen` invalida expl��citamente `addressesProvider` despu��s de
+  crear, editar, borrar, archivar, restaurar o cambiar principal.
+- El test de widget de activa no principal ahora verifica el borrado real y la
+  desaparici��n de la lista.

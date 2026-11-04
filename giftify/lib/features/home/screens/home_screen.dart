@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/app_router.dart';
 import '../../../app/app_tab.dart';
 import '../../../app/app_tab_notifier.dart';
 import '../../../core/theme/app_theme.dart';
@@ -87,11 +88,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: TextStyle(color: textoSecundario),
                 ),
                 const SizedBox(height: 24),
-                Container(
-                  decoration: BoxDecoration(
-                    color: fondoPrincipal,
-                    borderRadius: BorderRadius.circular(18),
-                  ),
+                Material(
+                  color: fondoPrincipal,
+                  borderRadius: BorderRadius.circular(18),
+                  clipBehavior: Clip.antiAlias,
                   child: Column(
                     children: [
                       ListTile(
@@ -106,10 +106,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         subtitle: const Text('Administrar lugares de entrega'),
                         trailing: const Icon(Icons.chevron_right_rounded),
                         onTap: () {
-                          Navigator.pop(context);
-                          ref
-                              .read(appTabProvider.notifier)
-                              .select(AppTab.comingSoon);
+                          final navigator = Navigator.of(context);
+                          navigator.pop();
+                          navigator.pushNamed(AppRoutes.addresses);
                         },
                       ),
                       const Divider(height: 1),

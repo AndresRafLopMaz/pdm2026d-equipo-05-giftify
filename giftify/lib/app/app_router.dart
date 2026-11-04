@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../features/addresses/screens/address_list_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/cart/screens/cart_screen.dart';
 import '../features/cart/screens/checkout_screen.dart';
@@ -23,6 +24,7 @@ abstract final class AppRoutes {
   static const String productDetail = '/products/detail';
   static const String cart = '/cart';
   static const String checkout = '/checkout';
+  static const String addresses = '/addresses';
 }
 
 /// Router central de Giftify.
@@ -68,6 +70,9 @@ abstract final class AppRouter {
         final items = _extractCartItems(settings.arguments);
 
         return _buildRoute(settings, CheckoutScreen(items: items));
+
+      case AppRoutes.addresses:
+        return _buildRoute(settings, const AddressListScreen());
 
       default:
         return _buildRoute(settings, const _UnknownRouteScreen());
