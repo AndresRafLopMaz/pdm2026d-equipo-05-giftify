@@ -426,3 +426,15 @@ Diego Barrios en la rama compartida. No corresponde a un commit de Catherine.
 - CI remoto, revisión formal y QA visual/manual.
 - Crear y revisar el PR sin cerrar todavía el Issue #31.
 - FASE 8 permanece EN DESARROLLO hasta la integración final del equipo.
+
+## Corrección 2026-11-04 — regla final de borrado
+
+- Se alineó el CRUD con la regla del laboratorio: una dirección activa no
+  principal sí puede eliminarse directamente.
+- La dirección principal sigue bloqueada y ofrece cambiar principal o archivar.
+- La UI vuelve a ofrecer Eliminar en direcciones activas no principales.
+- El repositorio y el fake de pruebas ya no exigen archivar antes de eliminar.
+- Los tests de repositorio y widget cubren delete activo, delete archivado y
+  bloqueo de la principal.
+- El refresco del listado se hace con `ref.invalidate(addressesProvider)` desde
+  la pantalla de direcciones.

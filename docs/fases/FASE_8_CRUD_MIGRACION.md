@@ -150,6 +150,7 @@ is_default = 1  →  dirección principal  →  en uso
 - No se elimina.
 - Se ofrece cambiar principal o archivar.
 - Al archivar la principal se reasigna la siguiente activa o se deja sin principal.
+- Una dirección activa que no sea principal sí puede eliminarse directamente.
 
 ### Archivado
 
@@ -174,21 +175,22 @@ is_default = 1  →  dirección principal  →  en uso
 - Completado localmente: modelo extendido, `AddressBook`, repository SQLite,
   providers, lista, formulario único, navegación desde Home, UNIQUE,
   principal/en uso y archivado/restauración.
-- Cierre funcional: hard delete solo para archivadas no principales, protección
-  de principal en repository y UI, y restricciones UNIQUE traducidas por tipo.
-- Pruebas: 181 aprobadas; incluyen SQLite real, providers, migración, formulario,
-  lista responsive, navegación y Home. Análisis estático sin issues.
-- FASE 8 permanece **EN DESARROLLO**: faltan integración final, QA manual,
+- Cierre funcional: hard delete para direcciones no principales, activas o
+  archivadas; protección de principal en repository y UI; y restricciones
+  UNIQUE traducidas por tipo.
+- Pruebas: 181 aprobadas; incluyen SQLite real, providers, migración,
+  formulario, lista responsive, navegación y Home.
+- FASE 8 permanece **EN DESARROLLO**: faltan QA automatizado final, QA manual,
   CI, review y merge del PR de CRUD.
 
 ## Fuera de alcance
 
-- CRUD en esta rama;
-- providers de direcciones;
-- lista;
-- formulario;
-- navegación;
-- modificar Cart o Products;
+- Cart;
+- Products;
+- Checkout;
+- backend;
+- pagos;
+- modificar la migración v1 → v2 o `AppDatabase`;
 - migrar Cart o Products a SQLite.
 
 No modificar FASE 6.

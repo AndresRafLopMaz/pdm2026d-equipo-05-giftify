@@ -349,3 +349,14 @@ Home, con cobertura de widget del CRUD de `DeliveryAddress`.
 - QA manual en emulador o dispositivo con evidencia.
 - CI, review y merge del PR de CRUD.
 - FASE 8 permanece EN DESARROLLO.
+
+## Correcci��n 2026-11-04 - delete e invalidaci��n del listado
+
+- La tarjeta de una direcci��n activa no principal vuelve a mostrar Eliminar.
+- Eliminar una activa no principal no requiere archivarla primero.
+- La principal sigue mostrando el di��logo de direcci��n en uso y las salidas de
+  cambiar principal o archivar.
+- `AddressListScreen` invalida expl��citamente `addressesProvider` despu��s de
+  crear, editar, borrar, archivar, restaurar o cambiar principal.
+- El test de widget de activa no principal ahora verifica el borrado real y la
+  desaparici��n de la lista.
