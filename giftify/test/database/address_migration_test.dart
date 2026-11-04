@@ -200,4 +200,48 @@ void main() {
       expect(await reopenedDatabase.getVersion(), AppDatabase.version);
     },
   );
+
+  test('onCreate crea el esquema v2 completo', () async {
+    final appDatabase = AppDatabase(
+      factory: databaseFactoryFfi,
+      path: databasePath,
+    );
+    addTearDown(appDatabase.close);
+
+    final db = await appDatabase.database;
+    expect(await db.getVersion(), AppDatabase.version);
+
+    final columns = await db.rawQuery(
+      'PRAGMA table_info(${AppDatabase.deliveryAddressesTable})',
+    );
+    final columnNames = columns.map((row) => row['name']).toSet();
+    expect(columnNames, containsAll(<String>{'archived', 'is_default'}));
+
+    final indexes = await db.rawQuery(
+      'PRAGMA index_list(${AppDatabase.deliveryAddressesTable})',
+    );
+    final indexNames = indexes.map((row) => row['name']).toSet();
+    expect(
+      indexNames,
+      containsAll(<String>{
+        AppDatabase.labelNocaseIndex,
+        AppDatabase.singleDefaultIndex,
+        AppDatabase.archivedIndex,
+      }),
+    );
+
+    await db.insert(AppDatabase.deliveryAddressesTable, {
+      'id': 'addr-v2-001',
+      'label': 'Casa',
+      'recipient_name': 'María López',
+      'address_line': '5a avenida 10-20, zona 1',
+      'city': 'Guatemala',
+      'department': 'Guatemala',
+      'reference': 'Portón verde',
+    });
+
+    final row = (await db.query(AppDatabase.deliveryAddressesTable)).single;
+    expect(row['archived'], 0);
+    expect(row['is_default'], 0);
+  });
 }
