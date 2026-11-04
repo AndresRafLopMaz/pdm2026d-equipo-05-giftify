@@ -97,9 +97,6 @@ class FakeAddressRepository implements AddressRepository {
     if (_addresses[index].isDefault) {
       throw const AddressInUseException();
     }
-    if (!_addresses[index].isArchived) {
-      throw const ActiveAddressDeletionException();
-    }
     _addresses.removeAt(index);
   }
 

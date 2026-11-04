@@ -141,15 +141,14 @@ class AddressCard extends StatelessWidget {
                             contentPadding: EdgeInsets.zero,
                           ),
                         ),
-                        if (address.isDefault)
-                          const PopupMenuItem(
-                            value: AddressCardAction.delete,
-                            child: ListTile(
-                              leading: Icon(Icons.delete_outline_rounded),
-                              title: Text('Eliminar'),
-                              contentPadding: EdgeInsets.zero,
-                            ),
+                        const PopupMenuItem(
+                          value: AddressCardAction.delete,
+                          child: ListTile(
+                            leading: Icon(Icons.delete_outline_rounded),
+                            title: Text('Eliminar'),
+                            contentPadding: EdgeInsets.zero,
                           ),
+                        ),
                       ];
                     },
                   ),

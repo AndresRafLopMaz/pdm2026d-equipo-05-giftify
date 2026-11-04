@@ -128,9 +128,6 @@ class SqfliteAddressRepository implements AddressRepository {
           if (existing.isDefault) {
             throw const AddressInUseException();
           }
-          if (!existing.isArchived) {
-            throw const ActiveAddressDeletionException();
-          }
 
           await txn.delete(
             AppDatabase.deliveryAddressesTable,

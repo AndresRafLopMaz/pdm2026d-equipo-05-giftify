@@ -258,9 +258,7 @@ void main() {
     expect(find.text('Trabajo'), findsOneWidget);
   });
 
-  testWidgets('una activa no principal no ofrece eliminación definitiva', (
-    tester,
-  ) async {
+  testWidgets('elimina una activa no principal', (tester) async {
     final repository = FakeAddressRepository(
       initial: [
         _address('addr-casa', 'Casa', isDefault: true),
@@ -272,9 +270,13 @@ void main() {
     await tester.pumpAndSettle();
 
     await _openMenu(tester, 'addr-trabajo');
+    await tester.tap(find.text('Eliminar'));
+    await tester.pumpAndSettle();
 
-    expect(find.text('Archivar'), findsOneWidget);
-    expect(find.text('Eliminar'), findsNothing);
+    expect(repository.addresses, hasLength(1));
+    expect(repository.addresses.single.id, 'addr-casa');
+    expect(find.text('Trabajo'), findsNothing);
+    expect(find.text('Dirección eliminada.'), findsOneWidget);
   });
 
   testWidgets('elimina definitivamente una dirección archivada', (

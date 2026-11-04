@@ -157,24 +157,24 @@ void main() {
     }
   });
 
-  test('bloquea eliminar una dirección activa no principal', () async {
+  test('elimina una dirección activa no principal', () async {
     final casa = await repository.create(_draft('Casa'));
     final trabajo = await repository.create(_draft('Trabajo'));
 
-    await expectLater(
-      repository.delete(trabajo.id),
-      throwsA(
-        isA<ActiveAddressDeletionException>().having(
-          (error) => error.message,
-          'message',
-          'Archiva la dirección antes de eliminarla definitivamente.',
-        ),
-      ),
-    );
+    await repository.delete(trabajo.id);
 
     final book = await repository.loadBook();
-    expect(book.active, hasLength(2));
+    expect(book.active, hasLength(1));
+    expect(book.active.single.id, casa.id);
     expect(book.defaultAddressId, casa.id);
+
+    final db = await appDatabase.database;
+    final rows = await db.query(
+      AppDatabase.deliveryAddressesTable,
+      where: 'id = ?',
+      whereArgs: [trabajo.id],
+    );
+    expect(rows, isEmpty);
   });
 
   test(
