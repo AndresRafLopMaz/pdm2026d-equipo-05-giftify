@@ -1,6 +1,6 @@
 # FASE 8 — CRUD y migración de direcciones
 
-ESTADO: EN DESARROLLO
+ESTADO: COMPLETADA
 
 ## Objetivo
 
@@ -93,39 +93,22 @@ Flujo:
 10. comprobar CRUD básico v2;
 11. reabrir y confirmar que los datos siguen igual.
 
-## PRs
+## PRs integrados
 
-### PR de migración
+| PR real | Issue | Rama | Squash merge en main | CI | Reviews |
+|---|---|---|---|---|---|
+| `#32` | `#30` | `feat/30-migracion-direcciones` | `d0e87d4094209f53af4e56957c5fd9bfb7b8b4a0` | 2 checks en success | 0 reviews |
+| `#33` | `#31` | `feat/31-crud-direcciones` | `58785636af14054f442a30facaa8505e36c9df8a` | 2 checks en success | 0 reviews |
 
-Issue: `#30`
+No existe un PR `#31`; `#31` es el Issue del CRUD. El PR real del CRUD es `#33`.
 
-Rama: `feat/30-migracion-direcciones`
+### Excepción de review
 
-- dependencias SQLite;
-- `AppDatabase`;
-- schema v1/v2;
-- `onUpgrade`;
-- migration test;
-- documentación inicial.
+Los PR `#32` y `#33` no registraron reviews formales antes del merge.
+El CI sí quedó en verde. Esta situación se documenta como excepción de proceso.
 
-### PR de CRUD
-
-Issue: `#31`
-
-Rama: `feat/31-crud-direcciones`
-
-- `AddressRepository`;
-- `AddressBook`;
-- providers;
-- lista;
-- formulario;
-- navegación;
-- UNIQUE;
-- en uso;
-- archivado;
-- pruebas.
-
-El PR de CRUD se crea desde `main` después de integrar la migración.
+El Issue `#30` está cerrado. El Issue `#31` permanece abierto al momento de este
+cierre documental.
 
 ## Reglas funcionales
 
@@ -159,29 +142,44 @@ is_default = 1  →  dirección principal  →  en uso
 - Se puede restaurar.
 - Una archivada no principal se puede eliminar.
 
-## Calidad
+## Calidad y cierre
 
-- CI obligatorio: `Formato, análisis y pruebas`.
-- Review formal obligatoria.
-- Squash and merge.
-- No se integra con 0 reviews.
-- El ruleset de `main` permanece activo.
+- CI: PR `#32` y PR `#33` con 2 checks en `success`.
+- Squash and merge: aplicado en ambos PR.
+- Reviews formales: **0** en `#32` y **0** en `#33`.
+- La ausencia de reviews se registra como excepción de proceso, no como
+  aprobación inventada.
+- Ruleset de `main`: permanece activo; este cierre documental se hace por rama y
+  PR, no por push directo.
+
+## QA final real
+
+Ejecutado sobre `main` actualizado:
+
+- `dart format --output=none --set-exit-if-changed lib test`:
+  `Formatted 75 files (0 changed)`.
+- `flutter analyze`: `No issues found!`.
+- `flutter test`: **181 pruebas aprobadas**.
+- `git diff --check`: sin errores, exit code `0`.
+
+## QA manual Android
+
+**NO EJECUTADA.**
+
+Motivo: el entorno utilizado no tenía Android SDK, AVD ni `adb`.
+No se declara evidencia visual/manual como completada.
 
 ## Estado actual
 
 - Bloque A: infraestructura SQLite y migración v1 → v2 integrada en `main`.
-- Bloque B: CRUD de `DeliveryAddress` implementado en
-  `feat/31-crud-direcciones`.
-- Completado localmente: modelo extendido, `AddressBook`, repository SQLite,
-  providers, lista, formulario único, navegación desde Home, UNIQUE,
-  principal/en uso y archivado/restauración.
-- Cierre funcional: hard delete para direcciones no principales, activas o
-  archivadas; protección de principal en repository y UI; y restricciones
-  UNIQUE traducidas por tipo.
-- Pruebas: 181 aprobadas; incluyen SQLite real, providers, migración,
-  formulario, lista responsive, navegación y Home.
-- FASE 8 permanece **EN DESARROLLO**: faltan QA automatizado final, QA manual,
-  CI, review y merge del PR de CRUD.
+- Bloque B: CRUD de `DeliveryAddress` integrado en `main`.
+- Modelo extendido, `AddressBook`, repository SQLite, providers, lista,
+  formulario único, navegación desde Home, UNIQUE, principal/en uso,
+  delete libre y archivado/restauración: completados.
+- Migración v1 → v2 y `AppDatabase` conservados sin cambios tras el CRUD.
+- Issue `#31`: permanece abierto al cierre documental.
+- FASE 8: **COMPLETADA** documentalmente con la limitación explícita de QA
+  manual Android no ejecutada.
 
 ## Fuera de alcance
 
