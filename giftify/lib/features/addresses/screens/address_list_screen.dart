@@ -25,12 +25,18 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
     ref.invalidate(addressesProvider);
   }
 
+  Future<void> _refreshAddresses() async {
+    ref.invalidate(addressesProvider);
+    await ref.read(addressesProvider.future);
+  }
+
   Future<void> _openCreate() async {
     await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
         builder: (_) => AddressFormScreen(
           onSubmit: (draft) async {
             await ref.read(addressesProvider.notifier).createAddress(draft);
+            await _refreshAddresses();
           },
         ),
       ),
@@ -50,6 +56,7 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
             await ref
                 .read(addressesProvider.notifier)
                 .updateAddress(address.id, draft);
+            await _refreshAddresses();
           },
         ),
       ),
@@ -80,6 +87,7 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
   Future<void> _delete(DeliveryAddress address) async {
     try {
       await ref.read(addressesProvider.notifier).deleteAddress(address.id);
+      await _refreshAddresses();
       if (mounted) {
         _showMessage('Dirección eliminada.');
       }
@@ -101,6 +109,7 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
   Future<void> _run(Future<void> Function() action, String message) async {
     try {
       await action();
+      await _refreshAddresses();
       if (mounted) {
         _showMessage(message);
       }

@@ -15,41 +15,28 @@ class AddressesNotifier extends AsyncNotifier<AddressBook> {
     return ref.watch(addressRepositoryProvider).loadBook();
   }
 
-  Future<DeliveryAddress> createAddress(AddressDraft draft) async {
-    final address = await ref.read(addressRepositoryProvider).create(draft);
-    await _refresh();
-    return address;
+  Future<DeliveryAddress> createAddress(AddressDraft draft) {
+    return ref.read(addressRepositoryProvider).create(draft);
   }
 
-  Future<DeliveryAddress> updateAddress(String id, AddressDraft draft) async {
-    final address = await ref.read(addressRepositoryProvider).update(id, draft);
-    await _refresh();
-    return address;
+  Future<DeliveryAddress> updateAddress(String id, AddressDraft draft) {
+    return ref.read(addressRepositoryProvider).update(id, draft);
   }
 
-  Future<void> deleteAddress(String id) async {
-    await ref.read(addressRepositoryProvider).delete(id);
-    await _refresh();
+  Future<void> deleteAddress(String id) {
+    return ref.read(addressRepositoryProvider).delete(id);
   }
 
-  Future<void> archiveAddress(String id) async {
-    await ref.read(addressRepositoryProvider).archive(id);
-    await _refresh();
+  Future<void> archiveAddress(String id) {
+    return ref.read(addressRepositoryProvider).archive(id);
   }
 
-  Future<void> restoreAddress(String id) async {
-    await ref.read(addressRepositoryProvider).restore(id);
-    await _refresh();
+  Future<void> restoreAddress(String id) {
+    return ref.read(addressRepositoryProvider).restore(id);
   }
 
-  Future<void> setDefaultAddress(String id) async {
-    await ref.read(addressRepositoryProvider).setDefault(id);
-    await _refresh();
-  }
-
-  Future<void> _refresh() async {
-    ref.invalidateSelf();
-    await future;
+  Future<void> setDefaultAddress(String id) {
+    return ref.read(addressRepositoryProvider).setDefault(id);
   }
 }
 

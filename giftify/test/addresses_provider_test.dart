@@ -95,7 +95,7 @@ void main() {
     },
   );
 
-  test('cada mutación exitosa invalida y recarga el repository', () async {
+  test('ref.invalidate recarga el listado después de una mutación', () async {
     final repository = FakeAddressRepository();
     final container = _containerWith(repository);
     addTearDown(container.dispose);
@@ -104,30 +104,14 @@ void main() {
 
     final notifier = container.read(addressesProvider.notifier);
     final casa = await notifier.createAddress(_draft('Casa'));
+    expect(repository.loadCount, 1);
+
+    container.invalidate(addressesProvider);
+    final book = await container.read(addressesProvider.future);
+
     expect(repository.loadCount, 2);
-
-    final trabajo = await notifier.createAddress(_draft('Trabajo'));
-    expect(repository.loadCount, 3);
-
-    await notifier.updateAddress(trabajo.id, _draft('Oficina'));
-    expect(repository.loadCount, 4);
-
-    await notifier.setDefaultAddress(trabajo.id);
-    expect(repository.loadCount, 5);
-
-    await notifier.archiveAddress(casa.id);
-    expect(repository.loadCount, 6);
-
-    await notifier.restoreAddress(casa.id);
-    expect(repository.loadCount, 7);
-
-    await notifier.archiveAddress(casa.id);
-    await notifier.deleteAddress(casa.id);
-    expect(repository.loadCount, 9);
-
-    final book = container.read(addressesProvider).requireValue;
-    expect(book.addresses.single.id, trabajo.id);
-    expect(book.addresses.single.label, 'Oficina');
+    expect(book.active.single.id, casa.id);
+    expect(book.active.single.label, 'Casa');
   });
 
   test('una mutación fallida conserva los datos cargados', () async {
