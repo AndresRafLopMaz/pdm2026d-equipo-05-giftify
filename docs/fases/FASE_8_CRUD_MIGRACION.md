@@ -174,7 +174,10 @@ is_default = 1  →  dirección principal  →  en uso
 - Completado localmente: modelo extendido, `AddressBook`, repository SQLite,
   providers, lista, formulario único, navegación desde Home, UNIQUE,
   principal/en uso y archivado/restauración.
-- Pruebas: repositorio con SQLite real, formulario, lista, navegación y Home.
+- Cierre funcional: hard delete solo para archivadas no principales, protección
+  de principal en repository y UI, y restricciones UNIQUE traducidas por tipo.
+- Pruebas: 181 aprobadas; incluyen SQLite real, providers, migración, formulario,
+  lista responsive, navegación y Home. Análisis estático sin issues.
 - FASE 8 permanece **EN DESARROLLO**: faltan integración final, QA manual,
   CI, review y merge del PR de CRUD.
 

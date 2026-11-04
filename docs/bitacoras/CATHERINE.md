@@ -304,7 +304,7 @@ diseño V2.
 - Issue #27 y FASE 7 permanecen abiertos hasta completar el trabajo de Diego,
   QA conjunto, CI y review.
 
-## Sesión 2026-11-04 — Issue #31: repositorio y providers de direcciones
+## Sesión 2026-11-04 — Issue #31: avance inicial publicado por Diego
 
 ### Objetivo
 Implementar la capa de datos y estado del CRUD de `DeliveryAddress` sobre la
@@ -315,7 +315,10 @@ migración SQLite v1 → v2 ya integrada, sin modificar `AppDatabase`.
 - SHA base: `d0e87d4094209f53af4e56957c5fd9bfb7b8b4a0`.
 - La rama local y `origin/feat/31-crud-direcciones` coincidieron en ese SHA.
 
-### Trabajo realizado
+### Implementación inicial publicada por Diego
+Este bloque registra el contenido del commit `d79676f`, creado y publicado por
+Diego Barrios en la rama compartida. No corresponde a un commit de Catherine.
+
 - Se extendió `DeliveryAddress` con `isDefault`, `isArchived` y `copyWith`.
 - Se creó `AddressDraft` para desacoplar el formulario de la persistencia.
 - Se creó `AddressBook` con `addresses`, `defaultAddressId`, `active` y
@@ -357,7 +360,7 @@ migración SQLite v1 → v2 ya integrada, sin modificar `AppDatabase`.
 - No se modificaron Cart, Products ni Checkout.
 - No se agregaron dependencias.
 
-### Pruebas realizadas
+### Validaciones registradas en el avance inicial
 - Línea base: 139 pruebas aprobadas.
 - Pruebas nuevas del repositorio: 16.
 - Suite completa final: 169 pruebas aprobadas.
@@ -370,3 +373,56 @@ migración SQLite v1 → v2 ya integrada, sin modificar `AppDatabase`.
 - Integración y QA conjunto con la UI de Diego.
 - CI, review y merge del PR de CRUD.
 - FASE 8 permanece EN DESARROLLO.
+
+## Sesión 2026-11-04 — Issue #31: cierre integral de Catherine
+
+### Base y baseline
+- Rama: `feat/31-crud-direcciones`.
+- SHA recibido: `e19c874483c3fb5d7a861e64ac7c51e5410d5941`.
+- Baseline real: 169 pruebas aprobadas, formato correcto y análisis sin issues.
+- Se conservaron los contratos, pantallas, providers y navegación publicados por
+  Diego; no se duplicó ninguna implementación.
+
+### Correcciones realizadas por Catherine
+- El hard delete quedó limitado a direcciones archivadas no principales.
+- Una activa no principal debe archivarse antes de eliminarse y recibe un error
+  de dominio comprensible si se intenta borrar directamente.
+- La principal continúa protegida por `AddressInUseException`.
+- `update` rechaza convertir una dirección archivada en principal.
+- `setDefault` continúa rechazando direcciones archivadas.
+- Solo las violaciones UNIQUE de `delivery_addresses.label` se traducen a
+  `DuplicateAddressLabelException`; otras restricciones usan un error genérico
+  sin exponer SQL.
+- La apertura y lectura SQLite también quedan dentro de la traducción de errores
+  del repositorio.
+- La UI no ofrece eliminación definitiva para activas no principales.
+- Las archivadas permiten restaurar o eliminar y no abren edición desde la
+  tarjeta; el formulario deshabilita principal para una archivada.
+- El fake de pruebas replica las mismas reglas del repositorio real.
+
+### Pruebas incorporadas por Catherine
+- `address_repository_test.dart`: 19 pruebas SQLite aprobadas.
+- `addresses_provider_test.dart`: 5 pruebas de loading, data, error, retry
+  manual, ausencia de retry automático, invalidación y conservación de estado.
+- Widget tests para bloqueo de delete activo, delete archivado, protección de
+  principal archivada y responsive 320x640.
+- Migración v1 → v2: 2 pruebas aprobadas sin modificar su implementación.
+- Suite completa final: 181 pruebas aprobadas.
+- `dart format --output=none --set-exit-if-changed lib test`: OK.
+- `flutter analyze`: `No issues found!`.
+- Persistencia verificada cerrando y reabriendo SQLite en pruebas automatizadas.
+
+### Validación manual
+- No se ejecutó la aplicación en emulador ni dispositivo físico.
+- El recorrido funcional y responsive se validó mediante pruebas automatizadas,
+  no mediante QA visual/manual.
+
+### Restricciones respetadas
+- No se modificó `AppDatabase` ni la migración v1 → v2.
+- No se modificaron Cart, Products, Checkout, backend ni dependencias.
+- No se modificó la bitácora personal de Diego.
+
+### Pendientes
+- CI remoto, revisión formal y QA visual/manual.
+- Crear y revisar el PR sin cerrar todavía el Issue #31.
+- FASE 8 permanece EN DESARROLLO hasta la integración final del equipo.
