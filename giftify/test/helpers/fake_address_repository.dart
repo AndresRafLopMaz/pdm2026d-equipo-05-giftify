@@ -65,6 +65,12 @@ class FakeAddressRepository implements AddressRepository {
     final normalized = _normalize(draft);
     _ensureUnique(normalized.label, exceptId: id);
 
+    if (existing.isArchived && normalized.isDefault) {
+      throw const AddressValidationException(
+        'Restaura la dirección antes de usarla como principal.',
+      );
+    }
+
     final makeDefault = normalized.isDefault || existing.isDefault;
     if (makeDefault && !existing.isDefault) {
       _clearDefault();
@@ -90,6 +96,9 @@ class FakeAddressRepository implements AddressRepository {
     final index = _indexOf(id);
     if (_addresses[index].isDefault) {
       throw const AddressInUseException();
+    }
+    if (!_addresses[index].isArchived) {
+      throw const ActiveAddressDeletionException();
     }
     _addresses.removeAt(index);
   }

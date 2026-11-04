@@ -39,6 +39,11 @@ class AddressInUseException extends AddressException {
     : super('No puedes eliminar la dirección principal porque está en uso.');
 }
 
+class ActiveAddressDeletionException extends AddressException {
+  const ActiveAddressDeletionException()
+    : super('Archiva la dirección antes de eliminarla definitivamente.');
+}
+
 class AddressNotFoundException extends AddressException {
   const AddressNotFoundException()
     : super('No encontramos la dirección solicitada.');

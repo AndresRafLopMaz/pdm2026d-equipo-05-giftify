@@ -19,12 +19,18 @@ class SqfliteAddressRepository implements AddressRepository {
   @override
   Future<AddressBook> loadBook() {
     return _serialize(() async {
-      final db = await _db;
-      final rows = await db.query(
-        AppDatabase.deliveryAddressesTable,
-        orderBy: 'is_default DESC, label COLLATE NOCASE ASC',
-      );
-      return AddressBook(addresses: rows.map(_fromRow).toList(growable: false));
+      try {
+        final db = await _db;
+        final rows = await db.query(
+          AppDatabase.deliveryAddressesTable,
+          orderBy: 'is_default DESC, label COLLATE NOCASE ASC',
+        );
+        return AddressBook(
+          addresses: rows.map(_fromRow).toList(growable: false),
+        );
+      } on DatabaseException catch (error) {
+        throw _translate(error);
+      }
     });
   }
 
@@ -32,9 +38,9 @@ class SqfliteAddressRepository implements AddressRepository {
   Future<DeliveryAddress> create(AddressDraft draft) {
     return _serialize(() async {
       final normalized = _normalize(draft);
-      final db = await _db;
 
       try {
+        final db = await _db;
         return await db.transaction((txn) async {
           final makeDefault = normalized.isDefault || !await _hasDefault(txn);
 
@@ -68,11 +74,16 @@ class SqfliteAddressRepository implements AddressRepository {
   Future<DeliveryAddress> update(String id, AddressDraft draft) {
     return _serialize(() async {
       final normalized = _normalize(draft);
-      final db = await _db;
 
       try {
+        final db = await _db;
         return await db.transaction((txn) async {
           final existing = await _findById(txn, id);
+          if (existing.isArchived && normalized.isDefault) {
+            throw const AddressValidationException(
+              'Restaura la dirección antes de usarla como principal.',
+            );
+          }
           final makeDefault = normalized.isDefault || existing.isDefault;
 
           if (makeDefault && !existing.isDefault) {
@@ -110,13 +121,15 @@ class SqfliteAddressRepository implements AddressRepository {
   @override
   Future<void> delete(String id) {
     return _serialize(() async {
-      final db = await _db;
-
       try {
+        final db = await _db;
         await db.transaction((txn) async {
           final existing = await _findById(txn, id);
           if (existing.isDefault) {
             throw const AddressInUseException();
+          }
+          if (!existing.isArchived) {
+            throw const ActiveAddressDeletionException();
           }
 
           await txn.delete(
@@ -134,9 +147,8 @@ class SqfliteAddressRepository implements AddressRepository {
   @override
   Future<void> archive(String id) {
     return _serialize(() async {
-      final db = await _db;
-
       try {
+        final db = await _db;
         await db.transaction((txn) async {
           final existing = await _findById(txn, id);
           if (existing.isArchived) {
@@ -187,9 +199,8 @@ class SqfliteAddressRepository implements AddressRepository {
   @override
   Future<void> restore(String id) {
     return _serialize(() async {
-      final db = await _db;
-
       try {
+        final db = await _db;
         await db.transaction((txn) async {
           final existing = await _findById(txn, id);
           if (!existing.isArchived) {
@@ -213,9 +224,8 @@ class SqfliteAddressRepository implements AddressRepository {
   @override
   Future<void> setDefault(String id) {
     return _serialize(() async {
-      final db = await _db;
-
       try {
+        final db = await _db;
         await db.transaction((txn) async {
           final existing = await _findById(txn, id);
           if (existing.isArchived) {
@@ -357,7 +367,13 @@ class SqfliteAddressRepository implements AddressRepository {
   }
 
   AddressException _translate(DatabaseException error) {
-    if (error.isUniqueConstraintError()) {
+    final details = error.toString().toLowerCase();
+    final isLabelConstraint =
+        details.contains(AppDatabase.labelNocaseIndex.toLowerCase()) ||
+        details.contains(
+          '${AppDatabase.deliveryAddressesTable}.label'.toLowerCase(),
+        );
+    if (error.isUniqueConstraintError() && isLabelConstraint) {
       return const DuplicateAddressLabelException();
     }
     return const AddressException(

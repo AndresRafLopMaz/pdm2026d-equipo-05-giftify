@@ -191,4 +191,25 @@ void main() {
     );
     expect(find.byType(AddressFormScreen), findsOneWidget);
   });
+
+  testWidgets('una archivada no puede marcarse como principal', (tester) async {
+    const initial = DeliveryAddress(
+      id: 'addr-archivada',
+      label: 'Anterior',
+      recipientName: 'María López',
+      addressLine: '5a avenida 10-20, zona 1',
+      city: 'Guatemala',
+      department: 'Guatemala',
+      isArchived: true,
+    );
+
+    await _pumpForm(tester, initialAddress: initial, onSubmit: (_) async {});
+
+    final defaultSwitch = tester.widget<SwitchListTile>(
+      find.byKey(_defaultSwitchKey),
+    );
+    expect(defaultSwitch.value, isFalse);
+    expect(defaultSwitch.onChanged, isNull);
+    expect(find.text('Restaura la dirección para usarla.'), findsOneWidget);
+  });
 }

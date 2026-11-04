@@ -34,7 +34,7 @@ class AddressCard extends StatelessWidget {
         side: const BorderSide(color: Color(0xFFE4E8E6)),
       ),
       child: InkWell(
-        onTap: onEdit,
+        onTap: address.isArchived ? null : onEdit,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 8, 16),
           child: Column(
@@ -141,14 +141,15 @@ class AddressCard extends StatelessWidget {
                             contentPadding: EdgeInsets.zero,
                           ),
                         ),
-                        const PopupMenuItem(
-                          value: AddressCardAction.delete,
-                          child: ListTile(
-                            leading: Icon(Icons.delete_outline_rounded),
-                            title: Text('Eliminar'),
-                            contentPadding: EdgeInsets.zero,
+                        if (address.isDefault)
+                          const PopupMenuItem(
+                            value: AddressCardAction.delete,
+                            child: ListTile(
+                              leading: Icon(Icons.delete_outline_rounded),
+                              title: Text('Eliminar'),
+                              contentPadding: EdgeInsets.zero,
+                            ),
                           ),
-                        ),
                       ];
                     },
                   ),

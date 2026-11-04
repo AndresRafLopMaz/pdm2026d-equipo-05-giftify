@@ -114,6 +114,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   Widget build(BuildContext context) {
     final editing = widget.isEditing;
     final isCurrentDefault = widget.initialAddress?.isDefault ?? false;
+    final isArchived = widget.initialAddress?.isArchived ?? false;
 
     return Scaffold(
       appBar: AppBar(
@@ -207,12 +208,14 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                   key: const ValueKey('address-default-switch'),
                   contentPadding: EdgeInsets.zero,
                   value: _isDefault,
-                  onChanged: isCurrentDefault
+                  onChanged: isCurrentDefault || isArchived
                       ? null
                       : (value) => setState(() => _isDefault = value),
                   title: const Text('Usar como dirección principal'),
                   subtitle: isCurrentDefault
                       ? const Text('Esta dirección está en uso.')
+                      : isArchived
+                      ? const Text('Restaura la dirección para usarla.')
                       : null,
                 ),
                 const SizedBox(height: 18),

@@ -258,6 +258,69 @@ void main() {
     expect(find.text('Trabajo'), findsOneWidget);
   });
 
+  testWidgets('una activa no principal no ofrece eliminación definitiva', (
+    tester,
+  ) async {
+    final repository = FakeAddressRepository(
+      initial: [
+        _address('addr-casa', 'Casa', isDefault: true),
+        _address('addr-trabajo', 'Trabajo'),
+      ],
+    );
+
+    await _pumpList(tester, repository);
+    await tester.pumpAndSettle();
+
+    await _openMenu(tester, 'addr-trabajo');
+
+    expect(find.text('Archivar'), findsOneWidget);
+    expect(find.text('Eliminar'), findsNothing);
+  });
+
+  testWidgets('elimina definitivamente una dirección archivada', (
+    tester,
+  ) async {
+    final repository = FakeAddressRepository(
+      initial: [
+        _address('addr-casa', 'Casa', isDefault: true),
+        _address('addr-anterior', 'Anterior', isArchived: true),
+      ],
+    );
+
+    await _pumpList(tester, repository);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('addresses-tab-archived')));
+    await tester.pumpAndSettle();
+
+    await _openMenu(tester, 'addr-anterior');
+    await tester.tap(find.text('Eliminar'));
+    await tester.pumpAndSettle();
+
+    expect(repository.addresses, hasLength(1));
+    expect(repository.addresses.single.id, 'addr-casa');
+    expect(find.text('No hay direcciones archivadas.'), findsOneWidget);
+    expect(find.text('Dirección eliminada.'), findsOneWidget);
+  });
+
+  testWidgets('la lista no desborda en pantalla móvil de 320x640', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = FakeAddressRepository(
+      initial: [_address('addr-casa', 'Casa', isDefault: true)],
+    );
+
+    await _pumpList(tester, repository);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Casa'), findsOneWidget);
+  });
+
   testWidgets('cambia la dirección principal desde la tarjeta', (tester) async {
     final repository = FakeAddressRepository(
       initial: [

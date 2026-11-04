@@ -157,16 +157,40 @@ void main() {
     }
   });
 
-  test('elimina una dirección libre', () async {
+  test('bloquea eliminar una dirección activa no principal', () async {
     final casa = await repository.create(_draft('Casa'));
     final trabajo = await repository.create(_draft('Trabajo'));
 
-    await repository.delete(trabajo.id);
+    await expectLater(
+      repository.delete(trabajo.id),
+      throwsA(
+        isA<ActiveAddressDeletionException>().having(
+          (error) => error.message,
+          'message',
+          'Archiva la dirección antes de eliminarla definitivamente.',
+        ),
+      ),
+    );
 
     final book = await repository.loadBook();
-    expect(book.active, hasLength(1));
-    expect(book.active.single.id, casa.id);
+    expect(book.active, hasLength(2));
+    expect(book.defaultAddressId, casa.id);
   });
+
+  test(
+    'elimina definitivamente una dirección archivada no principal',
+    () async {
+      await repository.create(_draft('Casa'));
+      final trabajo = await repository.create(_draft('Trabajo'));
+      await repository.archive(trabajo.id);
+
+      await repository.delete(trabajo.id);
+
+      final book = await repository.loadBook();
+      expect(book.active, hasLength(1));
+      expect(book.archived, isEmpty);
+    },
+  );
 
   test('la dirección principal en uso no se puede eliminar', () async {
     final casa = await repository.create(_draft('Casa'));
@@ -264,6 +288,51 @@ void main() {
     await expectLater(
       repository.setDefault(casa.id),
       throwsA(isA<AddressValidationException>()),
+    );
+  });
+
+  test('editar no permite convertir una archivada en principal', () async {
+    final casa = await repository.create(_draft('Casa'));
+    final trabajo = await repository.create(_draft('Trabajo'));
+    await repository.archive(trabajo.id);
+
+    await expectLater(
+      repository.update(trabajo.id, _draft('Trabajo', isDefault: true)),
+      throwsA(isA<AddressValidationException>()),
+    );
+
+    final book = await repository.loadBook();
+    expect(book.defaultAddressId, casa.id);
+    expect(book.archived.single.id, trabajo.id);
+    expect(book.archived.single.isDefault, isFalse);
+  });
+
+  test('una restricción UNIQUE ajena a label usa un error genérico', () async {
+    final db = await appDatabase.database;
+    await db.execute('''
+      CREATE TRIGGER reject_address_insert
+      BEFORE INSERT ON ${AppDatabase.deliveryAddressesTable}
+      BEGIN
+        SELECT RAISE(ABORT, 'UNIQUE constraint failed: delivery_addresses.id');
+      END
+    ''');
+
+    await expectLater(
+      repository.create(_draft('Casa')),
+      throwsA(
+        isA<AddressException>()
+            .having(
+              (error) => error,
+              'type',
+              isNot(isA<DuplicateAddressLabelException>()),
+            )
+            .having((error) => error.message, 'message', isNot(contains('SQL')))
+            .having(
+              (error) => error.message,
+              'message',
+              isNot(contains('delivery_addresses')),
+            ),
+      ),
     );
   });
 
