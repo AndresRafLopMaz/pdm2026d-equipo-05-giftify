@@ -36,8 +36,12 @@ void main() {
     await _pumpHomeScreen(tester);
 
     expect(find.byType(HomeScreen), findsOneWidget);
-    expect(find.text('ENCUENTRA TU REGALO PERFECTO'), findsOneWidget);
-    expect(find.text('Encontrar tu regalo'), findsOneWidget);
+    expect(find.text('Giftify'), findsOneWidget);
+    expect(find.text('Encuentra el regalo ideal'), findsOneWidget);
+    expect(find.text('Buscar un regalo'), findsOneWidget);
+    expect(find.text('Catálogo'), findsOneWidget);
+    expect(find.text('Carrito'), findsOneWidget);
+    expect(find.text('Mis direcciones'), findsOneWidget);
   });
 
   testWidgets('el CTA navega de Home a Search mediante el provider', (
@@ -45,27 +49,32 @@ void main() {
   ) async {
     final container = await _pumpHomeScreen(tester);
 
-    final cta = find.text('Encontrar tu regalo');
-    await tester.ensureVisible(cta);
-    await tester.pumpAndSettle();
-    await tester.tap(cta);
+    await tester.tap(find.byKey(const ValueKey('home-search-action')));
     await tester.pump();
 
     expect(container.read(appTabProvider), AppTab.search);
   });
 
-  testWidgets('Ver todo cambia a la pestaña Catálogo mediante el provider', (
+  testWidgets('Catálogo cambia a la pestaña Catálogo mediante el provider', (
     tester,
   ) async {
     final container = await _pumpHomeScreen(tester);
 
-    final verTodo = find.text('Ver todo');
-    await tester.ensureVisible(verTodo);
-    await tester.pumpAndSettle();
-    await tester.tap(verTodo);
+    await tester.tap(find.byKey(const ValueKey('home-catalog-action')));
     await tester.pump();
 
     expect(container.read(appTabProvider), AppTab.catalog);
+  });
+
+  testWidgets('Carrito cambia a la pestaña Carrito mediante el provider', (
+    tester,
+  ) async {
+    final container = await _pumpHomeScreen(tester);
+
+    await tester.tap(find.byKey(const ValueKey('home-cart-action')));
+    await tester.pump();
+
+    expect(container.read(appTabProvider), AppTab.cart);
   });
 
   testWidgets('Home no desborda en pantalla movil de 320x640', (tester) async {
@@ -88,9 +97,10 @@ void main() {
       overrides: [addressRepositoryProvider.overrideWithValue(repository)],
     );
 
-    await tester.tap(find.byIcon(Icons.person_outline_rounded));
+    final addresses = find.byKey(const ValueKey('home-addresses-action'));
+    await tester.ensureVisible(addresses);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Mis direcciones'));
+    await tester.tap(addresses);
     await tester.pumpAndSettle();
 
     expect(find.byType(AddressListScreen), findsOneWidget);
