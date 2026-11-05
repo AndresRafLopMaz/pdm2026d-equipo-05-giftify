@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/app_router.dart';
@@ -107,6 +108,13 @@ class _ProductResultsScreenState extends ConsumerState<ProductResultsScreen> {
     );
   }
 
+  Future<void> _deleteFromAccessibility(GiftProduct product) async {
+    final confirmed = await _confirmDelete(product);
+    if (confirmed) {
+      _onDismissed(product);
+    }
+  }
+
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(
@@ -129,7 +137,7 @@ class _ProductResultsScreenState extends ConsumerState<ProductResultsScreen> {
           TextButton.icon(
             key: const ValueKey('results-filter-button'),
             onPressed: _openFilters,
-            icon: const Icon(Icons.tune_rounded),
+            icon: const Icon(Icons.edit_rounded),
             label: const Text('Filtrar'),
           ),
           const SizedBox(width: 8),
@@ -179,15 +187,24 @@ class _ProductResultsScreenState extends ConsumerState<ProductResultsScreen> {
                         padding: EdgeInsets.symmetric(
                           horizontal: horizontalPadding,
                         ),
-                        child: Dismissible(
-                          key: ValueKey(results[index].id),
-                          direction: DismissDirection.endToStart,
-                          background: const _DeleteBackground(),
-                          confirmDismiss: (_) => _confirmDelete(results[index]),
-                          onDismissed: (_) => _onDismissed(results[index]),
-                          child: ProductCard(
-                            product: results[index],
-                            onTap: () => _openDetail(context, results[index]),
+                        child: Semantics(
+                          customSemanticsActions: {
+                            CustomSemanticsAction(
+                              label: 'Eliminar producto',
+                            ): () =>
+                                _deleteFromAccessibility(results[index]),
+                          },
+                          child: Dismissible(
+                            key: ValueKey(results[index].id),
+                            direction: DismissDirection.endToStart,
+                            background: const _DeleteBackground(),
+                            confirmDismiss: (_) =>
+                                _confirmDelete(results[index]),
+                            onDismissed: (_) => _onDismissed(results[index]),
+                            child: ProductCard(
+                              product: results[index],
+                              onTap: () => _openDetail(context, results[index]),
+                            ),
                           ),
                         ),
                       ),
@@ -271,7 +288,7 @@ class _ErrorResults extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_rounded, color: colors.error, size: 48),
+            Icon(Icons.error_outline_rounded, color: colors.error, size: 48),
             const SizedBox(height: 16),
             Text(
               'No pudimos cargar los productos.',
@@ -487,7 +504,7 @@ class _EmptyResults extends StatelessWidget {
               OutlinedButton.icon(
                 key: const ValueKey('modify-search-button'),
                 onPressed: onModifySearch,
-                icon: const Icon(Icons.tune_rounded),
+                icon: const Icon(Icons.filter_list_rounded),
                 label: const Text('Modificar búsqueda'),
               ),
             ],

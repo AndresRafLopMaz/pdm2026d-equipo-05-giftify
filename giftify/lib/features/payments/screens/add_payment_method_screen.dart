@@ -236,7 +236,7 @@ class _AddPaymentMethodScreenState
                       validator: _validateLast4,
                       decoration: const InputDecoration(
                         labelText: 'Últimos 4 dígitos',
-                        prefixIcon: Icon(Icons.pin_outlined),
+                        prefixIcon: Icon(Icons.numbers_rounded),
                       ),
                     ),
                     const SizedBox(height: 14),

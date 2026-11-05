@@ -3,8 +3,11 @@
 ## Estado
 
 - **10G-A — Regresión funcional P0/P1 y accesibilidad crítica:** completado.
-- **10G-B — Recursos visuales y polish:** pendiente.
+- **10G-B — Recursos visuales y polish:** completado técnicamente con fallback A+.
 - **10G-C — QA final, documentación y PR:** pendiente.
+
+> No se encontraron assets WebP locales válidos. Los 10 assets por categoría
+> quedan pendientes de incorporación con origen y licencia documentados.
 
 Base de partida: `2f567692794b081cdfcd599e5d7ddcc5ebb67fa5`.
 
@@ -251,17 +254,126 @@ con text scale 2.0.
 
 **ESTADO:** completado.
 
+## 10G-B — Recursos visuales y polish
+
+### Assets encontrados
+
+Al iniciar 10G-B no existían imágenes de producto ni carpeta `assets/`. Solo
+había iconos de plataforma generados por Flutter. Los 36 productos tenían
+`imageAsset == null`.
+
+No se descargaron imágenes externas ni se inventó procedencia.
+
+### Estrategia aplicada
+
+Se implementó **A+**:
+
+- `ProductImage` centralizado.
+- Resolver de assets por categoría preparado para los 10 WebP futuros.
+- Fallback Material por categoría con icono y superficie semántica.
+- Sin `Image.network`.
+- Sin assets WebP falsos.
+- Sin sección `assets:` en `pubspec.yaml` hasta disponer de archivos válidos.
+
+Rutas reservadas:
+
+```text
+assets/images/categories/technology.webp
+assets/images/categories/jewelry.webp
+assets/images/categories/food.webp
+assets/images/categories/accessories.webp
+assets/images/categories/home.webp
+assets/images/categories/books.webp
+assets/images/categories/gaming.webp
+assets/images/categories/beauty.webp
+assets/images/categories/crafts.webp
+assets/images/categories/experiences.webp
+```
+
+`CategoryVisuals.localAssetsAvailable` permanece en `false` hasta incorporar
+los archivos con licencia. Al activarlo, `ProductImage` usará el asset de
+categoría; `imageAsset` sigue siendo override opcional.
+
+### Fallback por categoría
+
+| Categoría | Icono |
+|---|---|
+| Tecnología | `devices_rounded` |
+| Joyería | `diamond_rounded` |
+| Alimentos | `restaurant_rounded` |
+| Accesorios | `watch_rounded` |
+| Hogar | `home_rounded` |
+| Libros | `menu_book_rounded` |
+| Gaming | `sports_esports_rounded` |
+| Belleza | `spa_rounded` |
+| Artesanías | `palette_rounded` |
+| Experiencias | `local_activity_rounded` |
+
+Los colores usan tokens Light/Dark; no hay colores de pantalla hardcodeados.
+
+### Integración
+
+- Results/Catálogo: `ProductCard` usa `ProductImage` 92×92.
+- Detail: `ProductImage` full width × 240.
+- Cart: `ProductImage` 80×80 con `Image.asset`; se eliminó `Image.network`.
+- `errorBuilder` cae al fallback de categoría.
+
+### Copy e iconografía
+
+- Disponibilidad: “Todas” → “Todos”.
+- Register: copy limitado a cuenta, direcciones y carrito reales.
+- Search: “Local” → “Producto local”.
+- Success: “Pedido confirmado” + aviso de simulación académica.
+- Últimos 4 dígitos: `numbers_rounded` en vez de `pin`.
+- Errores locales: `error_outline_rounded` en vez de nube/conexión.
+- Filtro: `filter_list_rounded`; modificar búsqueda: `edit_rounded`.
+- Dirección principal: “Dirección principal” / “Esta es la dirección principal.”.
+
+### Semantics y touch
+
+- `ProductCard`: hint “Ver detalle”.
+- `AddressCard`: hint “Editar dirección”.
+- Results: acción semántica personalizada para eliminar sin depender del swipe.
+- `PaymentMethods`: método vencido visible con icono + “Vencido”, no solo color.
+- Se mantuvieron los targets 48 de 10G-A.
+
+### Home
+
+- Se corrigió el círculo decorativo que quedaba oculto bajo el fondo opaco del
+  hero.
+
+### Responsive, Dark y text scale
+
+Se agregaron pruebas para:
+
+- `CheckoutSuccess`: 320/390/800 y text scale 1.3/2.0.
+- `AddressForm`: 320/390/800 y text scale 1.3/2.0.
+- `MainShell`: 320/390/412/800 y text scale 1.3/2.0.
+- Results, Detail y AddressList: 320×640 + text scale 2.0.
+- Success y MainShell en Dark.
+- ProductImage fallback en Light/Dark.
+
+### Dependencias
+
+Se auditó `cupertino_icons`: no tenía referencias en `lib/` ni `test/`. Al
+retirarlo, el build Web emitió un warning de fuente faltante porque el
+tree-shaker de Flutter aún espera `CupertinoIcons`.
+
+Se decidió **mantenerlo** para conservar un build Web limpio y evitar iconos
+faltantes. No se agregaron dependencias nuevas ni se actualizaron versiones.
+
 ## Regresión
 
 - `dart format --output=none --set-exit-if-changed lib test`: PASS.
 - `flutter analyze`: PASS.
-- `flutter test`: **407 pruebas aprobadas**.
+- `flutter test`: **421 pruebas aprobadas**.
 - `git diff --check`: PASS.
 - `flutter build web`: PASS.
 - Android: **NO EJECUTADO** por falta de SDK/adb/emulador.
 
 ## Fuera de 10G-A
 
-- Assets, ProductImage, WebP, `pubspec` assets y `Cart Image.asset`: 10G-B.
-- Copy/iconografía masiva: 10G-B.
-- README, QA manual y PR: 10G-C.
+- Assets, ProductImage y Cart `Image.asset`: resueltos en 10G-B con A+;
+  WebP pendiente de assets licenciados.
+- Copy/iconografía masiva: resuelta en 10G-B.
+- README, QA manual, capturas y PR: 10G-C.

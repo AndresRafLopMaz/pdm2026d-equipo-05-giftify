@@ -128,7 +128,7 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Dirección en uso'),
+          title: const Text('Dirección principal'),
           content: Text(
             '$message\n\n'
             'Puedes cambiar la dirección principal o archivarla.',
@@ -436,7 +436,7 @@ class _AddressError extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_rounded, color: colors.error, size: 48),
+            Icon(Icons.error_outline_rounded, color: colors.error, size: 48),
             const SizedBox(height: 16),
             Text(
               'No pudimos cargar tus direcciones.',

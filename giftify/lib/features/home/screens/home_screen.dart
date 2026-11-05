@@ -256,6 +256,7 @@ class _SearchHero extends StatelessWidget {
       borderRadius: BorderRadius.circular(24),
       child: Stack(
         children: [
+          Positioned.fill(child: ColoredBox(color: colors.primaryContainer)),
           Positioned(
             right: -34,
             top: -42,
@@ -270,7 +271,6 @@ class _SearchHero extends StatelessWidget {
           ),
           Container(
             width: double.infinity,
-            color: colors.primaryContainer,
             padding: const EdgeInsets.all(20),
             child: Align(
               alignment: Alignment.centerLeft,

@@ -214,7 +214,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                           : (value) => setState(() => _isDefault = value),
                       title: const Text('Usar como dirección principal'),
                       subtitle: isCurrentDefault
-                          ? const Text('Esta dirección está en uso.')
+                          ? const Text('Esta es la dirección principal.')
                           : isArchived
                           ? const Text('Restaura la dirección para usarla.')
                           : null,

@@ -163,7 +163,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Guarda tus regalos, direcciones y búsquedas.',
+                        'Guarda tu cuenta, tus direcciones y tu carrito.',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: colors.onSurfaceVariant,
                         ),

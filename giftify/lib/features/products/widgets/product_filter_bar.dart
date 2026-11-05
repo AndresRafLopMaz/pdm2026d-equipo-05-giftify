@@ -94,7 +94,7 @@ class ProductFilterBar extends ConsumerWidget {
             children: [
               FilterChip(
                 key: const ValueKey('filter-availability-all'),
-                label: const Text('Todas'),
+                label: const Text('Todos'),
                 selected: filter.availability == null,
                 onSelected: (_) => notifier.setAvailability(null),
               ),

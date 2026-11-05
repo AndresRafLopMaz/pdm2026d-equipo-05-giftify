@@ -42,7 +42,7 @@ class CheckoutSuccessScreen extends ConsumerWidget {
         key: const ValueKey('checkout-success-screen'),
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: const Text('Compra completada'),
+          title: const Text('Confirmación'),
         ),
         body: SafeArea(
           child: Center(
@@ -60,7 +60,7 @@ class CheckoutSuccessScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Compra simulada completada',
+                      'Pedido confirmado',
                       key: const ValueKey('checkout-success-title'),
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineSmall?.copyWith(
@@ -71,7 +71,8 @@ class CheckoutSuccessScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                     Text(
                       'Tu carrito se vació correctamente. '
-                      'Esta demostración no genera un pedido real.',
+                      'Esta compra es una simulación académica; no se procesó '
+                      'un pago real ni se creó una orden de compra.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colors.onSurfaceVariant,

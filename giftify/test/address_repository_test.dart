@@ -218,7 +218,7 @@ void main() {
         isA<AddressInUseException>().having(
           (error) => error.message,
           'message',
-          'No puedes eliminar la dirección principal porque está en uso.',
+          'No puedes eliminar la dirección principal.',
         ),
       ),
     );

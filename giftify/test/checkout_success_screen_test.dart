@@ -61,7 +61,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Compra simulada completada'), findsOneWidget);
+    expect(find.text('Pedido confirmado'), findsOneWidget);
     expect(find.text('2 artículos'), findsOneWidget);
     expect(find.text('Casa · Ana'), findsOneWidget);
     expect(find.text('Visa •••• 4242'), findsOneWidget);
@@ -107,7 +107,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CheckoutSuccessScreen), findsNothing);
-    expect(find.text('Compra simulada completada'), findsNothing);
+    expect(find.text('Pedido confirmado'), findsNothing);
     expect(find.byType(MainShell), findsOneWidget);
   });
 
@@ -139,7 +139,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CheckoutSuccessScreen), findsOneWidget);
-    expect(find.text('Compra simulada completada'), findsOneWidget);
+    expect(find.text('Pedido confirmado'), findsOneWidget);
   });
 
   testWidgets('el back desde Success vuelve a Inicio', (tester) async {
@@ -183,5 +183,39 @@ void main() {
     expect(find.byType(CheckoutSuccessScreen), findsNothing);
     expect(find.byType(MainShell), findsOneWidget);
     expect(container.read(appTabProvider), AppTab.home);
+  });
+
+  testWidgets('Success es responsive y soporta text scale', (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    for (final size in const [Size(320, 640), Size(390, 844), Size(800, 800)]) {
+      for (final scale in const [1.3, 2.0]) {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        final harness = authenticatedHarness();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              ...harness.overrides,
+              cartRepositoryProvider.overrideWithValue(
+                PersistentCartRepository(store: InMemoryCartStore()),
+              ),
+            ],
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: const CheckoutSuccessScreen(data: data),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('Pedido confirmado'), findsOneWidget);
+      }
+    }
   });
 }

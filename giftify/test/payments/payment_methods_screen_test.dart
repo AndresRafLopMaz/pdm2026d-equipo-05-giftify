@@ -43,6 +43,16 @@ void main() {
     expiryYear: 2031,
   );
 
+  const expired = PaymentMethod(
+    id: 'pay-expired',
+    userId: 1,
+    holderName: 'Ana',
+    brand: PaymentBrand.visa,
+    last4: '0000',
+    expiryMonth: 1,
+    expiryYear: 2020,
+  );
+
   Future<void> pumpPayments(
     WidgetTester tester, {
     List<PaymentMethod> initial = const [],
@@ -116,6 +126,17 @@ void main() {
     expect(find.text('Predeterminado'), findsOneWidget);
     expect(find.text('Vence 08/30'), findsOneWidget);
     expect(find.byKey(const ValueKey('payment-menu-pay-2')), findsOneWidget);
+  });
+
+  testWidgets('marca visualmente un método vencido', (tester) async {
+    await pumpPayments(tester, initial: const [expired]);
+
+    expect(
+      find.byKey(const ValueKey('payment-expired-pay-expired')),
+      findsOneWidget,
+    );
+    expect(find.text('Vencido'), findsOneWidget);
+    expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
   });
 
   testWidgets('establece un método como predeterminado', (tester) async {

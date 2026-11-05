@@ -375,7 +375,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_rounded, size: 48, color: colors.error),
+            Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
             const SizedBox(height: 16),
             Text(
               'No pudimos preparar el checkout.',

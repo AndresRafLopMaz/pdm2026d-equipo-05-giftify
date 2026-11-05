@@ -36,7 +36,7 @@ class DuplicateAddressLabelException extends AddressException {
 
 class AddressInUseException extends AddressException {
   const AddressInUseException()
-    : super('No puedes eliminar la dirección principal porque está en uso.');
+    : super('No puedes eliminar la dirección principal.');
 }
 
 class AddressNotFoundException extends AddressException {

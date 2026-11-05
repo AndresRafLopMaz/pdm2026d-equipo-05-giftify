@@ -345,7 +345,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CheckoutSuccessScreen), findsOneWidget);
-    expect(find.text('Compra simulada completada'), findsOneWidget);
+    expect(find.text('Pedido confirmado'), findsOneWidget);
     expect(find.text('2 artículos'), findsOneWidget);
     expect(
       tester

@@ -158,10 +158,17 @@ class _PaymentMethodCard extends StatelessWidget {
   final VoidCallback onSetDefault;
   final VoidCallback onDelete;
 
+  bool get _isExpired {
+    final now = DateTime.now();
+    return method.expiryYear < now.year ||
+        (method.expiryYear == now.year && method.expiryMonth < now.month);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final expired = _isExpired;
 
     return Card(
       key: ValueKey('payment-method-${method.id}'),
@@ -179,6 +186,26 @@ class _PaymentMethodCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Vence ${method.expiryLabel}'),
+            if (expired)
+              Row(
+                key: ValueKey('payment-expired-${method.id}'),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    size: 14,
+                    color: colors.error,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Vencido',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colors.error,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             if (method.isDefault)
               Text(
                 'Predeterminado',
@@ -293,7 +320,7 @@ class _PaymentError extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_rounded, size: 48, color: colors.error),
+            Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
             const SizedBox(height: 12),
             Text(
               'No pudimos cargar tus métodos de pago.',

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/app/auth_gate.dart';
+import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/addresses/providers/addresses_provider.dart';
 import 'package:giftify/features/addresses/screens/address_form_screen.dart';
@@ -16,6 +17,8 @@ import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
 import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
+import 'package:giftify/features/checkout/models/checkout_success_data.dart';
+import 'package:giftify/features/checkout/screens/checkout_success_screen.dart';
 import 'package:giftify/features/home/screens/home_screen.dart';
 import 'package:giftify/features/payments/providers/payment_methods_provider.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
@@ -217,5 +220,33 @@ void main() {
   testWidgets('AddressForm renderiza en dark', (tester) async {
     await pumpDark(tester, AddressFormScreen(onSubmit: (_) async {}));
     expect(find.byType(AddressFormScreen), findsOneWidget);
+  });
+
+  testWidgets('Success renderiza en dark', (tester) async {
+    const data = CheckoutSuccessData(
+      totalUnits: 2,
+      total: 250,
+      addressLabel: 'Casa',
+      recipientName: 'Ana',
+      paymentBrand: PaymentBrand.visa,
+      paymentLast4: '4242',
+    );
+
+    await pumpDark(tester, const CheckoutSuccessScreen(data: data));
+    expect(find.byType(CheckoutSuccessScreen), findsOneWidget);
+    expect(find.text('Pedido confirmado'), findsOneWidget);
+  });
+
+  testWidgets('MainShell renderiza en dark con sesión', (tester) async {
+    final harness = authenticatedHarness();
+
+    await pumpDark(
+      tester,
+      const MainShell(),
+      overrides: harness.overrides,
+      includeOwnership: false,
+    );
+    expect(find.byType(MainShell), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
   });
 }

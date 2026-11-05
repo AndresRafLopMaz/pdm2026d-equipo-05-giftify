@@ -157,6 +157,30 @@ void main() {
     );
   });
 
+  testWidgets('MainShell es responsive y soporta text scale', (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    for (final size in const [
+      Size(320, 640),
+      Size(390, 844),
+      Size(412, 915),
+      Size(800, 800),
+    ]) {
+      for (final scale in const [1.3, 2.0]) {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+
+        await _pumpShell(tester);
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(NavigationBar), findsOneWidget);
+      }
+    }
+  });
+
   testWidgets('IndexedStack conserva el scroll de Catálogo', (tester) async {
     await _pumpShell(tester);
     await _tapDestination(tester, 'Catálogo');

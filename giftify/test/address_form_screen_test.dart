@@ -127,7 +127,7 @@ void main() {
     );
     expect(defaultSwitch.value, isTrue);
     expect(defaultSwitch.onChanged, isNull);
-    expect(find.text('Esta dirección está en uso.'), findsOneWidget);
+    expect(find.text('Esta es la dirección principal.'), findsOneWidget);
 
     await tester.enterText(find.byKey(_labelKey), 'Casa de mamá');
     await tester.enterText(find.byKey(_cityKey), 'Mixco');
@@ -190,6 +190,26 @@ void main() {
       findsOneWidget,
     );
     expect(find.byType(AddressFormScreen), findsOneWidget);
+  });
+
+  testWidgets('AddressForm es responsive y soporta text scale', (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    for (final size in const [Size(320, 640), Size(390, 844), Size(800, 800)]) {
+      for (final scale in const [1.3, 2.0]) {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+
+        await _pumpForm(tester, onSubmit: (_) async {});
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.byKey(_submitKey), findsOneWidget);
+      }
+    }
   });
 
   testWidgets('una archivada no puede marcarse como principal', (tester) async {

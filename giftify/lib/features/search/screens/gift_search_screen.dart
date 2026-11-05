@@ -639,7 +639,7 @@ class _OptionalSearchFields extends StatelessWidget {
             ),
             FilterChip(
               key: const ValueKey('search-local'),
-              label: const Text('Local'),
+              label: const Text('Producto local'),
               selected: isLocal,
               onSelected: onLocalChanged,
             ),
