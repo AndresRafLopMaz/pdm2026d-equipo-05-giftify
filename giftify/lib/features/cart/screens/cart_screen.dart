@@ -563,12 +563,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           ),
                         ),
                       ),
-                      Text(
-                        _formatPrice(snapshot.total),
-                        key: const ValueKey('cart-total'),
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: colors.primary,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: Text(
+                          _formatPrice(snapshot.total),
+                          key: const ValueKey('cart-total'),
+                          textAlign: TextAlign.end,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: colors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],

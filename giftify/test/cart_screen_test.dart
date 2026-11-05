@@ -712,6 +712,22 @@ void main() {
 
     await expireSnackBar(tester);
   });
+
+  testWidgets('soporta text scale 2.0 en 320x640', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    await pumpCart(tester, [
+      CartItem(product: mockProducts.first, quantity: 2),
+    ]);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('checkout-button')), findsOneWidget);
+  });
 }
 
 class _DeferredLoadCartStore extends CartStore {

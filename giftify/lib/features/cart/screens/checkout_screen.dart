@@ -478,6 +478,41 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final details = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: colors.onSurface,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          subtitle,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colors.onSurfaceVariant,
+          ),
+        ),
+        if (detail != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            detail,
+            style: theme.textTheme.bodySmall?.copyWith(color: colors.onSurface),
+          ),
+        ],
+      ],
+    );
+    final action = showChangeAction
+        ? TextButton(
+            key: changeKey,
+            onPressed: _isSubmitting ? null : onChange,
+            child: Text(changeLabel),
+          )
+        : null;
+    final useStackedAction =
+        action != null && MediaQuery.textScalerOf(context).scale(1) > 1.3;
 
     return Container(
       key: cardKey,
@@ -487,51 +522,30 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         border: Border.all(color: colors.outlineVariant),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: colors.primary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
+      child: useStackedAction
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(icon, color: colors.primary),
+                    const SizedBox(width: 12),
+                    Expanded(child: details),
+                  ],
+                ),
+                Align(alignment: Alignment.centerRight, child: action),
+              ],
+            )
+          : Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: colors.onSurface,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-                if (detail != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    detail,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface,
-                    ),
-                  ),
-                ],
+                Icon(icon, color: colors.primary),
+                const SizedBox(width: 12),
+                Expanded(child: details),
+                if (action != null) ...[const SizedBox(width: 8), action],
               ],
             ),
-          ),
-          if (showChangeAction) ...[
-            const SizedBox(width: 8),
-            TextButton(
-              key: changeKey,
-              onPressed: _isSubmitting ? null : onChange,
-              child: Text(changeLabel),
-            ),
-          ],
-        ],
-      ),
     );
   }
 
@@ -685,10 +699,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      _formatPrice(item.subtotal),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
+                    Flexible(
+                      child: Text(
+                        _formatPrice(item.subtotal),
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ],
@@ -707,12 +724,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       ),
                     ),
                   ),
-                  Text(
-                    _formatPrice(snapshot.total),
-                    key: const ValueKey('checkout-total'),
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: colors.primary,
-                      fontWeight: FontWeight.w700,
+                  Flexible(
+                    child: Text(
+                      _formatPrice(snapshot.total),
+                      key: const ValueKey('checkout-total'),
+                      textAlign: TextAlign.end,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],

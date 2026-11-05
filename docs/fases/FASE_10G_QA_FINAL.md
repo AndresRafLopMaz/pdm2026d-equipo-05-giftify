@@ -229,11 +229,33 @@ Home inicial, filtros limpios, prefill nulo, tema intacto y stack sin MainShell.
 
 **ESTADO:** completado.
 
+### 10. Text scale 2.0 en Carrito y Checkout
+
+**ANTES**
+
+Carrito y Checkout no tenían prueba a 320×640 con text scale 2.0. Al añadirla
+aparecieron overflows horizontales: precio del carrito, total del resumen y
+acciones del selector de Checkout.
+
+**FIX**
+
+- Precio/total usan `Flexible` con alineación final.
+- Los paneles de selección de Checkout apilan su acción debajo del texto cuando
+  el text scale supera 1.3.
+- No se redujeron fonts.
+
+**TEST**
+
+`test/cart_screen_test.dart` y `test/checkout_screen_test.dart` cubren 320×640
+con text scale 2.0.
+
+**ESTADO:** completado.
+
 ## Regresión
 
 - `dart format --output=none --set-exit-if-changed lib test`: PASS.
 - `flutter analyze`: PASS.
-- `flutter test`: **405 pruebas aprobadas**.
+- `flutter test`: **407 pruebas aprobadas**.
 - `git diff --check`: PASS.
 - `flutter build web`: PASS.
 - Android: **NO EJECUTADO** por falta de SDK/adb/emulador.
