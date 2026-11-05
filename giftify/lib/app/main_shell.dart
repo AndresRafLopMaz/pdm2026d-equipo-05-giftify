@@ -27,6 +27,7 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final selectedTab = ref.watch(appTabProvider);
     ref.listen(appTabProvider, (previous, next) {
       if (!_visitedTabs.contains(next)) {
@@ -50,37 +51,43 @@ class _MainShellState extends ConsumerState<MainShell> {
             ),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedTab.index,
-        onDestinationSelected: (index) {
-          final tab = AppTab.values[index];
-          setState(() {
-            _visitedTabs.add(tab);
-          });
-          ref.read(appTabProvider.notifier).select(tab);
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Inicio',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.search_outlined),
-            selectedIcon: Icon(Icons.search_rounded),
-            label: 'Buscar',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.grid_view_outlined),
-            selectedIcon: Icon(Icons.grid_view_rounded),
-            label: 'Catálogo',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.shopping_cart_outlined),
-            selectedIcon: Icon(Icons.shopping_cart_rounded),
-            label: 'Carrito',
-          ),
-        ],
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          border: Border(top: BorderSide(color: colors.outlineVariant)),
+        ),
+        child: NavigationBar(
+          selectedIndex: selectedTab.index,
+          onDestinationSelected: (index) {
+            final tab = AppTab.values[index];
+            setState(() {
+              _visitedTabs.add(tab);
+            });
+            ref.read(appTabProvider.notifier).select(tab);
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Inicio',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.search_outlined),
+              selectedIcon: Icon(Icons.search_rounded),
+              label: 'Buscar',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.grid_view_outlined),
+              selectedIcon: Icon(Icons.grid_view_rounded),
+              label: 'Catálogo',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.shopping_cart_outlined),
+              selectedIcon: Icon(Icons.shopping_cart_rounded),
+              label: 'Carrito',
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -11,7 +11,8 @@ class AvailabilityBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final style = _styleFor(colors, availability);
+    final giftify = GiftifyColors.of(context);
+    final style = _styleFor(colors, giftify, availability);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -42,19 +43,23 @@ class AvailabilityBadge extends StatelessWidget {
     );
   }
 
-  _BadgeStyle _styleFor(ColorScheme colors, GiftAvailability availability) {
+  _BadgeStyle _styleFor(
+    ColorScheme colors,
+    GiftifyColors giftify,
+    GiftAvailability availability,
+  ) {
     return switch (availability) {
       GiftAvailability.inStock => _BadgeStyle(
         label: 'Disponible',
         icon: Icons.check_circle_rounded,
-        foreground: colors.primary,
-        background: colors.primaryContainer,
+        foreground: giftify.successStrong,
+        background: giftify.successSoft,
       ),
-      GiftAvailability.lowStock => const _BadgeStyle(
+      GiftAvailability.lowStock => _BadgeStyle(
         label: 'Pocas unidades',
         icon: Icons.inventory_2_outlined,
-        foreground: giftifyWarning,
-        background: giftifyWarningBackground,
+        foreground: giftify.warmStrong,
+        background: giftify.warmSoft,
       ),
       GiftAvailability.outOfStock => _BadgeStyle(
         label: 'Agotado',

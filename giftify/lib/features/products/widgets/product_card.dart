@@ -56,7 +56,7 @@ class ProductCard extends StatelessWidget {
                       Text(
                         'Q ${product.price.toStringAsFixed(2)}',
                         style: theme.textTheme.titleMedium?.copyWith(
-                          color: colors.primary,
+                          color: colors.onSurface,
                           fontWeight: FontWeight.w700,
                         ),
                       ),

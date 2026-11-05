@@ -83,7 +83,7 @@ class _DetailContent extends StatelessWidget {
                   Text(
                     'Q ${product.price.toStringAsFixed(2)}',
                     style: theme.textTheme.headlineSmall?.copyWith(
-                      color: colors.primary,
+                      color: colors.onSurface,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

@@ -1,16 +1,113 @@
 import 'package:flutter/material.dart';
 
-const Color giftifyPrimary = Color(0xFF087A4A);
-const Color giftifyPrimaryContainer = Color(0xFFE6F4EC);
-const Color giftifyBackground = Color(0xFFF7F8F7);
+const Color giftifyPrimary = Color(0xFF5867B8);
+const Color giftifyPrimaryContainer = Color(0xFFEEF0FF);
+const Color giftifyBackground = Color(0xFFF8F9FC);
 const Color giftifySurface = Color(0xFFFFFFFF);
-const Color giftifySurfaceMuted = Color(0xFFEEF2EF);
-const Color giftifyText = Color(0xFF1F2522);
-const Color giftifyMuted = Color(0xFF5F6B64);
-const Color giftifyBorder = Color(0xFFD8E0DB);
+const Color giftifySurfaceMuted = Color(0xFFF2F3F8);
+const Color giftifyText = Color(0xFF262936);
+const Color giftifyMuted = Color(0xFF697080);
+const Color giftifyBorder = Color(0xFFE4E6EC);
 const Color giftifyError = Color(0xFFB3261E);
-const Color giftifyWarning = Color(0xFF7A5200);
-const Color giftifyWarningBackground = Color(0xFFFFF4D6);
+const Color giftifyWarning = Color(0xFF8A5A00);
+const Color giftifyWarningBackground = Color(0xFFFFF7EA);
+
+@immutable
+class GiftifyColors extends ThemeExtension<GiftifyColors> {
+  const GiftifyColors({
+    required this.secondaryStrong,
+    required this.secondarySoft,
+    required this.blush,
+    required this.blushStrong,
+    required this.blushSoft,
+    required this.warm,
+    required this.warmStrong,
+    required this.warmSoft,
+    required this.success,
+    required this.successStrong,
+    required this.successSoft,
+  });
+
+  final Color secondaryStrong;
+  final Color secondarySoft;
+  final Color blush;
+  final Color blushStrong;
+  final Color blushSoft;
+  final Color warm;
+  final Color warmStrong;
+  final Color warmSoft;
+  final Color success;
+  final Color successStrong;
+  final Color successSoft;
+
+  static GiftifyColors of(BuildContext context) {
+    return Theme.of(context).extension<GiftifyColors>() ?? giftifyColors;
+  }
+
+  @override
+  GiftifyColors copyWith({
+    Color? secondaryStrong,
+    Color? secondarySoft,
+    Color? blush,
+    Color? blushStrong,
+    Color? blushSoft,
+    Color? warm,
+    Color? warmStrong,
+    Color? warmSoft,
+    Color? success,
+    Color? successStrong,
+    Color? successSoft,
+  }) {
+    return GiftifyColors(
+      secondaryStrong: secondaryStrong ?? this.secondaryStrong,
+      secondarySoft: secondarySoft ?? this.secondarySoft,
+      blush: blush ?? this.blush,
+      blushStrong: blushStrong ?? this.blushStrong,
+      blushSoft: blushSoft ?? this.blushSoft,
+      warm: warm ?? this.warm,
+      warmStrong: warmStrong ?? this.warmStrong,
+      warmSoft: warmSoft ?? this.warmSoft,
+      success: success ?? this.success,
+      successStrong: successStrong ?? this.successStrong,
+      successSoft: successSoft ?? this.successSoft,
+    );
+  }
+
+  @override
+  GiftifyColors lerp(ThemeExtension<GiftifyColors>? other, double t) {
+    if (other is! GiftifyColors) {
+      return this;
+    }
+
+    return GiftifyColors(
+      secondaryStrong: Color.lerp(secondaryStrong, other.secondaryStrong, t)!,
+      secondarySoft: Color.lerp(secondarySoft, other.secondarySoft, t)!,
+      blush: Color.lerp(blush, other.blush, t)!,
+      blushStrong: Color.lerp(blushStrong, other.blushStrong, t)!,
+      blushSoft: Color.lerp(blushSoft, other.blushSoft, t)!,
+      warm: Color.lerp(warm, other.warm, t)!,
+      warmStrong: Color.lerp(warmStrong, other.warmStrong, t)!,
+      warmSoft: Color.lerp(warmSoft, other.warmSoft, t)!,
+      success: Color.lerp(success, other.success, t)!,
+      successStrong: Color.lerp(successStrong, other.successStrong, t)!,
+      successSoft: Color.lerp(successSoft, other.successSoft, t)!,
+    );
+  }
+}
+
+const GiftifyColors giftifyColors = GiftifyColors(
+  secondaryStrong: Color(0xFF6B5AA6),
+  secondarySoft: Color(0xFFF3EFFF),
+  blush: Color(0xFFE9B8D0),
+  blushStrong: Color(0xFF9B4F73),
+  blushSoft: Color(0xFFFFF1F7),
+  warm: Color(0xFFF3D6A4),
+  warmStrong: Color(0xFF8A5A00),
+  warmSoft: Color(0xFFFFF7EA),
+  success: Color(0xFF2E7D5B),
+  successStrong: Color(0xFF1F6B43),
+  successSoft: Color(0xFFE7F5ED),
+);
 
 const ColorScheme _giftifyColorScheme = ColorScheme(
   brightness: Brightness.light,
@@ -18,13 +115,13 @@ const ColorScheme _giftifyColorScheme = ColorScheme(
   onPrimary: Colors.white,
   primaryContainer: giftifyPrimaryContainer,
   onPrimaryContainer: giftifyText,
-  secondary: giftifyPrimary,
-  onSecondary: Colors.white,
-  secondaryContainer: giftifyPrimaryContainer,
-  onSecondaryContainer: giftifyText,
-  tertiary: giftifyMuted,
+  secondary: Color(0xFF9B8BD4),
+  onSecondary: giftifyText,
+  secondaryContainer: Color(0xFFF3EFFF),
+  onSecondaryContainer: Color(0xFF6B5AA6),
+  tertiary: Color(0xFF9B4F73),
   onTertiary: Colors.white,
-  tertiaryContainer: giftifySurfaceMuted,
+  tertiaryContainer: Color(0xFFFFF1F7),
   onTertiaryContainer: giftifyText,
   error: giftifyError,
   onError: Colors.white,
@@ -34,17 +131,17 @@ const ColorScheme _giftifyColorScheme = ColorScheme(
   onSurface: giftifyText,
   onSurfaceVariant: giftifyMuted,
   surfaceContainerLowest: giftifySurface,
-  surfaceContainerLow: Color(0xFFFBFCFB),
+  surfaceContainerLow: Color(0xFFFCFCFE),
   surfaceContainer: giftifySurfaceMuted,
-  surfaceContainerHigh: Color(0xFFE8EEEA),
-  surfaceContainerHighest: Color(0xFFE1E8E3),
+  surfaceContainerHigh: Color(0xFFEAECF3),
+  surfaceContainerHighest: Color(0xFFE2E5EE),
   outline: giftifyBorder,
   outlineVariant: giftifyBorder,
   shadow: Colors.black,
   scrim: Colors.black,
   inverseSurface: giftifyText,
   onInverseSurface: Colors.white,
-  inversePrimary: giftifyPrimaryContainer,
+  inversePrimary: Color(0xFFC3CAF4),
   surfaceTint: giftifyPrimary,
 );
 
@@ -88,6 +185,7 @@ final ThemeData appTheme = ThemeData(
   colorScheme: _giftifyColorScheme,
   scaffoldBackgroundColor: giftifyBackground,
   textTheme: _giftifyTextTheme,
+  extensions: const <ThemeExtension<dynamic>>[giftifyColors],
   appBarTheme: const AppBarTheme(
     backgroundColor: giftifyBackground,
     foregroundColor: giftifyText,
@@ -181,6 +279,25 @@ final ThemeData appTheme = ThemeData(
       side: const BorderSide(color: giftifyBorder),
     ),
   ),
+  chipTheme: ChipThemeData(
+    backgroundColor: giftifySurface,
+    selectedColor: giftifyPrimaryContainer,
+    disabledColor: giftifySurfaceMuted,
+    labelStyle: const TextStyle(
+      color: giftifyText,
+      fontSize: 13,
+      fontWeight: FontWeight.w500,
+    ),
+    secondaryLabelStyle: const TextStyle(
+      color: giftifyPrimary,
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+    ),
+    side: const BorderSide(color: giftifyBorder),
+    shape: const StadiumBorder(),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    showCheckmark: false,
+  ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: giftifySurface,
@@ -235,7 +352,7 @@ final ThemeData appTheme = ThemeData(
     ),
   ),
   navigationBarTheme: NavigationBarThemeData(
-    height: 64,
+    height: 70,
     elevation: 0,
     backgroundColor: giftifySurface,
     surfaceTintColor: Colors.transparent,
