@@ -15,12 +15,9 @@ class CheckoutSuccessScreen extends ConsumerWidget {
 
   void _goHome(BuildContext context, WidgetRef ref) {
     ref.read(appTabProvider.notifier).select(AppTab.home);
-    final navigator = Navigator.of(context);
-    if (navigator.canPop()) {
-      navigator.pop();
-    } else {
-      navigator.pushReplacementNamed(AppRoutes.home);
-    }
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
   }
 
   @override

@@ -19,7 +19,6 @@ import '../shared/models/gift_search_criteria.dart';
 import 'app_tab.dart';
 import 'app_tab_notifier.dart';
 import 'auth_gate.dart';
-import 'main_shell.dart';
 
 /// Nombres centralizados de las rutas de Giftify.
 ///
@@ -197,15 +196,19 @@ class _CheckoutSuccessFallbackState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(appTabProvider.notifier).select(AppTab.home);
+      if (!mounted) {
+        return;
       }
+      ref.read(appTabProvider.notifier).select(AppTab.home);
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return const MainShell();
+    return const SizedBox.shrink();
   }
 }
 

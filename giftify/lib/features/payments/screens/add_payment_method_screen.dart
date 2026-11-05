@@ -23,7 +23,7 @@ class _AddPaymentMethodScreenState
   final _holderController = TextEditingController();
   final _last4Controller = TextEditingController();
 
-  late final DateTime _now;
+  late final DateTime Function() _clock;
   late int _selectedMonth;
   late int _selectedYear;
   PaymentBrand? _selectedBrand;
@@ -36,9 +36,11 @@ class _AddPaymentMethodScreenState
   @override
   void initState() {
     super.initState();
-    _now = widget.now ?? DateTime.now();
-    _selectedMonth = _now.month;
-    _selectedYear = _now.year;
+    final fixedNow = widget.now;
+    _clock = fixedNow == null ? DateTime.now : () => fixedNow;
+    final current = _clock();
+    _selectedMonth = current.month;
+    _selectedYear = current.year;
   }
 
   @override
@@ -95,7 +97,8 @@ class _AddPaymentMethodScreenState
   }
 
   bool _isExpired(int month, int year) {
-    return year < _now.year || (year == _now.year && month < _now.month);
+    final now = _clock();
+    return year < now.year || (year == now.year && month < now.month);
   }
 
   Future<void> _submit() async {
@@ -161,8 +164,9 @@ class _AddPaymentMethodScreenState
     final horizontalPadding = MediaQuery.sizeOf(context).width >= 600
         ? 24.0
         : 16.0;
+    final currentYear = _clock().year;
     final years = [
-      for (var year = _now.year; year <= _now.year + 20; year++) year,
+      for (var year = currentYear; year <= currentYear + 20; year++) year,
     ];
 
     return Scaffold(

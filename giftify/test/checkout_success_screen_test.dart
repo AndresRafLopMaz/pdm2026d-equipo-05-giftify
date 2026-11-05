@@ -9,6 +9,7 @@ import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/cart/data/cart_store.dart';
 import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
 import 'package:giftify/features/cart/providers/cart_items_provider.dart';
+import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/checkout/models/checkout_success_data.dart';
 import 'package:giftify/features/checkout/screens/checkout_success_screen.dart';
 import 'package:giftify/shared/enums/payment_brand.dart';
@@ -183,6 +184,49 @@ void main() {
     expect(find.byType(CheckoutSuccessScreen), findsNothing);
     expect(find.byType(MainShell), findsOneWidget);
     expect(container.read(appTabProvider), AppTab.home);
+  });
+
+  testWidgets('Success desde una ruta Cart independiente vuelve a Inicio', (
+    tester,
+  ) async {
+    final harness = authenticatedHarness();
+    final navigatorKey = GlobalKey<NavigatorState>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ...harness.overrides,
+          cartRepositoryProvider.overrideWithValue(
+            PersistentCartRepository(store: InMemoryCartStore()),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          navigatorKey: navigatorKey,
+          home: const MainShell(),
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    navigatorKey.currentState!.pushNamed(AppRoutes.cart);
+    await tester.pumpAndSettle();
+    expect(find.byType(CartScreen), findsOneWidget);
+
+    navigatorKey.currentState!.pushNamed(
+      AppRoutes.checkoutSuccess,
+      arguments: data,
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(CheckoutSuccessScreen), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CheckoutSuccessScreen), findsNothing);
+    expect(find.byType(CartScreen), findsNothing);
+    expect(find.byType(MainShell), findsOneWidget);
   });
 
   testWidgets('Success es responsive y soporta text scale', (tester) async {
