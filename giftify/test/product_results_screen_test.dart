@@ -14,6 +14,8 @@ import 'package:giftify/features/products/utils/product_filters.dart';
 import 'package:giftify/features/products/widgets/product_card.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_category.dart';
+import 'package:giftify/shared/enums/gift_occasion.dart';
+import 'package:giftify/shared/enums/gift_recipient.dart';
 import 'package:giftify/shared/models/gift_search_criteria.dart';
 
 import 'helpers/fake_product_repository.dart';
@@ -77,8 +79,8 @@ void main() {
     tester,
   ) async {
     const criteria = GiftSearchCriteria(
-      occasion: 'Cumpleaños',
-      recipient: 'Amigo',
+      occasion: GiftOccasion.birthday,
+      recipientType: GiftRecipient.friend,
       maxBudget: 1000,
     );
 
@@ -88,7 +90,7 @@ void main() {
       criteria: criteria,
     );
 
-    expect(find.textContaining('Para Amigo'), findsOneWidget);
+    expect(find.textContaining('Para Amigo/a'), findsOneWidget);
     expect(find.textContaining('hasta Q1000.00'), findsOneWidget);
     expect(find.text('Cambiar'), findsOneWidget);
     expect(find.byType(ProductCard), findsWidgets);
@@ -98,8 +100,8 @@ void main() {
     tester,
   ) async {
     const criteria = GiftSearchCriteria(
-      occasion: 'Cumpleaños',
-      recipient: 'Amigo',
+      occasion: GiftOccasion.birthday,
+      recipientType: GiftRecipient.friend,
       maxBudget: 1,
     );
 
@@ -143,8 +145,8 @@ void main() {
     tester,
   ) async {
     const criteria = GiftSearchCriteria(
-      occasion: 'Cumpleaños',
-      recipient: 'Amigo',
+      occasion: GiftOccasion.birthday,
+      recipientType: GiftRecipient.friend,
       maxBudget: 1000,
     );
     final expected = filterAndPrioritizeProducts(mockProducts, criteria).first;
@@ -465,8 +467,8 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     const criteria = GiftSearchCriteria(
-      occasion: 'Cumpleaños',
-      recipient: 'Un destinatario con nombre largo',
+      occasion: GiftOccasion.birthday,
+      recipientType: GiftRecipient.friend,
       maxBudget: 1000,
     );
 

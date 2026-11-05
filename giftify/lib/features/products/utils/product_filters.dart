@@ -1,6 +1,3 @@
-import '../../../shared/enums/gift_category.dart';
-import '../../../shared/enums/gift_occasion.dart';
-import '../../../shared/enums/gift_size.dart';
 import '../../../shared/models/gift_product.dart';
 import '../../../shared/models/gift_search_criteria.dart';
 
@@ -8,9 +5,6 @@ import '../../../shared/models/gift_search_criteria.dart';
 ///
 /// Se mantiene como funciones puras para poder probarla sin depender de
 /// widgets ni de un backend. No contiene estado ni lógica de interfaz.
-
-/// Normalización sencilla utilizada únicamente para comparar textos.
-String _normalize(String value) => value.trim().toLowerCase();
 
 /// Orden determinista del catálogo general cuando no hay criterios.
 ///
@@ -52,32 +46,22 @@ bool _arrivesOnTime(GiftProduct product, GiftSearchCriteria criteria) {
 
 /// Calcula la puntuación de coincidencia de un producto con los criterios.
 ///
-/// category == giftType                    +2
-/// occasions contiene occasion             +2
-/// size == criteria.size                   +1
-/// llega antes de eventDate                +1
+/// Esta primera migración usa únicamente los criterios que ya existían
+/// conceptualmente en FASE 9. El scoring ampliado se implementa después.
 int _scoreFor(GiftProduct product, GiftSearchCriteria criteria) {
   var score = 0;
 
-  final giftType = criteria.giftType;
-  if (giftType != null &&
-      giftType.trim().isNotEmpty &&
-      _normalize(product.category.label) == _normalize(giftType)) {
+  final giftFormat = criteria.giftFormat;
+  if (giftFormat != null && product.giftFormat == giftFormat) {
     score += 2;
   }
 
-  final occasion = criteria.occasion;
-  if (occasion.trim().isNotEmpty &&
-      product.occasions.any(
-        (suggested) => _normalize(suggested.label) == _normalize(occasion),
-      )) {
+  if (product.occasions.contains(criteria.occasion)) {
     score += 2;
   }
 
   final size = criteria.size;
-  if (size != null &&
-      size.trim().isNotEmpty &&
-      _normalize(product.size.label) == _normalize(size)) {
+  if (size != null && product.size == size) {
     score += 1;
   }
 
@@ -93,9 +77,6 @@ int _scoreFor(GiftProduct product, GiftSearchCriteria criteria) {
 /// Si [criteria] es `null`, devuelve el catálogo completo con un orden
 /// determinista. Si existen criterios, excluye los productos cuyo precio
 /// supera `maxBudget` y ordena el resto por puntuación de coincidencia.
-///
-/// El destinatario (`recipient`) no se utiliza para filtrar porque
-/// `GiftProduct` no contiene información al respecto.
 List<GiftProduct> filterAndPrioritizeProducts(
   Iterable<GiftProduct> products,
   GiftSearchCriteria? criteria,

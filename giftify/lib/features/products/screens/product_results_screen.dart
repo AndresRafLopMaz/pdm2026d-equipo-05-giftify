@@ -5,6 +5,11 @@ import '../../../app/app_router.dart';
 import '../../../app/app_tab.dart';
 import '../../../app/app_tab_notifier.dart';
 import '../../../shared/enums/gift_availability.dart';
+import '../../../shared/enums/gift_format.dart';
+import '../../../shared/enums/gift_interest.dart';
+import '../../../shared/enums/gift_occasion.dart';
+import '../../../shared/enums/gift_recipient.dart';
+import '../../../shared/enums/gift_size.dart';
 import '../../../shared/models/gift_product.dart';
 import '../../../shared/models/gift_search_criteria.dart';
 import '../data/product_filter.dart';
@@ -334,11 +339,12 @@ class _CriteriaSummary extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final parts = <String>[
-      'Para ${criteria.recipient.trim()}',
-      criteria.occasion.trim(),
-      if (criteria.giftType?.trim().isNotEmpty ?? false)
-        criteria.giftType!.trim(),
-      if (criteria.size?.trim().isNotEmpty ?? false) criteria.size!.trim(),
+      'Para ${criteria.recipientType.label}',
+      criteria.occasion.label,
+      if (criteria.interests.isNotEmpty)
+        criteria.interests.map((interest) => interest.label).join(' + '),
+      if (criteria.giftFormat != null) criteria.giftFormat!.label,
+      if (criteria.size != null) criteria.size!.label,
       'hasta Q${criteria.maxBudget.toStringAsFixed(2)}',
     ];
 

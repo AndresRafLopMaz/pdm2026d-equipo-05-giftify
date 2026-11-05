@@ -5,6 +5,12 @@ import '../../../app/app_router.dart';
 import '../../../app/app_tab.dart';
 import '../../../app/app_tab_notifier.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/enums/gift_format.dart';
+import '../../../shared/enums/gift_interest.dart';
+import '../../../shared/enums/gift_occasion.dart';
+import '../../../shared/enums/gift_recipient.dart';
+import '../../search/models/search_prefill.dart';
+import '../../search/providers/search_prefill_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -19,40 +25,52 @@ class HomeScreen extends ConsumerWidget {
 
     final categories = <_CategoryIdea>[
       _CategoryIdea(
+        id: 'birthday',
         label: 'Cumpleaños',
         icon: Icons.cake_rounded,
         foreground: giftify.warmStrong,
         background: giftify.warmSoft,
+        prefill: const SearchPrefill(occasion: GiftOccasion.birthday),
       ),
       _CategoryIdea(
+        id: 'partner',
         label: 'Pareja',
         icon: Icons.favorite_rounded,
         foreground: giftify.blushStrong,
         background: giftify.blushSoft,
+        prefill: const SearchPrefill(recipientType: GiftRecipient.partner),
       ),
       _CategoryIdea(
+        id: 'family',
         label: 'Familia',
         icon: Icons.family_restroom_rounded,
         foreground: giftify.secondaryStrong,
         background: giftify.secondarySoft,
+        prefill: const SearchPrefill(recipientType: GiftRecipient.family),
       ),
       _CategoryIdea(
+        id: 'friends',
         label: 'Amigos',
         icon: Icons.groups_rounded,
         foreground: colors.primary,
         background: colors.primaryContainer,
+        prefill: const SearchPrefill(recipientType: GiftRecipient.friend),
       ),
       _CategoryIdea(
+        id: 'technology',
         label: 'Tecnología',
         icon: Icons.devices_rounded,
         foreground: colors.primary,
         background: colors.primaryContainer,
+        prefill: const SearchPrefill(interests: {GiftInterest.technology}),
       ),
       _CategoryIdea(
+        id: 'experiences',
         label: 'Experiencias',
         icon: Icons.local_activity_rounded,
         foreground: giftify.warmStrong,
         background: giftify.warmSoft,
+        prefill: const SearchPrefill(giftFormat: GiftFormat.experience),
       ),
     ];
 
@@ -109,7 +127,17 @@ class HomeScreen extends ConsumerWidget {
                     runSpacing: 8,
                     children: [
                       for (final category in categories)
-                        _CategoryPill(category: category),
+                        _CategoryPill(
+                          category: category,
+                          onTap: () {
+                            ref
+                                .read(searchPrefillProvider.notifier)
+                                .set(category.prefill);
+                            ref
+                                .read(appTabProvider.notifier)
+                                .select(AppTab.search);
+                          },
+                        ),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -290,55 +318,70 @@ class _SectionTitle extends StatelessWidget {
 
 class _CategoryIdea {
   const _CategoryIdea({
+    required this.id,
     required this.label,
     required this.icon,
     required this.foreground,
     required this.background,
+    required this.prefill,
   });
 
+  final String id;
   final String label;
   final IconData icon;
   final Color foreground;
   final Color background;
+  final SearchPrefill prefill;
 }
 
 class _CategoryPill extends StatelessWidget {
-  const _CategoryPill({required this.category});
+  const _CategoryPill({required this.category, required this.onTap});
 
   final _CategoryIdea category;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    // FASE 10C convertirá estas categorías en filtros reales.
     return Semantics(
-      container: true,
-      label: 'Categoría ${category.label}',
+      button: true,
+      label: 'Buscar por ${category.label}',
       child: ExcludeSemantics(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.sizeOf(context).width - 32,
-          ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: category.background,
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(category.icon, size: 18, color: category.foreground),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    category.label,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: category.foreground,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: ValueKey('home-category-${category.id}'),
+            borderRadius: BorderRadius.circular(999),
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.sizeOf(context).width - 32,
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
                 ),
-              ],
+                decoration: BoxDecoration(
+                  color: category.background,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(category.icon, size: 18, color: category.foreground),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        category.label,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: category.foreground,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

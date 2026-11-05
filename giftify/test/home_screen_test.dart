@@ -9,6 +9,12 @@ import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/addresses/providers/addresses_provider.dart';
 import 'package:giftify/features/addresses/screens/address_list_screen.dart';
 import 'package:giftify/features/home/screens/home_screen.dart';
+import 'package:giftify/features/products/screens/product_results_screen.dart';
+import 'package:giftify/features/search/providers/search_prefill_provider.dart';
+import 'package:giftify/shared/enums/gift_format.dart';
+import 'package:giftify/shared/enums/gift_interest.dart';
+import 'package:giftify/shared/enums/gift_occasion.dart';
+import 'package:giftify/shared/enums/gift_recipient.dart';
 
 import 'helpers/fake_address_repository.dart';
 
@@ -117,34 +123,62 @@ void main() {
     expect(container.read(appTabProvider), AppTab.catalog);
   });
 
-  testWidgets('las categorías son editoriales y no interactivas', (
+  testWidgets('las categorías prellenan Search sin navegar a Results', (
     tester,
   ) async {
-    await _pumpHomeScreen(tester);
+    final container = await _pumpHomeScreen(tester);
 
-    for (final category in [
-      'Cumpleaños',
-      'Pareja',
-      'Familia',
-      'Amigos',
-      'Tecnología',
-      'Experiencias',
-    ]) {
-      final label = find.text(category);
-      expect(label, findsOneWidget);
-      expect(
-        find.ancestor(of: label, matching: find.byType(InkWell)),
-        findsNothing,
-      );
-      expect(
-        find.ancestor(of: label, matching: find.byType(FilterChip)),
-        findsNothing,
-      );
-      expect(
-        find.ancestor(of: label, matching: find.byType(GestureDetector)),
-        findsNothing,
-      );
+    final cases = <String, void Function()>{
+      'home-category-birthday': () {
+        expect(
+          container.read(searchPrefillProvider)?.occasion,
+          GiftOccasion.birthday,
+        );
+      },
+      'home-category-partner': () {
+        expect(
+          container.read(searchPrefillProvider)?.recipientType,
+          GiftRecipient.partner,
+        );
+      },
+      'home-category-family': () {
+        expect(
+          container.read(searchPrefillProvider)?.recipientType,
+          GiftRecipient.family,
+        );
+      },
+      'home-category-friends': () {
+        expect(
+          container.read(searchPrefillProvider)?.recipientType,
+          GiftRecipient.friend,
+        );
+      },
+      'home-category-technology': () {
+        expect(container.read(searchPrefillProvider)?.interests, {
+          GiftInterest.technology,
+        });
+      },
+      'home-category-experiences': () {
+        expect(
+          container.read(searchPrefillProvider)?.giftFormat,
+          GiftFormat.experience,
+        );
+      },
+    };
+
+    for (final entry in cases.entries) {
+      final action = find.byKey(ValueKey(entry.key));
+      await tester.ensureVisible(action);
+      await tester.pumpAndSettle();
+      await tester.tap(action);
+      await tester.pump();
+
+      expect(container.read(appTabProvider), AppTab.search);
+      entry.value();
+      expect(find.byType(ProductResultsScreen), findsNothing);
     }
+
+    expect(find.bySemanticsLabel('Buscar por Cumpleaños'), findsOneWidget);
   });
 
   testWidgets('los accesos rápidos son botones semánticos reales', (
