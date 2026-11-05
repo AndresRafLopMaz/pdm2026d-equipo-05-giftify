@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:giftify/app/app_tab.dart';
 import 'package:giftify/app/app_tab_notifier.dart';
 import 'package:giftify/app/main_shell.dart';
+import 'package:giftify/features/cart/data/cart_store.dart';
+import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
+import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
+import 'package:giftify/shared/data/mock_products.dart';
 
-Future<ProviderContainer> _pumpShell(WidgetTester tester) async {
-  final container = ProviderContainer();
+Future<ProviderContainer> _pumpShell(
+  WidgetTester tester, {
+  List<Override> overrides = const [],
+}) async {
+  final container = ProviderContainer(overrides: overrides);
   addTearDown(container.dispose);
 
   await tester.pumpWidget(
@@ -102,6 +110,36 @@ void main() {
 
     expect(container.read(appTabProvider), AppTab.catalog);
     expect(_stackIndex(tester), AppTab.catalog.index);
+  });
+
+  testWidgets('el carrito persistido se ve al abrir la tab Carrito', (
+    tester,
+  ) async {
+    final product = mockProducts.first;
+    final store = InMemoryCartStore([
+      CartEntry(productId: product.id, quantity: 2),
+    ]);
+    final container = await _pumpShell(
+      tester,
+      overrides: [
+        cartRepositoryProvider.overrideWithValue(
+          PersistentCartRepository(store: store),
+        ),
+      ],
+    );
+
+    await _tapDestination(tester, 'Carrito');
+
+    expect(container.read(appTabProvider), AppTab.cart);
+    expect(find.text(product.name), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(ValueKey('quantity-${product.id}'))).data,
+      '2',
+    );
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('cart-total'))).data,
+      'Q 250.00',
+    );
   });
 
   testWidgets('IndexedStack conserva el scroll de Catálogo', (tester) async {
