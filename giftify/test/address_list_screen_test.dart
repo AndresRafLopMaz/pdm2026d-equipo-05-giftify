@@ -140,7 +140,7 @@ void main() {
     await _pumpList(tester, repository);
     await tester.pumpAndSettle();
 
-    expect(find.text('No tienes direcciones activas.'), findsOneWidget);
+    expect(find.text('No tienes direcciones guardadas.'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('add-address-button')));
     await tester.pumpAndSettle();
@@ -251,7 +251,7 @@ void main() {
           .isArchived,
       isFalse,
     );
-    expect(find.text('No hay direcciones archivadas.'), findsOneWidget);
+    expect(find.text('No tienes direcciones archivadas.'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('addresses-tab-active')));
     await tester.pumpAndSettle();
@@ -300,7 +300,7 @@ void main() {
 
     expect(repository.addresses, hasLength(1));
     expect(repository.addresses.single.id, 'addr-casa');
-    expect(find.text('No hay direcciones archivadas.'), findsOneWidget);
+    expect(find.text('No tienes direcciones archivadas.'), findsOneWidget);
     expect(find.text('Dirección eliminada.'), findsOneWidget);
   });
 

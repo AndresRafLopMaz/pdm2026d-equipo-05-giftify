@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
 
 const Color verdePrincipal = Color(0xFF18B870);
-const Color verdeOscuro = Color(0xFF087A4A);
 const Color verdeClaro = Color(0xFFE9F8F1);
-
-const Color rosaPrincipal = Color(0xFFF05CB5);
-const Color rosaClaro = Color(0xFFFFE9F6);
-
-const Color amarilloPrincipal = Color(0xFFFFD56A);
 
 const Color fondoPrincipal = Color(0xFFF8FAF9);
 const Color textoPrincipal = Color(0xFF252A28);
