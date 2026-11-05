@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/app/app_tab.dart';
 import 'package:giftify/app/app_tab_notifier.dart';
+import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/products/data/product_repository.dart';
 import 'package:giftify/features/products/providers/products_provider.dart';
@@ -164,6 +165,50 @@ void main() {
     );
 
     expect(detail.product, same(expected));
+  });
+
+  testWidgets('desde MainShell, tap en Catálogo abre el detalle y vuelve', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _testApp(
+        home: const MainShell(),
+        repository: FakeProductRepository.success(mockProducts),
+        onGenerateRoute: AppRouter.onGenerateRoute,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Catálogo'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProductCard), findsWidgets);
+
+    final firstCard = tester.widget<ProductCard>(
+      find.byType(ProductCard).first,
+    );
+
+    await tester.tap(find.byType(ProductCard).first);
+    await tester.pumpAndSettle();
+
+    final detail = tester.widget<ProductDetailScreen>(
+      find.byType(ProductDetailScreen),
+    );
+
+    expect(detail.product, same(firstCard.product));
+    expect(find.text(firstCard.product.name), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProductDetailScreen), findsNothing);
+    expect(find.byType(ProductCard), findsWidgets);
+    expect(find.text('Ruta no encontrada'), findsNothing);
   });
 
   testWidgets('muestra loading mientras el repositorio responde', (

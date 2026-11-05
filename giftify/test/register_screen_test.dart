@@ -2,24 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:giftify/app/app_router.dart';
+import 'package:giftify/app/giftify_app.dart';
 import 'package:giftify/app/main_shell.dart';
-import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/auth/screens/register_screen.dart';
 import 'package:giftify/features/home/screens/home_screen.dart';
 
 Finder _field(String label) => find.widgetWithText(TextFormField, label);
 
 Future<void> _pumpRegisterScreen(WidgetTester tester) async {
-  await tester.pumpWidget(
-    ProviderScope(
-      child: MaterialApp(
-        theme: appTheme,
-        initialRoute: AppRoutes.register,
-        onGenerateRoute: AppRouter.onGenerateRoute,
-      ),
-    ),
-  );
+  await tester.pumpWidget(const ProviderScope(child: GiftifyApp()));
   await tester.pumpAndSettle();
 }
 
@@ -178,6 +169,30 @@ void main() {
     expect(find.byType(MainShell), findsOneWidget);
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(find.byType(RegisterScreen), findsNothing);
+  });
+
+  testWidgets('el registro deja MainShell como raíz sin ruta desconocida', (
+    tester,
+  ) async {
+    await _pumpRegisterScreen(tester);
+
+    await _fillValidData(tester);
+    await _selectBirthDate(tester);
+
+    await _tapSubmit(tester);
+    await tester.pumpAndSettle();
+
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+
+    expect(find.byType(MainShell), findsOneWidget);
+    expect(navigator.canPop(), isFalse);
+    expect(find.text('Ruta no encontrada'), findsNothing);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MainShell), findsOneWidget);
+    expect(find.text('Ruta no encontrada'), findsNothing);
   });
 
   testWidgets('no muestra el enlace de inicio de sesión sin función', (

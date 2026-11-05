@@ -17,6 +17,7 @@ import 'main_shell.dart';
 /// Se deben utilizar estas constantes en lugar de escribir
 /// manualmente rutas como "/cart" o "/products".
 abstract final class AppRoutes {
+  static const String root = '/';
   static const String register = '/register';
   static const String home = '/home';
   static const String search = '/search';
@@ -34,6 +35,7 @@ abstract final class AppRoutes {
 abstract final class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case AppRoutes.root:
       case AppRoutes.register:
         return _buildRoute(settings, const RegisterScreen());
 

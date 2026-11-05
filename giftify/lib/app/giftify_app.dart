@@ -12,7 +12,7 @@ class GiftifyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Giftify',
       theme: appTheme,
-      initialRoute: AppRoutes.register,
+      initialRoute: AppRoutes.root,
       onGenerateRoute: AppRouter.onGenerateRoute,
     );
   }
