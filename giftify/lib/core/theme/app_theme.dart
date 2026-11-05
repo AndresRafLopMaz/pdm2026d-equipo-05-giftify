@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 const Color giftifyPrimary = Color(0xFF5867B8);
 const Color giftifyPrimaryContainer = Color(0xFFEEF0FF);
@@ -9,8 +10,13 @@ const Color giftifyText = Color(0xFF262936);
 const Color giftifyMuted = Color(0xFF697080);
 const Color giftifyBorder = Color(0xFFE4E6EC);
 const Color giftifyError = Color(0xFFB3261E);
-const Color giftifyWarning = Color(0xFF8A5A00);
-const Color giftifyWarningBackground = Color(0xFFFFF7EA);
+
+const Color giftifyDarkBackground = Color(0xFF121318);
+const Color giftifyDarkSurface = Color(0xFF1A1B22);
+const Color giftifyDarkSurfaceMuted = Color(0xFF23252E);
+const Color giftifyDarkBorder = Color(0xFF343742);
+const Color giftifyDarkText = Color(0xFFF3F4F7);
+const Color giftifyDarkMuted = Color(0xFFAEB3C2);
 
 @immutable
 class GiftifyColors extends ThemeExtension<GiftifyColors> {
@@ -41,7 +47,15 @@ class GiftifyColors extends ThemeExtension<GiftifyColors> {
   final Color successSoft;
 
   static GiftifyColors of(BuildContext context) {
-    return Theme.of(context).extension<GiftifyColors>() ?? giftifyColors;
+    final theme = Theme.of(context);
+    final extension = theme.extension<GiftifyColors>();
+    if (extension != null) {
+      return extension;
+    }
+
+    return theme.brightness == Brightness.dark
+        ? giftifyColorsDark
+        : giftifyColors;
   }
 
   @override
@@ -109,7 +123,21 @@ const GiftifyColors giftifyColors = GiftifyColors(
   successSoft: Color(0xFFE7F5ED),
 );
 
-const ColorScheme _giftifyColorScheme = ColorScheme(
+const GiftifyColors giftifyColorsDark = GiftifyColors(
+  secondaryStrong: Color(0xFFD4C7FF),
+  secondarySoft: Color(0xFF2D2742),
+  blush: Color(0xFFD39AB7),
+  blushStrong: Color(0xFFFFC0DA),
+  blushSoft: Color(0xFF3A2230),
+  warm: Color(0xFFF3D6A4),
+  warmStrong: Color(0xFFF7D58A),
+  warmSoft: Color(0xFF3A2E1B),
+  success: Color(0xFF6FCFA2),
+  successStrong: Color(0xFF8FE3B8),
+  successSoft: Color(0xFF1C3528),
+);
+
+const ColorScheme _lightColorScheme = ColorScheme(
   brightness: Brightness.light,
   primary: giftifyPrimary,
   onPrimary: Colors.white,
@@ -143,6 +171,42 @@ const ColorScheme _giftifyColorScheme = ColorScheme(
   onInverseSurface: Colors.white,
   inversePrimary: Color(0xFFC3CAF4),
   surfaceTint: giftifyPrimary,
+);
+
+const ColorScheme _darkColorScheme = ColorScheme(
+  brightness: Brightness.dark,
+  primary: Color(0xFFAEB9FF),
+  onPrimary: Color(0xFF171B30),
+  primaryContainer: Color(0xFF2C3352),
+  onPrimaryContainer: Color(0xFFE3E7FF),
+  secondary: Color(0xFFCFC1FF),
+  onSecondary: Color(0xFF241B3A),
+  secondaryContainer: Color(0xFF3A2F58),
+  onSecondaryContainer: Color(0xFFF0E8FF),
+  tertiary: Color(0xFFF0A9C9),
+  onTertiary: Color(0xFF3B1728),
+  tertiaryContainer: Color(0xFF4A2A3B),
+  onTertiaryContainer: Color(0xFFFFD9E8),
+  error: Color(0xFFFFB4AB),
+  onError: Color(0xFF690005),
+  errorContainer: Color(0xFF5C1A16),
+  onErrorContainer: Color(0xFFFFDAD6),
+  surface: giftifyDarkSurface,
+  onSurface: giftifyDarkText,
+  onSurfaceVariant: giftifyDarkMuted,
+  surfaceContainerLowest: Color(0xFF101116),
+  surfaceContainerLow: Color(0xFF171820),
+  surfaceContainer: giftifyDarkSurfaceMuted,
+  surfaceContainerHigh: Color(0xFF2B2D38),
+  surfaceContainerHighest: Color(0xFF323542),
+  outline: Color(0xFF4A4E5C),
+  outlineVariant: giftifyDarkBorder,
+  shadow: Colors.black,
+  scrim: Colors.black,
+  inverseSurface: giftifyDarkText,
+  onInverseSurface: giftifyDarkSurface,
+  inversePrimary: giftifyPrimary,
+  surfaceTint: Color(0xFFAEB9FF),
 );
 
 const TextTheme _giftifyTextTheme = TextTheme(
@@ -180,240 +244,294 @@ const TextTheme _giftifyTextTheme = TextTheme(
   ),
 );
 
-final ThemeData appTheme = ThemeData(
-  useMaterial3: true,
-  colorScheme: _giftifyColorScheme,
-  scaffoldBackgroundColor: giftifyBackground,
-  textTheme: _giftifyTextTheme,
-  extensions: const <ThemeExtension<dynamic>>[giftifyColors],
-  appBarTheme: const AppBarTheme(
-    backgroundColor: giftifyBackground,
-    foregroundColor: giftifyText,
-    surfaceTintColor: Colors.transparent,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-    centerTitle: false,
-    titleTextStyle: TextStyle(
-      color: giftifyText,
-      fontSize: 22,
-      height: 1.27,
-      fontWeight: FontWeight.w700,
-    ),
-    iconTheme: IconThemeData(color: giftifyText, size: 24),
-  ),
-  filledButtonTheme: FilledButtonThemeData(
-    style: ButtonStyle(
-      minimumSize: const WidgetStatePropertyAll(Size(64, 52)),
-      padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+abstract final class AppTheme {
+  static final ThemeData lightTheme = _build(
+    scheme: _lightColorScheme,
+    giftify: giftifyColors,
+    background: giftifyBackground,
+    isDark: false,
+  );
+
+  static final ThemeData darkTheme = _build(
+    scheme: _darkColorScheme,
+    giftify: giftifyColorsDark,
+    background: giftifyDarkBackground,
+    isDark: true,
+  );
+
+  static ThemeData _build({
+    required ColorScheme scheme,
+    required GiftifyColors giftify,
+    required Color background,
+    required bool isDark,
+  }) {
+    final snackBackground = isDark
+        ? scheme.surfaceContainerHighest
+        : scheme.inverseSurface;
+    final snackForeground = isDark ? scheme.onSurface : scheme.onInverseSurface;
+    final snackAction = isDark ? scheme.primary : scheme.inversePrimary;
+    final overlayBase = isDark
+        ? SystemUiOverlayStyle.light
+        : SystemUiOverlayStyle.dark;
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: scheme.brightness,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: background,
+      textTheme: _giftifyTextTheme,
+      extensions: <ThemeExtension<dynamic>>[giftify],
+      appBarTheme: AppBarTheme(
+        backgroundColor: background,
+        foregroundColor: scheme.onSurface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        systemOverlayStyle: overlayBase.copyWith(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarColor: background,
+          statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+          systemNavigationBarIconBrightness: isDark
+              ? Brightness.light
+              : Brightness.dark,
+        ),
+        titleTextStyle: TextStyle(
+          color: scheme.onSurface,
+          fontSize: 22,
+          height: 1.27,
+          fontWeight: FontWeight.w700,
+        ),
+        iconTheme: IconThemeData(color: scheme.onSurface, size: 24),
       ),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      filledButtonTheme: FilledButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: const WidgetStatePropertyAll(Size(64, 52)),
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          textStyle: const WidgetStatePropertyAll(
+            TextStyle(fontSize: 16, height: 1.25, fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return scheme.surfaceContainerHighest;
+            }
+            return scheme.primary;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return scheme.onSurfaceVariant;
+            }
+            return scheme.onPrimary;
+          }),
+          overlayColor: WidgetStatePropertyAll(
+            scheme.onPrimary.withValues(alpha: 0.12),
+          ),
+          elevation: const WidgetStatePropertyAll(0),
+        ),
       ),
-      textStyle: const WidgetStatePropertyAll(
-        TextStyle(fontSize: 16, height: 1.25, fontWeight: FontWeight.w600),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: const WidgetStatePropertyAll(Size(64, 48)),
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          textStyle: const WidgetStatePropertyAll(
+            TextStyle(fontSize: 14, height: 1.43, fontWeight: FontWeight.w600),
+          ),
+          foregroundColor: WidgetStatePropertyAll(scheme.primary),
+          side: WidgetStatePropertyAll(BorderSide(color: scheme.outline)),
+          overlayColor: WidgetStatePropertyAll(
+            scheme.primary.withValues(alpha: 0.08),
+          ),
+        ),
       ),
-      backgroundColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.disabled)) {
-          return giftifySurfaceMuted;
-        }
-        return giftifyPrimary;
-      }),
-      foregroundColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.disabled)) {
-          return giftifyMuted;
-        }
-        return Colors.white;
-      }),
-      overlayColor: WidgetStatePropertyAll(
-        Colors.white.withValues(alpha: 0.12),
+      textButtonTheme: TextButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          textStyle: const WidgetStatePropertyAll(
+            TextStyle(fontSize: 14, height: 1.43, fontWeight: FontWeight.w600),
+          ),
+          foregroundColor: WidgetStatePropertyAll(scheme.primary),
+          overlayColor: WidgetStatePropertyAll(
+            scheme.primary.withValues(alpha: 0.08),
+          ),
+        ),
       ),
-      elevation: const WidgetStatePropertyAll(0),
-    ),
-  ),
-  outlinedButtonTheme: OutlinedButtonThemeData(
-    style: ButtonStyle(
-      minimumSize: const WidgetStatePropertyAll(Size(64, 48)),
-      padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      cardTheme: CardThemeData(
+        color: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: scheme.outlineVariant),
+        ),
       ),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      chipTheme: ChipThemeData(
+        backgroundColor: scheme.surface,
+        selectedColor: scheme.primaryContainer,
+        disabledColor: scheme.surfaceContainerHighest,
+        labelStyle: TextStyle(
+          color: scheme.onSurface,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+        secondaryLabelStyle: TextStyle(
+          color: scheme.primary,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+        side: BorderSide(color: scheme.outlineVariant),
+        shape: const StadiumBorder(),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        showCheckmark: false,
       ),
-      textStyle: const WidgetStatePropertyAll(
-        TextStyle(fontSize: 14, height: 1.43, fontWeight: FontWeight.w600),
-      ),
-      foregroundColor: const WidgetStatePropertyAll(giftifyPrimary),
-      side: const WidgetStatePropertyAll(BorderSide(color: giftifyBorder)),
-      overlayColor: WidgetStatePropertyAll(
-        giftifyPrimary.withValues(alpha: 0.08),
-      ),
-    ),
-  ),
-  textButtonTheme: TextButtonThemeData(
-    style: ButtonStyle(
-      minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-      padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      ),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      textStyle: const WidgetStatePropertyAll(
-        TextStyle(fontSize: 14, height: 1.43, fontWeight: FontWeight.w600),
-      ),
-      foregroundColor: const WidgetStatePropertyAll(giftifyPrimary),
-      overlayColor: WidgetStatePropertyAll(
-        giftifyPrimary.withValues(alpha: 0.08),
-      ),
-    ),
-  ),
-  cardTheme: CardThemeData(
-    color: giftifySurface,
-    surfaceTintColor: Colors.transparent,
-    elevation: 0,
-    margin: EdgeInsets.zero,
-    clipBehavior: Clip.antiAlias,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-      side: const BorderSide(color: giftifyBorder),
-    ),
-  ),
-  chipTheme: ChipThemeData(
-    backgroundColor: giftifySurface,
-    selectedColor: giftifyPrimaryContainer,
-    disabledColor: giftifySurfaceMuted,
-    labelStyle: const TextStyle(
-      color: giftifyText,
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
-    ),
-    secondaryLabelStyle: const TextStyle(
-      color: giftifyPrimary,
-      fontSize: 13,
-      fontWeight: FontWeight.w600,
-    ),
-    side: const BorderSide(color: giftifyBorder),
-    shape: const StadiumBorder(),
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-    showCheckmark: false,
-  ),
-  inputDecorationTheme: InputDecorationTheme(
-    filled: true,
-    fillColor: giftifySurface,
-    labelStyle: const TextStyle(
-      color: giftifyMuted,
-      fontSize: 14,
-      height: 1.43,
-    ),
-    floatingLabelStyle: const TextStyle(
-      color: giftifyPrimary,
-      fontSize: 14,
-      height: 1.43,
-      fontWeight: FontWeight.w600,
-    ),
-    hintStyle: const TextStyle(color: giftifyMuted, fontSize: 14, height: 1.43),
-    helperStyle: const TextStyle(
-      color: giftifyMuted,
-      fontSize: 12,
-      height: 1.33,
-    ),
-    errorStyle: const TextStyle(
-      color: giftifyError,
-      fontSize: 12,
-      height: 1.33,
-    ),
-    prefixIconColor: giftifyMuted,
-    suffixIconColor: giftifyMuted,
-    errorMaxLines: 2,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: giftifyBorder),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: giftifyBorder),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: giftifyPrimary, width: 2),
-    ),
-    errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: giftifyError),
-    ),
-    focusedErrorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: giftifyError, width: 2),
-    ),
-    disabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: giftifyBorder),
-    ),
-  ),
-  navigationBarTheme: NavigationBarThemeData(
-    height: 70,
-    elevation: 0,
-    backgroundColor: giftifySurface,
-    surfaceTintColor: Colors.transparent,
-    indicatorColor: giftifyPrimaryContainer,
-    labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-    iconTheme: WidgetStateProperty.resolveWith((states) {
-      if (states.contains(WidgetState.selected)) {
-        return const IconThemeData(color: giftifyPrimary, size: 24);
-      }
-      return const IconThemeData(color: giftifyMuted, size: 24);
-    }),
-    labelTextStyle: WidgetStateProperty.resolveWith((states) {
-      if (states.contains(WidgetState.selected)) {
-        return const TextStyle(
-          color: giftifyPrimary,
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: scheme.surface,
+        labelStyle: TextStyle(
+          color: scheme.onSurfaceVariant,
+          fontSize: 14,
+          height: 1.43,
+        ),
+        floatingLabelStyle: TextStyle(
+          color: scheme.primary,
+          fontSize: 14,
+          height: 1.43,
+          fontWeight: FontWeight.w600,
+        ),
+        hintStyle: TextStyle(
+          color: scheme.onSurfaceVariant,
+          fontSize: 14,
+          height: 1.43,
+        ),
+        helperStyle: TextStyle(
+          color: scheme.onSurfaceVariant,
           fontSize: 12,
           height: 1.33,
-          fontWeight: FontWeight.w600,
-        );
-      }
-      return const TextStyle(
-        color: giftifyMuted,
-        fontSize: 12,
-        height: 1.33,
-        fontWeight: FontWeight.w600,
-      );
-    }),
-  ),
-  dividerTheme: const DividerThemeData(
-    color: giftifyBorder,
-    thickness: 1,
-    space: 1,
-  ),
-  snackBarTheme: SnackBarThemeData(
-    behavior: SnackBarBehavior.floating,
-    backgroundColor: giftifyText,
-    contentTextStyle: const TextStyle(
-      color: Colors.white,
-      fontSize: 14,
-      height: 1.43,
-    ),
-    actionTextColor: giftifyPrimaryContainer,
-    elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    insetPadding: const EdgeInsets.all(16),
-  ),
-  dialogTheme: DialogThemeData(
-    backgroundColor: giftifySurface,
-    surfaceTintColor: Colors.transparent,
-    elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    titleTextStyle: const TextStyle(
-      color: giftifyText,
-      fontSize: 22,
-      height: 1.27,
-      fontWeight: FontWeight.w700,
-    ),
-    contentTextStyle: const TextStyle(
-      color: giftifyMuted,
-      fontSize: 14,
-      height: 1.5,
-    ),
-  ),
-);
+        ),
+        errorStyle: TextStyle(color: scheme.error, fontSize: 12, height: 1.33),
+        prefixIconColor: scheme.onSurfaceVariant,
+        suffixIconColor: scheme.onSurfaceVariant,
+        errorMaxLines: 2,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.outline),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.outline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.error, width: 2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.outlineVariant),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        height: 70,
+        elevation: 0,
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: scheme.primaryContainer,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return IconThemeData(color: scheme.primary, size: 24);
+          }
+          return IconThemeData(color: scheme.onSurfaceVariant, size: 24);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return TextStyle(
+              color: scheme.primary,
+              fontSize: 12,
+              height: 1.33,
+              fontWeight: FontWeight.w600,
+            );
+          }
+          return TextStyle(
+            color: scheme.onSurfaceVariant,
+            fontSize: 12,
+            height: 1.33,
+            fontWeight: FontWeight.w600,
+          );
+        }),
+      ),
+      dividerTheme: DividerThemeData(
+        color: scheme.outlineVariant,
+        thickness: 1,
+        space: 1,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: snackBackground,
+        contentTextStyle: TextStyle(
+          color: snackForeground,
+          fontSize: 14,
+          height: 1.43,
+        ),
+        actionTextColor: snackAction,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        insetPadding: const EdgeInsets.all(16),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titleTextStyle: TextStyle(
+          color: scheme.onSurface,
+          fontSize: 22,
+          height: 1.27,
+          fontWeight: FontWeight.w700,
+        ),
+        contentTextStyle: TextStyle(
+          color: scheme.onSurfaceVariant,
+          fontSize: 14,
+          height: 1.5,
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: scheme.surface,
+        modalBackgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        modalBarrierColor: scheme.scrim.withValues(alpha: 0.5),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        textStyle: TextStyle(color: scheme.onSurface),
+      ),
+    );
+  }
+}
+
+final ThemeData appTheme = AppTheme.lightTheme;

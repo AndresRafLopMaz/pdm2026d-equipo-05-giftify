@@ -328,28 +328,25 @@ class _UnknownAvailabilityNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final giftify = GiftifyColors.of(context);
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: giftifyWarningBackground,
+        color: giftify.warmSoft,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.info_outline_rounded,
-            color: giftifyWarning,
-            size: 20,
-          ),
+          Icon(Icons.info_outline_rounded, color: giftify.warmStrong, size: 20),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               'La disponibilidad de este producto aún no está confirmada. '
               'No podemos asegurar que esté disponible.',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: giftifyWarning,
+                color: giftify.warmStrong,
               ),
             ),
           ),
