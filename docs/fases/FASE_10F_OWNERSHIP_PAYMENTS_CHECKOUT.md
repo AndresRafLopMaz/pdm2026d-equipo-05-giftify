@@ -286,7 +286,7 @@ Cubiertos:
 - rutas protegidas;
 - regresión de ownership, Auth y Theme.
 
-Total actual: **373 pruebas aprobadas**.
+Total actual: **381 pruebas aprobadas**.
 
 ## Limitaciones
 

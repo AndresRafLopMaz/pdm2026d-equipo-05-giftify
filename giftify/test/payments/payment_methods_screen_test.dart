@@ -287,4 +287,58 @@ void main() {
     await tester.pumpAndSettle();
     expect(submit.hitTestable(), findsOneWidget);
   });
+
+  for (final size in const [Size(390, 844), Size(412, 915), Size(800, 800)]) {
+    testWidgets('PaymentMethods soporta ${size.width}x${size.height}', (
+      tester,
+    ) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await pumpPayments(tester, initial: const [visa, mastercard]);
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Visa •••• 4242'), findsOneWidget);
+    });
+
+    testWidgets('AddPaymentMethod soporta ${size.width}x${size.height}', (
+      tester,
+    ) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await pumpAddForm(tester);
+
+      expect(tester.takeException(), isNull);
+      final submit = find.byKey(const ValueKey('payment-submit'));
+      await tester.ensureVisible(submit);
+      await tester.pumpAndSettle();
+      expect(submit.hitTestable(), findsOneWidget);
+    });
+  }
+
+  testWidgets('PaymentMethods soporta text scale 1.3', (tester) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    await pumpPayments(tester, initial: const [visa]);
+    expect(tester.takeException(), isNull);
+    expect(find.text('Visa •••• 4242'), findsOneWidget);
+  });
+
+  testWidgets('AddPaymentMethod soporta text scale 1.3', (tester) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    await pumpAddForm(tester);
+    expect(tester.takeException(), isNull);
+    final submit = find.byKey(const ValueKey('payment-submit'));
+    await tester.ensureVisible(submit);
+    await tester.pumpAndSettle();
+    expect(submit.hitTestable(), findsOneWidget);
+  });
 }
