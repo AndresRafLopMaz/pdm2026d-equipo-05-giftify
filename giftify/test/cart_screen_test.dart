@@ -5,17 +5,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/core/theme/app_theme.dart';
+import 'package:giftify/features/addresses/providers/addresses_provider.dart';
 import 'package:giftify/features/cart/data/cart_repository.dart';
 import 'package:giftify/features/cart/data/cart_store.dart';
 import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
 import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
+import 'package:giftify/features/payments/providers/payment_methods_provider.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_category.dart';
+import 'package:giftify/shared/enums/payment_brand.dart';
 import 'package:giftify/shared/models/cart_item.dart';
+import 'package:giftify/shared/models/delivery_address.dart';
+import 'package:giftify/shared/models/payment_method.dart';
 
 import 'helpers/auth_test_harness.dart';
+import 'helpers/fake_address_repository.dart';
+import 'helpers/fake_payment_method_repository.dart';
 
 void main() {
   Future<void> pumpCartWithRepository(
@@ -30,12 +37,42 @@ void main() {
       email: 'ana@mail.com',
     );
     harness.session.userId = user.id;
+    final addressRepository = FakeAddressRepository(
+      initial: [
+        DeliveryAddress(
+          id: 'addr-casa',
+          label: 'Casa',
+          recipientName: 'Ana',
+          addressLine: '5a avenida 10-20',
+          city: 'Guatemala',
+          department: 'Guatemala',
+          isDefault: true,
+        ),
+      ],
+    );
+    final paymentRepository = FakePaymentMethodRepository(
+      userId: user.id,
+      initial: const [
+        PaymentMethod(
+          id: 'pay-1',
+          userId: 1,
+          holderName: 'Ana',
+          brand: PaymentBrand.visa,
+          last4: '4242',
+          expiryMonth: 8,
+          expiryYear: 2099,
+          isDefault: true,
+        ),
+      ],
+    );
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           ...harness.overrides,
           cartRepositoryProvider.overrideWithValue(repository),
+          addressRepositoryProvider.overrideWithValue(addressRepository),
+          paymentMethodRepositoryProvider.overrideWithValue(paymentRepository),
         ],
         child: MaterialApp(
           theme: appTheme,
@@ -198,10 +235,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CheckoutScreen), findsOneWidget);
-    final checkout = tester.widget<CheckoutScreen>(find.byType(CheckoutScreen));
-    expect(checkout.items, hasLength(1));
-    expect(checkout.items.single.product, same(product));
-    expect(checkout.items.single.quantity, 2);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('checkout-total')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('${product.name} × 2'), findsOneWidget);
+    expect(textForKey(tester, 'checkout-total'), 'Q 250.00');
   });
 
   testWidgets('filtra por categoría sin alterar el total ni lo persistido', (
@@ -556,7 +598,7 @@ void main() {
     await expireSnackBar(tester);
   });
 
-  testWidgets('checkout recibe todos los items aunque haya filtro activo', (
+  testWidgets('checkout conserva todos los items aunque haya filtro activo', (
     tester,
   ) async {
     final store = InMemoryCartStore([
@@ -580,17 +622,17 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('checkout-button')));
     await tester.pumpAndSettle();
 
-    final checkout = tester.widget<CheckoutScreen>(find.byType(CheckoutScreen));
-    expect(checkout.items.map((item) => item.product.id), [
-      mockProducts[0].id,
-      mockProducts[1].id,
-      mockProducts[5].id,
-    ]);
-    expect(checkout.items.map((item) => item.quantity), [2, 1, 3]);
-    expect(
-      checkout.items.fold<double>(0, (total, item) => total + item.subtotal),
-      780,
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('checkout-total')),
+      300,
+      scrollable: find.byType(Scrollable).first,
     );
+    await tester.pumpAndSettle();
+
+    expect(find.text('${mockProducts[0].name} × 2'), findsOneWidget);
+    expect(find.text('${mockProducts[1].name} × 1'), findsOneWidget);
+    expect(find.text('${mockProducts[5].name} × 3'), findsOneWidget);
+    expect(textForKey(tester, 'checkout-total'), 'Q 780.00');
   });
 
   testWidgets('flujo responsive 320x640 con filtro, Deshacer y checkout', (
@@ -654,12 +696,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    final checkout = tester.widget<CheckoutScreen>(find.byType(CheckoutScreen));
-    expect(checkout.items, hasLength(3));
-    expect(
-      checkout.items.fold<double>(0, (total, item) => total + item.subtotal),
-      780,
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('checkout-total')),
+      300,
+      scrollable: find.byType(Scrollable).first,
     );
+    await tester.pumpAndSettle();
+
+    expect(textForKey(tester, 'checkout-total'), 'Q 780.00');
+    expect(tester.takeException(), isNull);
 
     await expireSnackBar(tester);
   });

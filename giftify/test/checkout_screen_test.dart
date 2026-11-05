@@ -1,254 +1,342 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:giftify/app/app_router.dart';
 import 'package:giftify/core/theme/app_theme.dart';
+import 'package:giftify/features/addresses/providers/addresses_provider.dart';
+import 'package:giftify/features/cart/data/cart_repository.dart';
+import 'package:giftify/features/cart/data/cart_store.dart';
+import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
+import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
+import 'package:giftify/features/checkout/screens/checkout_success_screen.dart';
+import 'package:giftify/features/payments/providers/payment_methods_provider.dart';
 import 'package:giftify/shared/data/mock_products.dart';
-import 'package:giftify/shared/enums/payment_method_type.dart';
-import 'package:giftify/shared/models/cart_item.dart';
+import 'package:giftify/shared/enums/payment_brand.dart';
+import 'package:giftify/shared/models/delivery_address.dart';
+import 'package:giftify/shared/models/payment_method.dart';
+
+import 'helpers/auth_test_harness.dart';
+import 'helpers/fake_address_repository.dart';
+import 'helpers/fake_payment_method_repository.dart';
+
+class _FailingClearStore extends InMemoryCartStore {
+  _FailingClearStore(super.entries);
+
+  @override
+  Future<void> clear() async {
+    throw StateError('No se pudo vaciar el carrito.');
+  }
+}
 
 void main() {
-  Future<void> pumpCheckout(WidgetTester tester, List<CartItem> items) async {
+  final defaultNow = DateTime(2026, 11, 5);
+  const casa = DeliveryAddress(
+    id: 'addr-casa',
+    label: 'Casa',
+    recipientName: 'Ana',
+    addressLine: '5a avenida 10-20',
+    city: 'Guatemala',
+    department: 'Guatemala',
+    isDefault: true,
+  );
+  const trabajo = DeliveryAddress(
+    id: 'addr-trabajo',
+    label: 'Trabajo',
+    recipientName: 'Ana',
+    addressLine: '1a calle 2-30, zona 4',
+    city: 'Guatemala',
+    department: 'Guatemala',
+  );
+  const visa = PaymentMethod(
+    id: 'pay-1',
+    userId: 1,
+    holderName: 'Ana',
+    brand: PaymentBrand.visa,
+    last4: '4242',
+    expiryMonth: 8,
+    expiryYear: 2099,
+    isDefault: true,
+  );
+  const mastercard = PaymentMethod(
+    id: 'pay-2',
+    userId: 1,
+    holderName: 'Ana',
+    brand: PaymentBrand.mastercard,
+    last4: '4444',
+    expiryMonth: 9,
+    expiryYear: 2099,
+  );
+  const expired = PaymentMethod(
+    id: 'pay-expired',
+    userId: 1,
+    holderName: 'Ana',
+    brand: PaymentBrand.visa,
+    last4: '0000',
+    expiryMonth: 1,
+    expiryYear: 2020,
+  );
+
+  Future<CartStore> pumpCheckout(
+    WidgetTester tester, {
+    CartStore? store,
+    CartRepository? repository,
+    List<DeliveryAddress> addresses = const [casa, trabajo],
+    List<PaymentMethod> payments = const [visa, mastercard],
+    Object? addressLoadError,
+    DateTime? nowOverride,
+  }) async {
+    final harness = AuthTestHarness();
+    final user = harness.repository.seedUser(
+      name: 'Ana',
+      email: 'ana@mail.com',
+    );
+    harness.session.userId = user.id;
+
+    final cartStore =
+        store ??
+        InMemoryCartStore([
+          CartEntry(productId: mockProducts.first.id, quantity: 2),
+        ]);
+    final addressRepository = FakeAddressRepository(
+      initial: addresses,
+      loadError: addressLoadError,
+    );
+    final paymentRepository = FakePaymentMethodRepository(
+      userId: user.id,
+      initial: payments,
+    );
+
     await tester.pumpWidget(
-      MaterialApp(
-        theme: appTheme,
-        home: CheckoutScreen(items: items),
+      ProviderScope(
+        overrides: [
+          ...harness.overrides,
+          cartRepositoryProvider.overrideWithValue(
+            repository ?? PersistentCartRepository(store: cartStore),
+          ),
+          addressRepositoryProvider.overrideWithValue(addressRepository),
+          paymentMethodRepositoryProvider.overrideWithValue(paymentRepository),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: CheckoutScreen(now: nowOverride ?? defaultNow),
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
       ),
     );
+    await tester.pumpAndSettle();
+    return cartStore;
   }
 
-  Future<void> fillRequiredAddress(WidgetTester tester) async {
-    await tester.enterText(
-      find.byKey(const ValueKey('recipient-field')),
-      'María López',
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey('address-field')),
-      '5a avenida 10-20',
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey('city-field')),
-      'Quetzaltenango',
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey('department-field')),
-      'Quetzaltenango',
-    );
-  }
-
-  Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+  Future<void> scrollTo(WidgetTester tester, Finder finder) async {
     await tester.scrollUntilVisible(
       finder,
       300,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    await tester.tap(finder);
-    await tester.pump();
   }
 
-  Future<void> finishConfirmation(WidgetTester tester) async {
+  Future<void> confirm(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey('confirm-order-button')));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle();
   }
 
-  testWidgets('muestra resumen y total de los productos', (tester) async {
-    await pumpCheckout(tester, [
-      CartItem(product: mockProducts.first, quantity: 2),
-      CartItem(product: mockProducts[1]),
-    ]);
-    await tester.scrollUntilVisible(
-      find.text('Resumen'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('2 productos'), findsOneWidget);
-    expect(
-      tester.widget<Text>(find.byKey(const ValueKey('checkout-total'))).data,
-      'Q 345.00',
-    );
-  });
-
-  testWidgets('maneja una lista vacía sin permitir confirmación', (
+  testWidgets('muestra dirección y pago guardados en lugar del formulario', (
     tester,
   ) async {
-    await pumpCheckout(tester, const []);
+    await pumpCheckout(tester);
 
-    expect(find.text('No hay productos para procesar.'), findsOneWidget);
-    expect(find.byKey(const ValueKey('checkout-total')), findsNothing);
-    expect(find.text('Q 0.00'), findsNothing);
+    expect(find.text('Casa · Ana'), findsOneWidget);
+    expect(find.byKey(const ValueKey('recipient-field')), findsNothing);
+    expect(find.byKey(const ValueKey('address-field')), findsNothing);
+    expect(find.byKey(const ValueKey('payment-cash')), findsNothing);
 
-    final button = tester.widget<FilledButton>(
-      find.byKey(const ValueKey('confirm-order-button')),
-    );
-    expect(button.onPressed, isNull);
-  });
-
-  testWidgets('valida los cuatro campos obligatorios de dirección', (
-    tester,
-  ) async {
-    await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
-    await tapVisible(tester, find.byKey(const ValueKey('payment-cash')));
-    await tapVisible(
-      tester,
-      find.byKey(const ValueKey('confirm-order-button')),
-    );
-
-    expect(find.text('Este campo es obligatorio.'), findsNWidgets(4));
-    expect(find.text('Pedido confirmado'), findsNothing);
-  });
-
-  testWidgets('permite confirmar sin completar la referencia opcional', (
-    tester,
-  ) async {
-    await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
-    await fillRequiredAddress(tester);
-    await tapVisible(tester, find.byKey(const ValueKey('payment-cash')));
-    await tapVisible(
-      tester,
-      find.byKey(const ValueKey('confirm-order-button')),
-    );
-    await finishConfirmation(tester);
-
-    expect(find.text('Pedido confirmado'), findsOneWidget);
-  });
-
-  testWidgets('exige seleccionar un método de pago', (tester) async {
-    await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
-    await fillRequiredAddress(tester);
-    await tapVisible(
-      tester,
-      find.byKey(const ValueKey('confirm-order-button')),
-    );
-    await tester.scrollUntilVisible(
-      find.text('Selecciona un método de pago.'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Selecciona un método de pago.'), findsOneWidget);
-    expect(find.text('Pedido confirmado'), findsNothing);
-  });
-
-  testWidgets('selecciona tarjeta y muestra una simulación segura', (
-    tester,
-  ) async {
-    await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
-    await tapVisible(tester, find.byKey(const ValueKey('payment-card')));
-
-    final group = tester.widget<RadioGroup<PaymentMethodType>>(
-      find.byType(RadioGroup<PaymentMethodType>),
-    );
-    expect(group.groupValue, PaymentMethodType.card);
-    expect(find.text('Simulación segura'), findsOneWidget);
+    await scrollTo(tester, find.byKey(const ValueKey('checkout-payment-card')));
+    expect(find.text('Visa •••• 4242'), findsOneWidget);
     expect(find.textContaining('CVV'), findsNothing);
     expect(find.textContaining('PIN'), findsNothing);
-  });
 
-  testWidgets('selecciona pago contra entrega y muestra su indicación', (
-    tester,
-  ) async {
-    await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
-    await tapVisible(tester, find.byKey(const ValueKey('payment-cash')));
-
-    final group = tester.widget<RadioGroup<PaymentMethodType>>(
-      find.byType(RadioGroup<PaymentMethodType>),
-    );
-    expect(group.groupValue, PaymentMethodType.cashOnDelivery);
-    expect(find.text('Paga cuando recibas el pedido'), findsOneWidget);
-  });
-
-  testWidgets('bloquea nuevos envíos mientras procesa la confirmación', (
-    tester,
-  ) async {
-    await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
-    await fillRequiredAddress(tester);
-    await tapVisible(tester, find.byKey(const ValueKey('payment-cash')));
-    await tapVisible(
-      tester,
-      find.byKey(const ValueKey('confirm-order-button')),
-    );
-
-    expect(find.text('Procesando...'), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    final button = tester.widget<FilledButton>(
-      find.byKey(const ValueKey('confirm-order-button')),
-    );
-    expect(button.onPressed, isNull);
-
-    await finishConfirmation(tester);
-    expect(find.text('Pedido confirmado'), findsOneWidget);
-  });
-
-  testWidgets('muestra feedback después de una confirmación válida', (
-    tester,
-  ) async {
-    await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
-    await fillRequiredAddress(tester);
-    await tester.enterText(
-      find.byKey(const ValueKey('reference-field')),
-      'Portón verde',
-    );
-    await tapVisible(tester, find.byKey(const ValueKey('payment-card')));
-    await tapVisible(
-      tester,
-      find.byKey(const ValueKey('confirm-order-button')),
-    );
-    await finishConfirmation(tester);
-
-    expect(find.text('Pedido confirmado'), findsOneWidget);
+    await scrollTo(tester, find.byKey(const ValueKey('checkout-total')));
     expect(
-      find.textContaining('Confirmación simulada para María López.'),
+      tester.widget<Text>(find.byKey(const ValueKey('checkout-total'))).data,
+      'Q 250.00',
+    );
+    expect(
+      find.text(
+        'Compra de demostración: no se procesa ningún pago real ni se '
+        'crea una orden de compra.',
+      ),
       findsOneWidget,
     );
-    expect(find.textContaining('Tarjeta simulada •••• 4242'), findsOneWidget);
-    expect(find.text('Entendido'), findsOneWidget);
   });
 
-  testWidgets('se adapta a una pantalla móvil estrecha', (tester) async {
-    tester.view.physicalSize = const Size(320, 640);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('carrito vacío no permite confirmar y ofrece volver al inicio', (
+    tester,
+  ) async {
+    await pumpCheckout(tester, store: InMemoryCartStore());
 
-    await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
-    expect(tester.takeException(), isNull);
-    await tester.drag(find.byType(ListView), const Offset(0, -900));
+    expect(find.byKey(const ValueKey('checkout-empty')), findsOneWidget);
+    expect(find.byKey(const ValueKey('confirm-order-button')), findsNothing);
+    expect(find.byKey(const ValueKey('checkout-empty-home')), findsOneWidget);
+  });
+
+  testWidgets('sin dirección o sin pago bloquea la confirmación', (
+    tester,
+  ) async {
+    await pumpCheckout(tester, addresses: const []);
+    expect(find.byKey(const ValueKey('checkout-address-add')), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('confirm-order-button')),
+          )
+          .onPressed,
+      isNull,
+    );
+
+    await pumpCheckout(tester, payments: const []);
+    expect(
+      find.byKey(const ValueKey('checkout-payment-required')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('confirm-order-button')),
+          )
+          .onPressed,
+      isNull,
+    );
+  });
+
+  testWidgets('un método de pago vencido no permite confirmar', (tester) async {
+    await pumpCheckout(tester, payments: const [expired]);
+
+    await scrollTo(
+      tester,
+      find.byKey(const ValueKey('checkout-payment-expired')),
+    );
+    expect(find.text('Método vencido'), findsOneWidget);
+    expect(
+      find.text('El método de pago está vencido. Elige otro para continuar.'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('confirm-order-button')),
+          )
+          .onPressed,
+      isNull,
+    );
+  });
+
+  testWidgets('permite cambiar dirección y método de pago guardados', (
+    tester,
+  ) async {
+    await pumpCheckout(tester);
+
+    await tester.tap(find.byKey(const ValueKey('checkout-address-change')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Trabajo').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Trabajo · Ana'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('checkout-payment-change')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mastercard •••• 4444').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Mastercard •••• 4444'), findsOneWidget);
+  });
+
+  testWidgets('confirma, muestra el snapshot y vacía el carrito', (
+    tester,
+  ) async {
+    final store = await pumpCheckout(tester);
+
+    await tester.tap(find.byKey(const ValueKey('confirm-order-button')));
+    await tester.pump();
+    expect(find.text('Procesando…'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('confirm-order-button')),
+          )
+          .onPressed,
+      isNull,
+    );
+
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull);
-    expect(find.byKey(const ValueKey('confirm-order-button')), findsOneWidget);
+    expect(find.byType(CheckoutSuccessScreen), findsOneWidget);
+    expect(find.text('Compra simulada completada'), findsOneWidget);
+    expect(find.text('2 artículos'), findsOneWidget);
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('checkout-success-total')))
+          .data,
+      'Q 250.00',
+    );
+    expect(find.text('Casa · Ana'), findsOneWidget);
+    expect(find.text('Visa •••• 4242'), findsOneWidget);
+    expect(find.textContaining('CVV'), findsNothing);
+    expect(await store.load(), isEmpty);
   });
 
-  testWidgets('permite desplazar el formulario con el teclado abierto', (
+  testWidgets('si falla el vaciado permanece en checkout y no confirma', (
+    tester,
+  ) async {
+    final store = _FailingClearStore([
+      CartEntry(productId: mockProducts.first.id, quantity: 2),
+    ]);
+    await pumpCheckout(tester, store: store);
+
+    await confirm(tester);
+
+    expect(find.byType(CheckoutScreen), findsOneWidget);
+    expect(find.byType(CheckoutSuccessScreen), findsNothing);
+    expect(
+      find.text(
+        'No pudimos vaciar el carrito. Tu compra no se completó; '
+        'inténtalo de nuevo.',
+      ),
+      findsOneWidget,
+    );
+    expect(await store.load(), isNotEmpty);
+  });
+
+  testWidgets('muestra error de carga y permite reintentar', (tester) async {
+    await pumpCheckout(
+      tester,
+      addressLoadError: StateError('falló la carga de direcciones'),
+    );
+
+    expect(find.byKey(const ValueKey('checkout-error')), findsOneWidget);
+    expect(find.byKey(const ValueKey('checkout-retry')), findsOneWidget);
+  });
+
+  testWidgets('se adapta a 320x640 con el botón de confirmación visible', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 640);
     tester.view.devicePixelRatio = 1;
-    tester.view.viewInsets = const FakeViewPadding(bottom: 260);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    addTearDown(tester.view.resetViewInsets);
 
-    await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
-    await tester.tap(find.byKey(const ValueKey('recipient-field')));
-    await tester.pump();
-    await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('city-field')),
-      200,
-      scrollable: find
-          .descendant(
-            of: find.byType(ListView),
-            matching: find.byType(Scrollable),
-          )
-          .first,
+    await pumpCheckout(tester);
+
+    expect(tester.takeException(), isNull);
+    await tester.drag(
+      find.byKey(const ValueKey('checkout-scroll-view')),
+      const Offset(0, -900),
     );
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.byKey(const ValueKey('city-field')), findsOneWidget);
     expect(find.byKey(const ValueKey('confirm-order-button')), findsOneWidget);
   });
 }

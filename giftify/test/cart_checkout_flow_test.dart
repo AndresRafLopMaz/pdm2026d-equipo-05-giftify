@@ -4,17 +4,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/core/theme/app_theme.dart';
+import 'package:giftify/features/addresses/providers/addresses_provider.dart';
 import 'package:giftify/features/cart/data/cart_store.dart';
 import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
 import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
+import 'package:giftify/features/payments/providers/payment_methods_provider.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_availability.dart';
+import 'package:giftify/shared/enums/payment_brand.dart';
 import 'package:giftify/shared/models/cart_item.dart';
+import 'package:giftify/shared/models/delivery_address.dart';
+import 'package:giftify/shared/models/payment_method.dart';
 
 import 'helpers/auth_test_harness.dart';
+import 'helpers/fake_address_repository.dart';
+import 'helpers/fake_payment_method_repository.dart';
 
 void main() {
   String textForKey(WidgetTester tester, String key) {
@@ -40,6 +47,38 @@ void main() {
           ...harness.overrides,
           cartRepositoryProvider.overrideWithValue(
             PersistentCartRepository(store: InMemoryCartStore()),
+          ),
+          addressRepositoryProvider.overrideWithValue(
+            FakeAddressRepository(
+              initial: [
+                DeliveryAddress(
+                  id: 'addr-casa',
+                  label: 'Casa',
+                  recipientName: 'Ana',
+                  addressLine: '5a avenida 10-20',
+                  city: 'Guatemala',
+                  department: 'Guatemala',
+                  isDefault: true,
+                ),
+              ],
+            ),
+          ),
+          paymentMethodRepositoryProvider.overrideWithValue(
+            FakePaymentMethodRepository(
+              userId: user.id,
+              initial: const [
+                PaymentMethod(
+                  id: 'pay-1',
+                  userId: 1,
+                  holderName: 'Ana',
+                  brand: PaymentBrand.visa,
+                  last4: '4242',
+                  expiryMonth: 8,
+                  expiryYear: 2099,
+                  isDefault: true,
+                ),
+              ],
+            ),
           ),
         ],
         child: MaterialApp(
@@ -67,24 +106,15 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('checkout-button')));
     await tester.pumpAndSettle();
 
-    final checkout = tester.widget<CheckoutScreen>(find.byType(CheckoutScreen));
-    expect(checkout.items, hasLength(1));
-    expect(checkout.items.single.product, same(product));
-    expect(checkout.items.single.quantity, 2);
-
-    final receivedTotal = checkout.items.fold<double>(
-      0,
-      (total, item) => total + item.subtotal,
-    );
-    expect(receivedTotal, expectedItem.subtotal);
-
+    expect(find.byType(CheckoutScreen), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Resumen'),
+      find.byKey(const ValueKey('checkout-total')),
       300,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
 
+    expect(find.text('${product.name} × 2'), findsOneWidget);
     expect(textForKey(tester, 'checkout-total'), cartTotalText);
   }
 
@@ -130,6 +160,38 @@ void main() {
           cartRepositoryProvider.overrideWithValue(
             PersistentCartRepository(store: store),
           ),
+          addressRepositoryProvider.overrideWithValue(
+            FakeAddressRepository(
+              initial: [
+                DeliveryAddress(
+                  id: 'addr-casa',
+                  label: 'Casa',
+                  recipientName: 'Ana',
+                  addressLine: '5a avenida 10-20',
+                  city: 'Guatemala',
+                  department: 'Guatemala',
+                  isDefault: true,
+                ),
+              ],
+            ),
+          ),
+          paymentMethodRepositoryProvider.overrideWithValue(
+            FakePaymentMethodRepository(
+              userId: user.id,
+              initial: const [
+                PaymentMethod(
+                  id: 'pay-1',
+                  userId: 1,
+                  holderName: 'Ana',
+                  brand: PaymentBrand.visa,
+                  last4: '4242',
+                  expiryMonth: 8,
+                  expiryYear: 2099,
+                  isDefault: true,
+                ),
+              ],
+            ),
+          ),
         ],
         child: MaterialApp(
           theme: appTheme,
@@ -172,10 +234,18 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('checkout-button')));
     await tester.pumpAndSettle();
 
-    final checkout = tester.widget<CheckoutScreen>(find.byType(CheckoutScreen));
-    expect(checkout.items, hasLength(1));
-    expect(checkout.items.single.product, same(product));
-    expect(checkout.items.single.quantity, 1);
-    expect(checkout.items.single.subtotal, product.price);
+    expect(find.byType(CheckoutScreen), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('checkout-total')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('${product.name} × 1'), findsOneWidget);
+    expect(
+      textForKey(tester, 'checkout-total'),
+      'Q ${product.price.toStringAsFixed(2)}',
+    );
   });
 }

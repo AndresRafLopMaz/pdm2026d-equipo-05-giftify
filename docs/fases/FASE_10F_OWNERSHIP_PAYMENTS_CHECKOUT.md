@@ -4,7 +4,7 @@
 
 - **10F-A — Ownership por usuario:** completado.
 - **10F-B — Payment Methods:** completado.
-- **10F-C — Checkout V2:** pendiente.
+- **10F-C — Checkout V2:** completado.
 
 Estado actual:
 
@@ -12,7 +12,8 @@ Estado actual:
 AppDatabase.version = 5
 ```
 
-No existen Orders ni gateway. Checkout V2 todavía no está implementado.
+No existen Orders ni gateway. Checkout V2 es un flujo local simulado que no
+persiste una orden de compra.
 
 ## 10F-A — Ownership
 
@@ -286,12 +287,103 @@ Cubiertos:
 - rutas protegidas;
 - regresión de ownership, Auth y Theme.
 
-Total actual: **381 pruebas aprobadas**.
+Al cierre de 10F-B: **381 pruebas aprobadas**.
+
+## 10F-C — Checkout V2
+
+### Flujo
+
+```text
+Cart → Checkout → confirmar → vaciar carrito → /checkout/success
+```
+
+Checkout usa exclusivamente providers y repositorios scoped:
+
+```text
+cartItemsProvider
+addressesProvider
+paymentMethodsProvider
+```
+
+No consulta SQLite directamente.
+
+### Datos de entrega y pago
+
+- Solo se muestran direcciones activas.
+- Se usa la dirección predeterminada si existe; si no, la primera activa.
+- Se usa el método de pago predeterminado vigente; si no, el primero vigente.
+- El usuario puede cambiar la selección desde bottom sheets.
+- Un método vencido no puede confirmarse.
+- No se capturan PAN, CVV ni PIN.
+- El formulario manual de dirección y la selección ficticia tarjeta/efectivo
+  fueron eliminados de Checkout.
+
+`PaymentMethodType` se eliminó porque dejó de tener referencias.
+
+### Confirmación
+
+Antes de vaciar el carrito se crea un snapshot inmutable
+`CheckoutSuccessData`:
+
+```text
+totalUnits
+total
+addressLabel
+recipientName
+paymentBrand
+paymentLast4
+```
+
+No incluye IDs de usuario, IDs de dirección, PAN, CVV ni token de gateway.
+
+Secuencia:
+
+1. Validar carrito, dirección y pago vigente.
+2. Crear el snapshot.
+3. Bloquear doble envío con `_isSubmitting`.
+4. Vaciar el carrito del usuario actual con `CartItemsNotifier.clear()`.
+5. Navegar con `pushReplacementNamed` a `/checkout/success`.
+
+Si falla el vaciado, se permanece en Checkout, se muestra un mensaje humano y
+no se muestra una confirmación falsa.
+
+### Success y navegación
+
+```text
+/checkout/success
+```
+
+- Protegida por AuthGate.
+- Requiere un `CheckoutSuccessData` válido.
+- Un deep link sin snapshot vuelve a MainShell/Inicio y no muestra confirmación.
+- “Volver al inicio” selecciona la pestaña Inicio.
+- El back del sistema también vuelve a Inicio, no al Checkout vacío.
+- No se crea ninguna Order.
+
+### Tests
+
+Cubiertos:
+
+- dirección y pago guardados;
+- dirección/pago predeterminados y fallback;
+- cambio de dirección y pago;
+- carrito vacío;
+- falta de dirección o pago;
+- pago vencido;
+- snapshot y vaciado del carrito;
+- fallo al vaciar sin confirmación;
+- doble envío;
+- Success con y sin argumentos;
+- back/CTA a Inicio;
+- dark, responsive 320x640, error y retry;
+- regresión de Auth, Theme, Ownership, Payment Methods y rutas.
+
+Total final FASE 10F: **385 pruebas aprobadas**.
 
 ## Limitaciones
 
-- Checkout V2 no implementado.
-- Orders no implementado.
+- Orders/OrderItems no implementados.
+- Checkout no persiste historial de compras.
 - No hay gateway ni procesamiento real.
 - No hay edición de métodos.
 - No hay PAN ni CVV.
@@ -303,12 +395,12 @@ Total actual: **381 pruebas aprobadas**.
 ## Participación
 
 - Andrés: DB v5, schema, constraints, FK, repository scoped, provider,
-  seguridad de storage e integración.
-- Catherine: revisión de UX de Payment Methods, empty state, delete/default,
-  copy y discoverability desde Profile; no se forzó commit propio sin
-  implementación sustancial.
-- Diego: tests de migración, multiusuario, seguridad, routing, dark,
-  responsive y documentación.
+  seguridad de storage, Checkout V2 provider-based, snapshot, clear y routing.
+- Catherine: revisión de UX de Payment Methods y Checkout, empty states,
+  selectores, delete/default, copy y discoverability desde Profile; no se
+  forzó commit propio sin implementación sustancial.
+- Diego: tests de migración, multiusuario, seguridad, routing, Success,
+  dark, responsive y documentación.
 - Brayan11Hernandez: revisión de datos ficticios, copy, QA conceptual, casos
   manuales y documentación. Sin acceso a migrations, repositories, storage,
   Auth ni providers críticos. No se usó como author/co-author sin email Git

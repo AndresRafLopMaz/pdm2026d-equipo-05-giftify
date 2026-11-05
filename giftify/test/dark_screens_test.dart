@@ -11,20 +11,28 @@ import 'package:giftify/features/addresses/screens/address_list_screen.dart';
 import 'package:giftify/features/auth/providers/current_user_provider.dart';
 import 'package:giftify/features/auth/screens/login_screen.dart';
 import 'package:giftify/features/auth/screens/register_screen.dart';
+import 'package:giftify/features/cart/data/cart_store.dart';
+import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
+import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
 import 'package:giftify/features/home/screens/home_screen.dart';
+import 'package:giftify/features/payments/providers/payment_methods_provider.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
 import 'package:giftify/features/products/screens/product_results_screen.dart';
 import 'package:giftify/features/profile/screens/profile_screen.dart';
 import 'package:giftify/features/search/screens/gift_search_screen.dart';
 import 'package:giftify/features/settings/screens/settings_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+import 'package:giftify/shared/enums/payment_brand.dart';
 import 'package:giftify/shared/models/cart_item.dart';
+import 'package:giftify/shared/models/delivery_address.dart';
+import 'package:giftify/shared/models/payment_method.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/auth_test_harness.dart';
 import 'helpers/fake_address_repository.dart';
+import 'helpers/fake_payment_method_repository.dart';
 import 'helpers/ownership_test_overrides.dart';
 
 void main() {
@@ -137,13 +145,61 @@ void main() {
     expect(find.byType(ProductDetailScreen), findsOneWidget);
   });
 
-  testWidgets('Cart y Checkout renderizan en dark', (tester) async {
+  testWidgets('Cart renderiza en dark', (tester) async {
     final item = CartItem(product: mockProducts.first);
 
     await pumpDark(tester, CartScreen(initialItems: [item]));
     expect(find.byType(CartScreen), findsOneWidget);
+  });
 
-    await pumpDark(tester, CheckoutScreen(items: [item]));
+  testWidgets('Checkout renderiza en dark', (tester) async {
+    final item = CartItem(product: mockProducts.first);
+
+    await pumpDark(
+      tester,
+      CheckoutScreen(now: DateTime(2026, 11, 5)),
+      overrides: [
+        cartRepositoryProvider.overrideWithValue(
+          PersistentCartRepository(
+            store: InMemoryCartStore([
+              CartEntry(productId: item.product.id, quantity: 1),
+            ]),
+          ),
+        ),
+        addressRepositoryProvider.overrideWithValue(
+          FakeAddressRepository(
+            initial: [
+              DeliveryAddress(
+                id: 'addr-casa',
+                label: 'Casa',
+                recipientName: 'Ana',
+                addressLine: '5a avenida 10-20',
+                city: 'Guatemala',
+                department: 'Guatemala',
+                isDefault: true,
+              ),
+            ],
+          ),
+        ),
+        paymentMethodRepositoryProvider.overrideWithValue(
+          FakePaymentMethodRepository(
+            userId: 1,
+            initial: const [
+              PaymentMethod(
+                id: 'pay-1',
+                userId: 1,
+                holderName: 'Ana',
+                brand: PaymentBrand.visa,
+                last4: '4242',
+                expiryMonth: 8,
+                expiryYear: 2099,
+                isDefault: true,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
     expect(find.byType(CheckoutScreen), findsOneWidget);
   });
 

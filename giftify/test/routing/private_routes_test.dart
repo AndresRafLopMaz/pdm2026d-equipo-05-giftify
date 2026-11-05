@@ -11,6 +11,7 @@ import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
 import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
+import 'package:giftify/features/checkout/screens/checkout_success_screen.dart';
 import 'package:giftify/features/payments/providers/payment_methods_provider.dart';
 import 'package:giftify/features/payments/screens/add_payment_method_screen.dart';
 import 'package:giftify/features/payments/screens/payment_methods_screen.dart';
@@ -98,6 +99,17 @@ void main() {
 
     expect(find.byType(LoginScreen), findsOneWidget);
     expect(find.byType(CheckoutScreen), findsNothing);
+  });
+
+  testWidgets('/checkout/success sin sesión no expone la confirmación', (
+    tester,
+  ) async {
+    final harness = AuthTestHarness();
+
+    await pumpRoute(tester, AppRoutes.checkoutSuccess, harness: harness);
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(CheckoutSuccessScreen), findsNothing);
   });
 
   testWidgets('/addresses con sesión abre direcciones', (tester) async {
