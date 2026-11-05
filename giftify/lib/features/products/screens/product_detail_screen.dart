@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/app_router.dart';
+import '../../../app/app_tab.dart';
+import '../../../app/app_tab_notifier.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/enums/gift_availability.dart';
 import '../../../shared/models/cart_item.dart';
 import '../../../shared/models/gift_product.dart';
+import '../../cart/providers/cart_items_provider.dart';
 import '../widgets/availability_badge.dart';
 
 class ProductDetailScreen extends StatelessWidget {
@@ -126,13 +129,13 @@ class _DetailContent extends StatelessWidget {
   }
 }
 
-class _AddToCartBar extends StatelessWidget {
+class _AddToCartBar extends ConsumerWidget {
   const _AddToCartBar({required this.product});
 
   final GiftProduct product;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final canAddToCart = product.isAvailable;
@@ -154,6 +157,7 @@ class _AddToCartBar extends StatelessWidget {
           12,
         ),
         child: Center(
+          heightFactor: 1,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
             child: Column(
@@ -173,7 +177,9 @@ class _AddToCartBar extends StatelessWidget {
                   width: double.infinity,
                   child: FilledButton.icon(
                     key: const ValueKey('detail-add-to-cart'),
-                    onPressed: canAddToCart ? () => _addToCart(context) : null,
+                    onPressed: canAddToCart
+                        ? () => _addToCart(context, ref)
+                        : null,
                     icon: const Icon(Icons.add_shopping_cart_rounded),
                     label: const Text('Agregar al carrito'),
                   ),
@@ -186,10 +192,45 @@ class _AddToCartBar extends StatelessWidget {
     );
   }
 
-  void _addToCart(BuildContext context) {
+  Future<void> _addToCart(BuildContext context, WidgetRef ref) async {
     final item = CartItem(product: product);
+    final messenger = ScaffoldMessenger.of(context);
+    final cartSubscription = ref.listenManual(cartItemsProvider, (_, _) {});
 
-    Navigator.pushNamed(context, AppRoutes.cart, arguments: [item]);
+    try {
+      await ref.read(cartItemsProvider.notifier).addIncoming([item]);
+
+      if (!context.mounted) {
+        return;
+      }
+
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: const Text('Producto agregado al carrito.'),
+          action: SnackBarAction(
+            label: 'Ver carrito',
+            onPressed: () {
+              ref.read(appTabProvider.notifier).select(AppTab.cart);
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) {
+        return;
+      }
+
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo agregar el producto. Inténtalo de nuevo.'),
+        ),
+      );
+    } finally {
+      cartSubscription.close();
+    }
   }
 }
 

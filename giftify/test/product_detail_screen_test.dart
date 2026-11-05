@@ -3,7 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:giftify/app/app_router.dart';
+import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/core/theme/app_theme.dart';
+import 'package:giftify/features/cart/data/cart_repository.dart';
+import 'package:giftify/features/cart/data/cart_store.dart';
+import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
+import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
@@ -39,10 +44,17 @@ GiftProduct _buildProduct({
   );
 }
 
-Widget _detailApp(GiftProduct? product) {
-  return MaterialApp(
-    theme: appTheme,
-    home: ProductDetailScreen(product: product),
+Widget _detailApp(GiftProduct? product, {CartRepository? repository}) {
+  return ProviderScope(
+    overrides: [
+      cartRepositoryProvider.overrideWithValue(
+        repository ?? PersistentCartRepository(store: InMemoryCartStore()),
+      ),
+    ],
+    child: MaterialApp(
+      theme: appTheme,
+      home: ProductDetailScreen(product: product),
+    ),
   );
 }
 
@@ -153,29 +165,17 @@ void main() {
     expect(find.byKey(const ValueKey('detail-add-to-cart')), findsOneWidget);
   });
 
-  testWidgets('al agregar navega al carrito con un CartItem', (tester) async {
+  testWidgets('al agregar permanece en Detail y muestra el SnackBar', (
+    tester,
+  ) async {
     final product = mockProducts.firstWhere(
       (item) => item.availability == GiftAvailability.inStock,
     );
-
-    final navigatorKey = GlobalKey<NavigatorState>();
+    final store = InMemoryCartStore();
 
     await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          theme: appTheme,
-          navigatorKey: navigatorKey,
-          initialRoute: AppRoutes.home,
-          onGenerateRoute: AppRouter.onGenerateRoute,
-        ),
-      ),
+      _detailApp(product, repository: PersistentCartRepository(store: store)),
     );
-
-    navigatorKey.currentState!.pushNamed(
-      AppRoutes.productDetail,
-      arguments: product,
-    );
-
     await tester.pumpAndSettle();
 
     final addButton = find.widgetWithText(FilledButton, 'Agregar al carrito');
@@ -185,10 +185,98 @@ void main() {
     await tester.tap(addButton);
     await tester.pumpAndSettle();
 
-    final cart = tester.widget<CartScreen>(find.byType(CartScreen));
+    expect(find.byType(ProductDetailScreen), findsOneWidget);
+    expect(find.text('Producto agregado al carrito.'), findsOneWidget);
+    expect(find.text('Ver carrito'), findsOneWidget);
 
-    expect(cart.initialItems.length, 1);
-    expect(cart.initialItems.first.product, same(product));
+    final persisted = await store.load();
+    expect(persisted, hasLength(1));
+    expect(persisted.single.productId, product.id);
+    expect(persisted.single.quantity, 1);
+  });
+
+  testWidgets('si falla el guardado, permanece en Detail y muestra error', (
+    tester,
+  ) async {
+    final product = mockProducts.firstWhere(
+      (item) => item.availability == GiftAvailability.inStock,
+    );
+    final store = _FailingSaveCartStore();
+
+    await tester.pumpWidget(
+      _detailApp(product, repository: PersistentCartRepository(store: store)),
+    );
+    await tester.pumpAndSettle();
+
+    final addButton = find.widgetWithText(FilledButton, 'Agregar al carrito');
+    await tester.ensureVisible(addButton);
+    await tester.pumpAndSettle();
+
+    await tester.tap(addButton);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProductDetailScreen), findsOneWidget);
+    expect(
+      find.text('No se pudo agregar el producto. Inténtalo de nuevo.'),
+      findsOneWidget,
+    );
+    expect(find.text('Producto agregado al carrito.'), findsNothing);
+  });
+
+  testWidgets('Ver carrito abre la tab Carrito y no duplica el estado', (
+    tester,
+  ) async {
+    final product = mockProducts.firstWhere(
+      (item) => item.availability == GiftAvailability.inStock,
+    );
+    final store = InMemoryCartStore();
+    final navigatorKey = GlobalKey<NavigatorState>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cartRepositoryProvider.overrideWithValue(
+            PersistentCartRepository(store: store),
+          ),
+        ],
+        child: MaterialApp(
+          theme: appTheme,
+          navigatorKey: navigatorKey,
+          home: const MainShell(),
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    navigatorKey.currentState!.pushNamed(
+      AppRoutes.productDetail,
+      arguments: product,
+    );
+    await tester.pumpAndSettle();
+
+    final addButton = find.widgetWithText(FilledButton, 'Agregar al carrito');
+    await tester.ensureVisible(addButton);
+    await tester.pumpAndSettle();
+    await tester.tap(addButton);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ver carrito'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MainShell), findsOneWidget);
+    expect(find.byType(CartScreen), findsOneWidget);
+    expect(navigatorKey.currentState!.canPop(), isFalse);
+    expect(find.text(product.name), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(ValueKey('quantity-${product.id}'))).data,
+      '1',
+    );
+
+    final persisted = await store.load();
+    expect(persisted, hasLength(1));
+    expect(persisted.single.productId, product.id);
+    expect(persisted.single.quantity, 1);
   });
 
   testWidgets('producto con pocas unidades permite agregar', (tester) async {
@@ -230,4 +318,14 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(SingleChildScrollView), findsOneWidget);
   });
+}
+
+class _FailingSaveCartStore extends CartStore {
+  @override
+  Future<List<CartEntry>> load() async => const [];
+
+  @override
+  Future<void> save(List<CartEntry> entries) {
+    throw StateError('Fallo al guardar el carrito.');
+  }
 }

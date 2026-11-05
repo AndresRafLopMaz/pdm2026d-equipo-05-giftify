@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
+import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/cart/data/cart_store.dart';
 import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
@@ -96,26 +97,35 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('ProductDetail a Cart a Checkout conserva el producto', (
+  testWidgets('ProductDetail agrega, Ver carrito y Checkout conserva todo', (
     tester,
   ) async {
     final product = mockProducts.firstWhere(
       (item) => item.availability == GiftAvailability.inStock,
     );
+    final store = InMemoryCartStore();
+    final navigatorKey = GlobalKey<NavigatorState>();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           cartRepositoryProvider.overrideWithValue(
-            PersistentCartRepository(store: InMemoryCartStore()),
+            PersistentCartRepository(store: store),
           ),
         ],
         child: MaterialApp(
           theme: appTheme,
-          home: ProductDetailScreen(product: product),
+          navigatorKey: navigatorKey,
+          home: const MainShell(),
           onGenerateRoute: AppRouter.onGenerateRoute,
         ),
       ),
+    );
+    await tester.pumpAndSettle();
+
+    navigatorKey.currentState!.pushNamed(
+      AppRoutes.productDetail,
+      arguments: product,
     );
     await tester.pumpAndSettle();
 
@@ -125,7 +135,15 @@ void main() {
     await tester.tap(addButton);
     await tester.pumpAndSettle();
 
+    expect(find.byType(ProductDetailScreen), findsOneWidget);
+    expect(find.text('Producto agregado al carrito.'), findsOneWidget);
+
+    await tester.tap(find.text('Ver carrito'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MainShell), findsOneWidget);
     expect(find.byType(CartScreen), findsOneWidget);
+    expect(navigatorKey.currentState!.canPop(), isFalse);
     expect(find.text(product.name), findsOneWidget);
     expect(textForKey(tester, 'quantity-${product.id}'), '1');
     expect(
