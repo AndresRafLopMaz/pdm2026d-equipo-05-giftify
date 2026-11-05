@@ -6,6 +6,7 @@ import 'package:giftify/app/app_router.dart';
 import 'package:giftify/app/giftify_app.dart';
 import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/features/auth/screens/login_screen.dart';
+import 'package:giftify/features/auth/screens/register_screen.dart';
 
 import 'helpers/auth_test_harness.dart';
 
@@ -77,6 +78,40 @@ void main() {
 
     expect(find.byType(MainShell), findsOneWidget);
     expect(find.text('Ruta no encontrada'), findsNothing);
+  });
+
+  testWidgets('/register sin sesión muestra Register', (tester) async {
+    final harness = AuthTestHarness();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: harness.overrides,
+        child: MaterialApp(
+          initialRoute: AppRoutes.register,
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RegisterScreen), findsOneWidget);
+    expect(find.text('Ruta no encontrada'), findsNothing);
+  });
+
+  testWidgets('/home sin sesión no revela MainShell', (tester) async {
+    final harness = AuthTestHarness();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: harness.overrides,
+        child: MaterialApp(
+          initialRoute: AppRoutes.home,
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(MainShell), findsNothing);
   });
 
   testWidgets('una ruta realmente desconocida conserva el fallback', (

@@ -217,7 +217,7 @@ void main() {
     },
   );
 
-  test('onCreate crea el esquema v2 completo', () async {
+  test('onCreate crea el esquema v3 completo', () async {
     final appDatabase = AppDatabase(
       factory: databaseFactoryFfi,
       path: databasePath,
