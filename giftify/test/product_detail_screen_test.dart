@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:giftify/app/app_router.dart';
+import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
@@ -38,9 +39,17 @@ GiftProduct _buildProduct({
   );
 }
 
+Widget _detailApp(GiftProduct? product) {
+  return MaterialApp(
+    theme: appTheme,
+    home: ProductDetailScreen(product: product),
+  );
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues({});
+
   testWidgets('renderiza nombre, precio y descripción', (tester) async {
     final product = _buildProduct(
       name: 'Pulsera artesanal',
@@ -48,9 +57,7 @@ void main() {
       description: 'Pulsera hecha a mano.',
     );
 
-    await tester.pumpWidget(
-      MaterialApp(home: ProductDetailScreen(product: product)),
-    );
+    await tester.pumpWidget(_detailApp(product));
 
     expect(find.text('Pulsera artesanal'), findsOneWidget);
     expect(find.text('Q 125.00'), findsOneWidget);
@@ -63,11 +70,9 @@ void main() {
       sellerRating: 4.7,
     );
 
-    await tester.pumpWidget(
-      MaterialApp(home: ProductDetailScreen(product: product)),
-    );
+    await tester.pumpWidget(_detailApp(product));
 
-    expect(find.text('Detalles del vendedor'), findsOneWidget);
+    expect(find.text('Vendedor'), findsOneWidget);
     expect(find.text('Detalles Xela'), findsOneWidget);
     expect(find.text('4.7 / 5'), findsOneWidget);
   });
@@ -75,12 +80,10 @@ void main() {
   testWidgets('representa la disponibilidad con texto', (tester) async {
     final product = _buildProduct(availability: GiftAvailability.inStock);
 
-    await tester.pumpWidget(
-      MaterialApp(home: ProductDetailScreen(product: product)),
-    );
+    await tester.pumpWidget(_detailApp(product));
 
     expect(find.text('Disponible'), findsOneWidget);
-    expect(find.text('Entrega estimada: 2 días'), findsOneWidget);
+    expect(find.textContaining('Entrega estimada: 2 días'), findsOneWidget);
   });
 
   testWidgets('producto agotado deshabilita el botón de agregar', (
@@ -88,9 +91,7 @@ void main() {
   ) async {
     final product = _buildProduct(availability: GiftAvailability.outOfStock);
 
-    await tester.pumpWidget(
-      MaterialApp(home: ProductDetailScreen(product: product)),
-    );
+    await tester.pumpWidget(_detailApp(product));
 
     expect(find.text('Agotado'), findsOneWidget);
 
@@ -103,9 +104,7 @@ void main() {
   ) async {
     final product = _buildProduct(availability: GiftAvailability.unknown);
 
-    await tester.pumpWidget(
-      MaterialApp(home: ProductDetailScreen(product: product)),
-    );
+    await tester.pumpWidget(_detailApp(product));
 
     expect(find.text('Por confirmar'), findsOneWidget);
     expect(find.textContaining('aún no está confirmada'), findsOneWidget);
@@ -117,7 +116,7 @@ void main() {
   testWidgets('producto null no provoca crash y muestra estado seguro', (
     tester,
   ) async {
-    await tester.pumpWidget(const MaterialApp(home: ProductDetailScreen()));
+    await tester.pumpWidget(_detailApp(null));
 
     expect(
       find.text('No se pudo cargar la información del producto.'),
@@ -129,9 +128,7 @@ void main() {
   testWidgets('producto sin imageAsset muestra placeholder', (tester) async {
     final product = _buildProduct(imageAsset: null);
 
-    await tester.pumpWidget(
-      MaterialApp(home: ProductDetailScreen(product: product)),
-    );
+    await tester.pumpWidget(_detailApp(product));
 
     expect(find.byType(Image), findsNothing);
     expect(find.byIcon(Icons.card_giftcard_rounded), findsOneWidget);
@@ -140,12 +137,20 @@ void main() {
   testWidgets('producto disponible permite agregar al carrito', (tester) async {
     final product = _buildProduct(availability: GiftAvailability.inStock);
 
-    await tester.pumpWidget(
-      MaterialApp(home: ProductDetailScreen(product: product)),
-    );
+    await tester.pumpWidget(_detailApp(product));
 
     final button = tester.widget<FilledButton>(find.byType(FilledButton));
     expect(button.onPressed, isNotNull);
+  });
+
+  testWidgets('el CTA queda fijo en el scaffold inferior', (tester) async {
+    final product = _buildProduct(availability: GiftAvailability.inStock);
+
+    await tester.pumpWidget(_detailApp(product));
+
+    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+    expect(scaffold.bottomNavigationBar, isNotNull);
+    expect(find.byKey(const ValueKey('detail-add-to-cart')), findsOneWidget);
   });
 
   testWidgets('al agregar navega al carrito con un CartItem', (tester) async {
@@ -158,6 +163,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          theme: appTheme,
           navigatorKey: navigatorKey,
           initialRoute: AppRoutes.home,
           onGenerateRoute: AppRouter.onGenerateRoute,
@@ -188,9 +194,7 @@ void main() {
   testWidgets('producto con pocas unidades permite agregar', (tester) async {
     final product = _buildProduct(availability: GiftAvailability.lowStock);
 
-    await tester.pumpWidget(
-      MaterialApp(home: ProductDetailScreen(product: product)),
-    );
+    await tester.pumpWidget(_detailApp(product));
 
     expect(find.text('Pocas unidades'), findsOneWidget);
 
@@ -203,9 +207,7 @@ void main() {
   ) async {
     final product = _buildProduct(estimatedDeliveryDays: null);
 
-    await tester.pumpWidget(
-      MaterialApp(home: ProductDetailScreen(product: product)),
-    );
+    await tester.pumpWidget(_detailApp(product));
 
     expect(find.textContaining('Entrega estimada'), findsNothing);
   });
@@ -223,9 +225,7 @@ void main() {
           'correctamente a pantallas móviles pequeñas sin desbordar.',
     );
 
-    await tester.pumpWidget(
-      MaterialApp(home: ProductDetailScreen(product: product)),
-    );
+    await tester.pumpWidget(_detailApp(product));
 
     expect(tester.takeException(), isNull);
     expect(find.byType(SingleChildScrollView), findsOneWidget);

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme/app_theme.dart';
 import '../../../shared/enums/gift_availability.dart';
 import '../providers/product_filter_provider.dart';
 
-/// Controles de filtro del catálogo de productos.
 class ProductFilterBar extends ConsumerWidget {
-  const ProductFilterBar({super.key});
+  const ProductFilterBar({super.key, this.onClose});
 
   static const List<String> _categories = [
     'Joyería',
@@ -16,6 +14,8 @@ class ProductFilterBar extends ConsumerWidget {
     'Artesanías',
     'Personalizados',
   ];
+
+  final VoidCallback? onClose;
 
   static String _availabilityLabel(GiftAvailability availability) {
     return switch (availability) {
@@ -28,30 +28,44 @@ class ProductFilterBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final filter = ref.watch(productFilterProvider);
     final notifier = ref.read(productFilterProvider.notifier);
 
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE4E8E6)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Filtrar catálogo',
-            style: TextStyle(
-              color: textoPrincipal,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Filtros',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: colors.onSurface,
+                  ),
+                ),
+              ),
+              if (onClose != null)
+                IconButton(
+                  key: const ValueKey('filters-close-button'),
+                  tooltip: 'Cerrar filtros',
+                  onPressed: onClose,
+                  icon: const Icon(Icons.close_rounded),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Categoría',
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: colors.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -73,16 +87,14 @@ class ProductFilterBar extends ConsumerWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 10),
-          const Text(
+          const SizedBox(height: 16),
+          Text(
             'Disponibilidad',
-            style: TextStyle(
-              color: textoPrincipal,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: colors.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -105,7 +117,7 @@ class ProductFilterBar extends ConsumerWidget {
             ],
           ),
           if (!filter.isEmpty) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             TextButton.icon(
               key: const ValueKey('clear-product-filters'),
               onPressed: notifier.clear,

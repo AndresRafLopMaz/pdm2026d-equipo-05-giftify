@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/app/app_tab.dart';
 import 'package:giftify/app/app_tab_notifier.dart';
+import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/products/data/product_repository.dart';
 import 'package:giftify/features/products/providers/products_provider.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
@@ -25,7 +26,11 @@ Widget _testApp({
       if (repository != null)
         productRepositoryProvider.overrideWithValue(repository),
     ],
-    child: MaterialApp(home: home, onGenerateRoute: onGenerateRoute),
+    child: MaterialApp(
+      theme: appTheme,
+      home: home,
+      onGenerateRoute: onGenerateRoute,
+    ),
   );
 }
 
@@ -43,6 +48,16 @@ Future<void> _pumpResults(
   await tester.pumpAndSettle();
 }
 
+Future<void> _openFilters(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('results-filter-button')));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _closeFilters(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('filters-close-button')));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('sin criterios muestra el catálogo general', (tester) async {
     await _pumpResults(
@@ -52,10 +67,13 @@ void main() {
 
     expect(find.byType(ProductCard), findsWidgets);
     expect(find.text('Resultados'), findsOneWidget);
-    expect(find.text('Filtrar catálogo'), findsOneWidget);
+    expect(find.text('Catálogo'), findsOneWidget);
+    expect(find.text('Filtrar'), findsOneWidget);
   });
 
-  testWidgets('con criterios renderiza resultados y resumen', (tester) async {
+  testWidgets('con criterios renderiza resultados y resumen compacto', (
+    tester,
+  ) async {
     const criteria = GiftSearchCriteria(
       occasion: 'Cumpleaños',
       recipient: 'Amigo',
@@ -68,7 +86,9 @@ void main() {
       criteria: criteria,
     );
 
-    expect(find.text('Tu búsqueda'), findsOneWidget);
+    expect(find.textContaining('Para Amigo'), findsOneWidget);
+    expect(find.textContaining('hasta Q1000.00'), findsOneWidget);
+    expect(find.text('Cambiar'), findsOneWidget);
     expect(find.byType(ProductCard), findsWidgets);
   });
 
@@ -117,7 +137,7 @@ void main() {
     expect(container.read(appTabProvider), AppTab.search);
   });
 
-  testWidgets('al pulsar una tarjeta navega al detalle con el producto', (
+  testWidgets('al pulsar una fila navega al detalle con el producto', (
     tester,
   ) async {
     const criteria = GiftSearchCriteria(
@@ -213,8 +233,10 @@ void main() {
 
     expect(repository.calls, 1);
 
+    await _openFilters(tester);
     await tester.tap(find.byKey(const ValueKey('filter-category-Joyería')));
     await tester.pumpAndSettle();
+    await _closeFilters(tester);
 
     final cards = tester.widgetList<ProductCard>(find.byType(ProductCard));
     expect(cards, isNotEmpty);
@@ -229,12 +251,14 @@ void main() {
     final repository = FakeProductRepository.success(mockProducts);
     await _pumpResults(tester, repository: repository);
 
+    await _openFilters(tester);
     await tester.tap(find.byKey(const ValueKey('filter-category-Joyería')));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey('filter-availability-outOfStock')),
     );
     await tester.pumpAndSettle();
+    await _closeFilters(tester);
 
     expect(find.text('No encontramos productos.'), findsOneWidget);
     expect(
