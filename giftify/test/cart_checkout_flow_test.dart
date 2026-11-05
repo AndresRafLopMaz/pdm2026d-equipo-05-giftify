@@ -68,7 +68,7 @@ void main() {
     expect(receivedTotal, expectedItem.subtotal);
 
     await tester.scrollUntilVisible(
-      find.text('Resumen del pedido'),
+      find.text('Resumen'),
       300,
       scrollable: find.byType(Scrollable).first,
     );

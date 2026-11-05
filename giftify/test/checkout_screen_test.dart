@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+import 'package:giftify/shared/enums/payment_method_type.dart';
 import 'package:giftify/shared/models/cart_item.dart';
 
 void main() {
@@ -50,24 +51,19 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('muestra resumen, subtotales y total de los productos', (
-    tester,
-  ) async {
+  testWidgets('muestra resumen y total de los productos', (tester) async {
     await pumpCheckout(tester, [
       CartItem(product: mockProducts.first, quantity: 2),
       CartItem(product: mockProducts[1]),
     ]);
     await tester.scrollUntilVisible(
-      find.text('Resumen del pedido'),
+      find.text('Resumen'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Pulsera artesanal × 2'), findsOneWidget);
-    expect(find.text('Caja de chocolates artesanales × 1'), findsOneWidget);
-    expect(find.text('Q 250.00'), findsOneWidget);
-    expect(find.text('Q 95.00'), findsOneWidget);
+    expect(find.text('2 productos'), findsOneWidget);
     expect(
       tester.widget<Text>(find.byKey(const ValueKey('checkout-total'))).data,
       'Q 345.00',
@@ -142,19 +138,11 @@ void main() {
     await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
     await tapVisible(tester, find.byKey(const ValueKey('payment-card')));
 
-    expect(
-      find.descendant(
-        of: find.byKey(const ValueKey('payment-card')),
-        matching: find.byIcon(Icons.check_circle_rounded),
-      ),
-      findsOneWidget,
+    final group = tester.widget<RadioGroup<PaymentMethodType>>(
+      find.byType(RadioGroup<PaymentMethodType>),
     );
-    expect(
-      find.text(
-        'Tarjeta •••• 4242 (simulación, no se procesarán datos reales).',
-      ),
-      findsOneWidget,
-    );
+    expect(group.groupValue, PaymentMethodType.card);
+    expect(find.text('Simulación segura'), findsOneWidget);
     expect(find.textContaining('CVV'), findsNothing);
     expect(find.textContaining('PIN'), findsNothing);
   });
@@ -165,14 +153,11 @@ void main() {
     await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
     await tapVisible(tester, find.byKey(const ValueKey('payment-cash')));
 
-    expect(
-      find.descendant(
-        of: find.byKey(const ValueKey('payment-cash')),
-        matching: find.byIcon(Icons.check_circle_rounded),
-      ),
-      findsOneWidget,
+    final group = tester.widget<RadioGroup<PaymentMethodType>>(
+      find.byType(RadioGroup<PaymentMethodType>),
     );
-    expect(find.text('Pagarás al recibir el pedido.'), findsOneWidget);
+    expect(group.groupValue, PaymentMethodType.cashOnDelivery);
+    expect(find.text('Paga cuando recibas el pedido'), findsOneWidget);
   });
 
   testWidgets('bloquea nuevos envíos mientras procesa la confirmación', (
@@ -250,7 +235,16 @@ void main() {
     await pumpCheckout(tester, [CartItem(product: mockProducts.first)]);
     await tester.tap(find.byKey(const ValueKey('recipient-field')));
     await tester.pump();
-    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('city-field')),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
