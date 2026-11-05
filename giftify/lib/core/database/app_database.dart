@@ -7,14 +7,16 @@ class AppDatabase {
 
   static final AppDatabase instance = AppDatabase();
 
-  static const int version = 2;
+  static const int version = 3;
   static const String fileName = 'giftify.db';
   static const String deliveryAddressesTable = 'delivery_addresses';
+  static const String usersTable = 'users';
 
   static const String labelNocaseIndex = 'idx_delivery_addresses_label_nocase';
   static const String singleDefaultIndex =
       'idx_delivery_addresses_single_default';
   static const String archivedIndex = 'idx_delivery_addresses_archived';
+  static const String usersEmailIndex = 'idx_users_email_nocase';
 
   final DatabaseFactory _factory;
   final String? path;
@@ -89,6 +91,7 @@ class AppDatabase {
     ''');
 
     await _createV2Indexes(db);
+    await _createUsersTable(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -104,6 +107,28 @@ class AppDatabase {
 
       await _createV2Indexes(db);
     }
+
+    if (oldVersion < 3) {
+      await _createUsersTable(db);
+    }
+  }
+
+  Future<void> _createUsersTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE $usersTable (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        password_hash TEXT NOT NULL,
+        password_salt TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE UNIQUE INDEX $usersEmailIndex
+      ON $usersTable(email COLLATE NOCASE)
+    ''');
   }
 
   Future<void> _createV2Indexes(Database db) async {

@@ -26,7 +26,7 @@ void main() {
   });
 
   test(
-    'migra v1 a v2 conservando direcciones y agrega columnas e índices',
+    'migra v1 a v3 conservando direcciones y agrega columnas, índices y users',
     () async {
       final v1Database = await databaseFactoryFfi.openDatabase(
         databasePath,
@@ -112,6 +112,22 @@ void main() {
           AppDatabase.singleDefaultIndex,
           AppDatabase.archivedIndex,
         }),
+      );
+
+      final tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type = 'table'",
+      );
+      expect(
+        tables.map((row) => row['name']),
+        contains(AppDatabase.usersTable),
+      );
+
+      final userIndexes = await db.rawQuery(
+        'PRAGMA index_list(${AppDatabase.usersTable})',
+      );
+      expect(
+        userIndexes.map((row) => row['name']),
+        contains(AppDatabase.usersEmailIndex),
       );
 
       await db.insert(AppDatabase.deliveryAddressesTable, {
