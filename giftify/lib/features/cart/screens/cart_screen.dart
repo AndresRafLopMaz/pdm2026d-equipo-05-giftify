@@ -180,12 +180,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void _continueToCheckout(CartSnapshot snapshot) {
-    Navigator.pushNamed(
-      context,
-      AppRoutes.checkout,
-      arguments: List<CartItem>.of(snapshot.allItems),
-    );
+  void _continueToCheckout() {
+    Navigator.pushNamed(context, AppRoutes.checkout);
   }
 
   bool _hasValidImageUrl(String? value) {
@@ -584,7 +580,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   child: FilledButton(
                     key: const ValueKey('checkout-button'),
                     onPressed: hasItems && !_hasPendingOperation
-                        ? () => _continueToCheckout(snapshot)
+                        ? _continueToCheckout
                         : null,
                     child: const Text('Continuar al pago'),
                   ),

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/addresses/screens/address_list_screen.dart';
 import '../features/cart/screens/cart_screen.dart';
 import '../features/cart/screens/checkout_screen.dart';
+import '../features/checkout/models/checkout_success_data.dart';
+import '../features/checkout/screens/checkout_success_screen.dart';
 import '../features/products/screens/product_detail_screen.dart';
 import '../features/payments/screens/add_payment_method_screen.dart';
 import '../features/payments/screens/payment_methods_screen.dart';
@@ -13,7 +16,10 @@ import '../features/settings/screens/settings_screen.dart';
 import '../shared/models/cart_item.dart';
 import '../shared/models/gift_product.dart';
 import '../shared/models/gift_search_criteria.dart';
+import 'app_tab.dart';
+import 'app_tab_notifier.dart';
 import 'auth_gate.dart';
+import 'main_shell.dart';
 
 /// Nombres centralizados de las rutas de Giftify.
 ///
@@ -33,6 +39,7 @@ abstract final class AppRoutes {
   static const String productDetail = '/products/detail';
   static const String cart = '/cart';
   static const String checkout = '/checkout';
+  static const String checkoutSuccess = '/checkout/success';
   static const String addresses = '/addresses';
 }
 
@@ -115,11 +122,21 @@ abstract final class AppRouter {
         );
 
       case AppRoutes.checkout:
-        final items = _extractCartItems(settings.arguments);
+        return _buildRoute(
+          settings,
+          const AuthGate(authenticatedChild: CheckoutScreen()),
+        );
+
+      case AppRoutes.checkoutSuccess:
+        final arguments = settings.arguments;
 
         return _buildRoute(
           settings,
-          AuthGate(authenticatedChild: CheckoutScreen(items: items)),
+          AuthGate(
+            authenticatedChild: arguments is CheckoutSuccessData
+                ? CheckoutSuccessScreen(data: arguments)
+                : const _CheckoutSuccessFallback(),
+          ),
         );
 
       case AppRoutes.addresses:
@@ -153,6 +170,33 @@ abstract final class AppRouter {
     }
 
     return const [];
+  }
+}
+
+/// Evita mostrar una confirmación falsa cuando llega un deep link sin datos.
+class _CheckoutSuccessFallback extends ConsumerStatefulWidget {
+  const _CheckoutSuccessFallback();
+
+  @override
+  ConsumerState<_CheckoutSuccessFallback> createState() =>
+      _CheckoutSuccessFallbackState();
+}
+
+class _CheckoutSuccessFallbackState
+    extends ConsumerState<_CheckoutSuccessFallback> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(appTabProvider.notifier).select(AppTab.home);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const MainShell();
   }
 }
 
