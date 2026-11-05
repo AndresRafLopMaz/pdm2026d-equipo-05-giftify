@@ -11,6 +11,7 @@ import '../../../shared/enums/gift_occasion.dart';
 import '../../../shared/enums/gift_recipient.dart';
 import '../../search/models/search_prefill.dart';
 import '../../search/providers/search_prefill_provider.dart';
+import '../../auth/providers/auth_controller.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -90,7 +91,11 @@ class HomeScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const _BrandHeader(),
+                  _BrandHeader(
+                    onLogout: () {
+                      _logout(context, ref);
+                    },
+                  ),
                   const SizedBox(height: 28),
                   Text(
                     'Hola',
@@ -168,10 +173,28 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Future<void> _logout(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(authControllerProvider.notifier).logout();
+    } catch (_) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No pudimos cerrar la sesión. Intenta nuevamente.'),
+        ),
+      );
+    }
+  }
 }
 
 class _BrandHeader extends StatelessWidget {
-  const _BrandHeader();
+  const _BrandHeader({required this.onLogout});
+
+  final VoidCallback onLogout;
 
   @override
   Widget build(BuildContext context) {
@@ -206,6 +229,13 @@ class _BrandHeader extends StatelessWidget {
               ),
             ),
           ),
+        ),
+        const Spacer(),
+        IconButton(
+          key: const ValueKey('logout-button'),
+          onPressed: onLogout,
+          tooltip: 'Cerrar sesión',
+          icon: const Icon(Icons.logout_rounded),
         ),
       ],
     );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../features/addresses/screens/address_list_screen.dart';
-import '../features/auth/screens/register_screen.dart';
 import '../features/cart/screens/cart_screen.dart';
 import '../features/cart/screens/checkout_screen.dart';
 import '../features/products/screens/product_detail_screen.dart';
@@ -10,7 +9,7 @@ import '../features/search/screens/gift_search_screen.dart';
 import '../shared/models/cart_item.dart';
 import '../shared/models/gift_product.dart';
 import '../shared/models/gift_search_criteria.dart';
-import 'main_shell.dart';
+import 'auth_gate.dart';
 
 /// Nombres centralizados de las rutas de Giftify.
 ///
@@ -18,6 +17,7 @@ import 'main_shell.dart';
 /// manualmente rutas como "/cart" o "/products".
 abstract final class AppRoutes {
   static const String root = '/';
+  static const String login = '/login';
   static const String register = '/register';
   static const String home = '/home';
   static const String search = '/search';
@@ -36,11 +36,22 @@ abstract final class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.root:
-      case AppRoutes.register:
-        return _buildRoute(settings, const RegisterScreen());
+        return _buildRoute(settings, const AuthGate());
 
       case AppRoutes.home:
-        return _buildRoute(settings, const MainShell());
+        return _buildRoute(settings, const AuthGate());
+
+      case AppRoutes.login:
+        return _buildRoute(
+          settings,
+          const AuthGate(initialView: AuthView.login),
+        );
+
+      case AppRoutes.register:
+        return _buildRoute(
+          settings,
+          const AuthGate(initialView: AuthView.register),
+        );
 
       case AppRoutes.search:
         return _buildRoute(settings, const GiftSearchScreen());

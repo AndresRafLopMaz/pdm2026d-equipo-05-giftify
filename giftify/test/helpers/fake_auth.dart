@@ -92,6 +92,7 @@ class InMemoryUserRepository implements UserRepository {
 
 class InMemorySessionStore implements SessionStore {
   int? userId;
+  Future<int?>? readOverride;
   bool failRead = false;
   bool failWrite = false;
   bool failClear = false;
@@ -100,6 +101,9 @@ class InMemorySessionStore implements SessionStore {
   Future<int?> readUserId() async {
     if (failRead) {
       throw const AuthStorageException();
+    }
+    if (readOverride != null) {
+      return readOverride!;
     }
     return userId;
   }

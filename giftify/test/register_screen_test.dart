@@ -2,241 +2,237 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:giftify/app/giftify_app.dart';
+import 'package:giftify/app/auth_gate.dart';
 import 'package:giftify/app/main_shell.dart';
+import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/auth/screens/register_screen.dart';
-import 'package:giftify/features/home/screens/home_screen.dart';
 
-Finder _field(String label) => find.widgetWithText(TextFormField, label);
-
-Future<void> _pumpRegisterScreen(WidgetTester tester) async {
-  await tester.pumpWidget(const ProviderScope(child: GiftifyApp()));
-  await tester.pumpAndSettle();
-}
-
-Future<void> _fillValidData(WidgetTester tester) async {
-  await tester.enterText(_field('Nombre'), 'Diego Barrios');
-  await tester.enterText(_field('Correo electrónico'), 'diego@correo.com');
-  await tester.enterText(_field('Contraseña'), 'contrasena123');
-}
-
-Future<void> _tapSubmit(WidgetTester tester) async {
-  final Finder submit = find.text('Regístrate');
-  await tester.ensureVisible(submit);
-  await tester.pumpAndSettle();
-  await tester.tap(submit);
-}
-
-Future<void> _selectBirthDate(WidgetTester tester) async {
-  final Finder dateField = _field('Fecha de nacimiento');
-  await tester.ensureVisible(dateField);
-  await tester.pumpAndSettle();
-  await tester.tap(dateField);
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('Aceptar'));
-  await tester.pumpAndSettle();
-}
+import 'helpers/auth_test_harness.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences.setMockInitialValues({});
 
-  testWidgets('renderiza el formulario de registro', (tester) async {
-    await _pumpRegisterScreen(tester);
-
-    expect(find.byType(RegisterScreen), findsOneWidget);
-    expect(find.text('Crear cuenta'), findsOneWidget);
-    expect(_field('Nombre'), findsOneWidget);
-    expect(_field('Correo electrónico'), findsOneWidget);
-    expect(_field('Contraseña'), findsOneWidget);
-    expect(_field('Fecha de nacimiento'), findsOneWidget);
-    expect(find.text('Regístrate'), findsOneWidget);
-    expect(find.text('Inicia sesión aquí'), findsNothing);
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('el formulario vacío muestra validaciones y no navega', (
-    tester,
-  ) async {
-    await _pumpRegisterScreen(tester);
+  Future<void> pumpRegister(
+    WidgetTester tester,
+    AuthTestHarness harness, {
+    VoidCallback? onLogin,
+  }) {
+    return tester.pumpWidget(
+      ProviderScope(
+        overrides: harness.overrides,
+        child: MaterialApp(
+          theme: appTheme,
+          home: RegisterScreen(onLogin: onLogin ?? () {}),
+        ),
+      ),
+    );
+  }
 
-    await _tapSubmit(tester);
+  Future<void> fillRegister(
+    WidgetTester tester, {
+    String name = 'Ana López',
+    String email = 'ana@mail.com',
+    String password = 'contrasena-123',
+    String? confirmPassword,
+  }) async {
+    await tester.enterText(find.byKey(const ValueKey('register-name')), name);
+    await tester.enterText(find.byKey(const ValueKey('register-email')), email);
+    await tester.enterText(
+      find.byKey(const ValueKey('register-password')),
+      password,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('register-confirm-password')),
+      confirmPassword ?? password,
+    );
+  }
+
+  Future<void> submit(WidgetTester tester) async {
+    final button = find.byKey(const ValueKey('register-submit'));
+    await tester.ensureVisible(button);
+    await tester.pumpAndSettle();
+    await tester.tap(button);
+  }
+
+  testWidgets('renderiza Register V2 sin fecha de nacimiento', (tester) async {
+    await pumpRegister(tester, AuthTestHarness());
+
+    expect(find.byType(RegisterScreen), findsOneWidget);
+    expect(find.text('Crear cuenta'), findsWidgets);
+    expect(find.byKey(const ValueKey('register-name')), findsOneWidget);
+    expect(find.byKey(const ValueKey('register-email')), findsOneWidget);
+    expect(find.byKey(const ValueKey('register-password')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('register-confirm-password')),
+      findsOneWidget,
+    );
+    expect(find.text('Fecha de nacimiento'), findsNothing);
+    expect(find.text('¿Ya tienes cuenta? Inicia sesión'), findsOneWidget);
+  });
+
+  testWidgets('valida campos vacíos', (tester) async {
+    await pumpRegister(tester, AuthTestHarness());
+
+    await submit(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Ingresa tu nombre.'), findsOneWidget);
     expect(find.text('Ingresa tu correo electrónico.'), findsOneWidget);
     expect(find.text('Ingresa tu contraseña.'), findsOneWidget);
-    expect(find.text('Selecciona tu fecha de nacimiento.'), findsOneWidget);
-    expect(find.byType(HomeScreen), findsNothing);
+    expect(find.text('Confirma tu contraseña.'), findsOneWidget);
   });
 
-  testWidgets('un correo inválido muestra error de formato', (tester) async {
-    await _pumpRegisterScreen(tester);
+  testWidgets('valida email, longitud y confirmación', (tester) async {
+    await pumpRegister(tester, AuthTestHarness());
 
-    await tester.enterText(_field('Nombre'), 'Diego Barrios');
-    await tester.enterText(_field('Correo electrónico'), 'diego@');
-    await tester.enterText(_field('Contraseña'), 'contrasena123');
-
-    await _tapSubmit(tester);
+    await fillRegister(tester, email: 'ana@', password: 'corta12');
+    await submit(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Ingresa un correo válido.'), findsOneWidget);
-    expect(find.byType(HomeScreen), findsNothing);
-  });
-
-  testWidgets('una contraseña corta muestra error de longitud', (tester) async {
-    await _pumpRegisterScreen(tester);
-
-    await tester.enterText(_field('Nombre'), 'Diego Barrios');
-    await tester.enterText(_field('Correo electrónico'), 'diego@correo.com');
-    await tester.enterText(_field('Contraseña'), 'corta12');
-
-    await _tapSubmit(tester);
-    await tester.pumpAndSettle();
-
     expect(
       find.text('La contraseña debe tener al menos 8 caracteres.'),
       findsOneWidget,
     );
-    expect(find.byType(HomeScreen), findsNothing);
-  });
 
-  testWidgets('el botón alterna mostrar y ocultar la contraseña', (
-    tester,
-  ) async {
-    await _pumpRegisterScreen(tester);
-
-    final Finder passwordField = _field('Contraseña');
-    await tester.ensureVisible(passwordField);
+    await fillRegister(
+      tester,
+      password: 'contrasena-123',
+      confirmPassword: 'otra-clave-123',
+    );
+    await submit(tester);
     await tester.pumpAndSettle();
 
-    EditableText editableText() => tester.widget<EditableText>(
-      find.descendant(of: passwordField, matching: find.byType(EditableText)),
+    expect(find.text('Las contraseñas no coinciden.'), findsOneWidget);
+  });
+
+  testWidgets('alterna mostrar y ocultar ambas contraseñas', (tester) async {
+    await pumpRegister(tester, AuthTestHarness());
+    final passwordField = find.byKey(const ValueKey('register-password'));
+    final confirmField = find.byKey(
+      const ValueKey('register-confirm-password'),
+    );
+    await tester.ensureVisible(confirmField);
+    await tester.pumpAndSettle();
+
+    EditableText editableText(Finder field) => tester.widget<EditableText>(
+      find.descendant(of: field, matching: find.byType(EditableText)),
     );
 
-    expect(editableText().obscureText, isTrue);
+    expect(editableText(passwordField).obscureText, isTrue);
+    expect(editableText(confirmField).obscureText, isTrue);
 
-    final Finder toggle = find.descendant(
-      of: passwordField,
-      matching: find.byType(IconButton),
+    await tester.tap(
+      find.descendant(of: passwordField, matching: find.byType(IconButton)),
     );
-
-    await tester.tap(toggle);
+    await tester.tap(
+      find.descendant(of: confirmField, matching: find.byType(IconButton)),
+    );
     await tester.pump();
-    expect(editableText().obscureText, isFalse);
 
-    await tester.tap(toggle);
-    await tester.pump();
-    expect(editableText().obscureText, isTrue);
+    expect(editableText(passwordField).obscureText, isFalse);
+    expect(editableText(confirmField).obscureText, isFalse);
   });
 
-  testWidgets('el campo de fecha abre el selector de fecha', (tester) async {
-    await _pumpRegisterScreen(tester);
-
-    final Finder dateField = _field('Fecha de nacimiento');
-    await tester.ensureVisible(dateField);
-    await tester.pumpAndSettle();
-    await tester.tap(dateField);
-    await tester.pumpAndSettle();
-
-    expect(find.byType(DatePickerDialog), findsOneWidget);
-
-    await tester.tap(find.text('Cancelar'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(DatePickerDialog), findsNothing);
-  });
-
-  testWidgets('un registro válido muestra envío y navega a HomeScreen', (
+  testWidgets('registro exitoso llega a MainShell sin stack extra', (
     tester,
   ) async {
-    await _pumpRegisterScreen(tester);
-
-    await _fillValidData(tester);
-    await _selectBirthDate(tester);
-
-    await _tapSubmit(tester);
-    await tester.pump();
-
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    final FilledButton button = tester.widget<FilledButton>(
-      find.byType(FilledButton),
+    final harness = AuthTestHarness();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: harness.overrides,
+        child: const MaterialApp(
+          home: AuthGate(initialView: AuthView.register),
+        ),
+      ),
     );
-    expect(button.onPressed, isNull);
-    expect(find.byType(HomeScreen), findsNothing);
-
     await tester.pumpAndSettle();
-
-    expect(find.byType(MainShell), findsOneWidget);
-    expect(find.byType(HomeScreen), findsOneWidget);
-    expect(find.byType(RegisterScreen), findsNothing);
-  });
-
-  testWidgets('el registro deja MainShell como raíz sin ruta desconocida', (
-    tester,
-  ) async {
-    await _pumpRegisterScreen(tester);
-
-    await _fillValidData(tester);
-    await _selectBirthDate(tester);
-
-    await _tapSubmit(tester);
+    await fillRegister(tester);
+    await submit(tester);
     await tester.pumpAndSettle();
 
     final navigator = tester.state<NavigatorState>(find.byType(Navigator));
-
     expect(find.byType(MainShell), findsOneWidget);
+    expect(find.byType(RegisterScreen), findsNothing);
     expect(navigator.canPop(), isFalse);
-    expect(find.text('Ruta no encontrada'), findsNothing);
-
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-
-    expect(find.byType(MainShell), findsOneWidget);
-    expect(find.text('Ruta no encontrada'), findsNothing);
+    expect(harness.session.userId, isNotNull);
   });
 
-  testWidgets('no muestra el enlace de inicio de sesión sin función', (
-    tester,
-  ) async {
-    await _pumpRegisterScreen(tester);
+  testWidgets('email duplicado muestra mensaje humano', (tester) async {
+    final harness = AuthTestHarness();
+    harness.repository.seedUser(name: 'Ana', email: 'ana@mail.com');
+    await pumpRegister(tester, harness);
 
-    expect(find.text('¿Ya tienes una cuenta?'), findsNothing);
-    expect(find.text('Inicia sesión aquí'), findsNothing);
+    await fillRegister(tester);
+    await submit(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ya existe una cuenta con este correo.'), findsOneWidget);
+    expect(harness.session.userId, isNull);
+  });
+
+  testWidgets('error de almacenamiento muestra mensaje humano', (tester) async {
+    final harness = AuthTestHarness();
+    harness.repository.failWrites = true;
+    await pumpRegister(tester, harness);
+
+    await fillRegister(tester);
+    await submit(tester);
+    await tester.pumpAndSettle();
+
     expect(
-      find.text('Inicio de sesión disponible próximamente.'),
-      findsNothing,
+      find.text('No pudimos guardar tu cuenta. Intenta nuevamente.'),
+      findsOneWidget,
     );
   });
 
-  testWidgets(
-    'se adapta a 320x640 sin overflow y mantiene accesibles el formulario '
-    'y el botón',
-    (tester) async {
-      tester.view.physicalSize = const Size(320, 640);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('Inicia sesión invoca el cambio de vista', (tester) async {
+    var opened = false;
+    await pumpRegister(
+      tester,
+      AuthTestHarness(),
+      onLogin: () {
+        opened = true;
+      },
+    );
 
-      await _pumpRegisterScreen(tester);
+    await tester.tap(find.byKey(const ValueKey('register-login')));
+    await tester.pump();
 
-      expect(tester.takeException(), isNull);
-      expect(find.text('Crear cuenta'), findsOneWidget);
-      expect(find.byType(SingleChildScrollView), findsOneWidget);
-      expect(_field('Nombre'), findsOneWidget);
-      expect(_field('Correo electrónico'), findsOneWidget);
-      expect(_field('Contraseña'), findsOneWidget);
-      expect(_field('Fecha de nacimiento'), findsOneWidget);
+    expect(opened, isTrue);
+  });
 
-      final Finder submit = find.text('Regístrate');
-      await tester.ensureVisible(submit);
-      await tester.pumpAndSettle();
+  testWidgets('es responsive en 320x640 sin overflow', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-      expect(tester.takeException(), isNull);
-      expect(submit.hitTestable(), findsOneWidget);
-      expect(
-        tester.getRect(find.byType(FilledButton)).bottom,
-        lessThanOrEqualTo(640),
-      );
-    },
-  );
+    await pumpRegister(tester, AuthTestHarness());
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
+    final submitButton = find.byKey(const ValueKey('register-submit'));
+    await tester.ensureVisible(submitButton);
+    await tester.pumpAndSettle();
+    expect(submitButton.hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('soporta text scale 2.0', (tester) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    await pumpRegister(tester, AuthTestHarness());
+
+    final submitButton = find.byKey(const ValueKey('register-submit'));
+    await tester.ensureVisible(submitButton);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(submitButton.hitTestable(), findsOneWidget);
+  });
 }
