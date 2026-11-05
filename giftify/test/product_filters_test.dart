@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/features/products/utils/product_filters.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+import 'package:giftify/shared/enums/gift_age_range.dart';
 import 'package:giftify/shared/enums/gift_availability.dart';
 import 'package:giftify/shared/enums/gift_category.dart';
 import 'package:giftify/shared/enums/gift_format.dart';
+import 'package:giftify/shared/enums/gift_interest.dart';
 import 'package:giftify/shared/enums/gift_occasion.dart';
 import 'package:giftify/shared/enums/gift_recipient.dart';
 import 'package:giftify/shared/enums/gift_size.dart';
@@ -17,6 +19,12 @@ GiftProduct _product({
   GiftSize size = GiftSize.small,
   GiftFormat giftFormat = GiftFormat.physical,
   Set<GiftOccasion> occasions = const {GiftOccasion.birthday},
+  Set<GiftRecipient> recipientTypes = const {GiftRecipient.friend},
+  Set<GiftAgeRange> ageRanges = const {GiftAgeRange.adult},
+  Set<GiftInterest> interests = const {},
+  GiftAvailability availability = GiftAvailability.inStock,
+  bool isPersonalizable = false,
+  bool isLocal = false,
   int? estimatedDeliveryDays,
 }) {
   return GiftProduct(
@@ -26,11 +34,16 @@ GiftProduct _product({
     price: price,
     category: category,
     size: size,
-    availability: GiftAvailability.inStock,
+    availability: availability,
     sellerName: 'Vendedor',
     sellerRating: 4.5,
     occasions: occasions,
+    recipientTypes: recipientTypes,
+    ageRanges: ageRanges,
+    interests: interests,
     giftFormat: giftFormat,
+    isPersonalizable: isPersonalizable,
+    isLocal: isLocal,
     estimatedDeliveryDays: estimatedDeliveryDays,
   );
 }
@@ -130,12 +143,145 @@ void main() {
         occasion: GiftOccasion.birthday,
         recipientType: GiftRecipient.friend,
         maxBudget: 1000,
-        eventDate: DateTime.now().add(const Duration(days: 5)),
+        eventDate: DateTime(2026, 1, 6),
+      );
+
+      final result = filterAndPrioritizeProducts(
+        products,
+        criteria,
+        now: DateTime(2026, 1, 1),
+      );
+
+      expect(_ids(result), ['a_tiempo']);
+    });
+
+    test('prioriza la coincidencia de destinatario', () {
+      final products = [
+        _product(id: 'amigo', recipientTypes: const {GiftRecipient.friend}),
+        _product(id: 'pareja', recipientTypes: const {GiftRecipient.partner}),
+      ];
+
+      const criteria = GiftSearchCriteria(
+        occasion: GiftOccasion.birthday,
+        recipientType: GiftRecipient.partner,
+        maxBudget: 1000,
       );
 
       final result = filterAndPrioritizeProducts(products, criteria);
 
-      expect(result.first.id, 'a_tiempo');
+      expect(result.first.id, 'pareja');
+    });
+
+    test('limita a +4 el score por intereses', () {
+      final products = [
+        _product(
+          id: 'muchos',
+          interests: const {
+            GiftInterest.technology,
+            GiftInterest.gaming,
+            GiftInterest.music,
+          },
+        ),
+        _product(
+          id: 'local',
+          interests: const {GiftInterest.technology, GiftInterest.gaming},
+          isLocal: true,
+        ),
+      ];
+
+      const criteria = GiftSearchCriteria(
+        occasion: GiftOccasion.birthday,
+        recipientType: GiftRecipient.friend,
+        maxBudget: 1000,
+        interests: {
+          GiftInterest.technology,
+          GiftInterest.gaming,
+          GiftInterest.music,
+        },
+        isLocal: true,
+      );
+
+      final result = filterAndPrioritizeProducts(products, criteria);
+
+      expect(result.first.id, 'local');
+    });
+
+    test('onlyAvailable excluye productos agotados', () {
+      final products = [
+        _product(id: 'disponible'),
+        _product(id: 'agotado', availability: GiftAvailability.outOfStock),
+      ];
+
+      const criteria = GiftSearchCriteria(
+        occasion: GiftOccasion.birthday,
+        recipientType: GiftRecipient.friend,
+        maxBudget: 1000,
+        onlyAvailable: true,
+      );
+
+      final result = filterAndPrioritizeProducts(products, criteria);
+
+      expect(_ids(result), ['disponible']);
+    });
+
+    test('prioriza entrega rápida, local y personalizable', () {
+      final products = [
+        _product(id: 'normal', estimatedDeliveryDays: 5),
+        _product(
+          id: 'preferido',
+          estimatedDeliveryDays: 2,
+          isLocal: true,
+          isPersonalizable: true,
+        ),
+      ];
+
+      const criteria = GiftSearchCriteria(
+        occasion: GiftOccasion.birthday,
+        recipientType: GiftRecipient.friend,
+        maxBudget: 1000,
+        fastDelivery: true,
+        isLocal: true,
+        isPersonalizable: true,
+      );
+
+      final result = filterAndPrioritizeProducts(products, criteria);
+
+      expect(result.first.id, 'preferido');
+    });
+
+    test('prioriza el rango de edad compatible', () {
+      final products = [
+        _product(id: 'mayor', ageRanges: const {GiftAgeRange.senior}),
+        _product(id: 'adulto', ageRanges: const {GiftAgeRange.adult}),
+      ];
+
+      const criteria = GiftSearchCriteria(
+        occasion: GiftOccasion.birthday,
+        recipientType: GiftRecipient.friend,
+        maxBudget: 1000,
+        ageRange: GiftAgeRange.adult,
+      );
+
+      final result = filterAndPrioritizeProducts(products, criteria);
+
+      expect(result.first.id, 'adulto');
+    });
+
+    test('usa precio e id como tie breakers', () {
+      final products = [
+        _product(id: 'b', price: 100),
+        _product(id: 'a', price: 100),
+      ];
+
+      const criteria = GiftSearchCriteria(
+        occasion: GiftOccasion.birthday,
+        recipientType: GiftRecipient.friend,
+        maxBudget: 1000,
+      );
+
+      final result = filterAndPrioritizeProducts(products, criteria);
+
+      expect(_ids(result), ['a', 'b']);
     });
 
     test('devuelve una lista vacía cuando nada cumple el presupuesto', () {

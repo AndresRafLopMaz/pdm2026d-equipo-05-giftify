@@ -2,18 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/enums/gift_availability.dart';
+import '../../../shared/enums/gift_category.dart';
 import '../providers/product_filter_provider.dart';
 
 class ProductFilterBar extends ConsumerWidget {
   const ProductFilterBar({super.key, this.onClose});
-
-  static const List<String> _categories = [
-    'Joyería',
-    'Alimentos',
-    'Accesorios',
-    'Artesanías',
-    'Personalizados',
-  ];
 
   final VoidCallback? onClose;
 
@@ -76,10 +69,10 @@ class ProductFilterBar extends ConsumerWidget {
                 selected: filter.category == null,
                 onSelected: (_) => notifier.setCategory(null),
               ),
-              for (final category in _categories)
+              for (final category in GiftCategory.values)
                 FilterChip(
-                  key: ValueKey('filter-category-$category'),
-                  label: Text(category),
+                  key: ValueKey('filter-category-${category.name}'),
+                  label: Text(category.label),
                   selected: filter.category == category,
                   onSelected: (selected) {
                     notifier.setCategory(selected ? category : null);

@@ -282,7 +282,7 @@ void main() {
     expect(repository.calls, 1);
 
     await _openFilters(tester);
-    await tester.tap(find.byKey(const ValueKey('filter-category-Joyería')));
+    await tester.tap(find.byKey(const ValueKey('filter-category-jewelry')));
     await tester.pumpAndSettle();
     await _closeFilters(tester);
 
@@ -303,7 +303,7 @@ void main() {
     await _pumpResults(tester, repository: repository);
 
     await _openFilters(tester);
-    await tester.tap(find.byKey(const ValueKey('filter-category-Joyería')));
+    await tester.tap(find.byKey(const ValueKey('filter-category-jewelry')));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey('filter-availability-outOfStock')),

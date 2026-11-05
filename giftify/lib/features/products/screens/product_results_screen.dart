@@ -5,6 +5,7 @@ import '../../../app/app_router.dart';
 import '../../../app/app_tab.dart';
 import '../../../app/app_tab_notifier.dart';
 import '../../../shared/enums/gift_availability.dart';
+import '../../../shared/enums/gift_category.dart';
 import '../../../shared/enums/gift_format.dart';
 import '../../../shared/enums/gift_interest.dart';
 import '../../../shared/enums/gift_occasion.dart';
@@ -390,7 +391,7 @@ class _ActiveFilters extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final parts = <String>[
-      if (filter.category != null) filter.category!,
+      if (filter.category != null) filter.category!.label,
       if (filter.availability != null) _availabilityLabel(filter.availability!),
     ];
 

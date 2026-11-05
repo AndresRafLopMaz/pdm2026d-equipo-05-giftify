@@ -1,15 +1,11 @@
 import '../../../shared/models/gift_product.dart';
 import '../../../shared/models/gift_search_criteria.dart';
 
-/// Lógica local de filtrado y priorización para la Pantalla 4.
+/// Lógica local de filtrado y priorización para Results.
 ///
 /// Se mantiene como funciones puras para poder probarla sin depender de
 /// widgets ni de un backend. No contiene estado ni lógica de interfaz.
 
-/// Orden determinista del catálogo general cuando no hay criterios.
-///
-/// Prioriza la calificación del vendedor, luego el precio y finalmente
-/// el id para garantizar un resultado estable entre ejecuciones.
 int _compareGeneral(GiftProduct a, GiftProduct b) {
   final byRating = b.sellerRating.compareTo(a.sellerRating);
   if (byRating != 0) {
@@ -24,39 +20,44 @@ int _compareGeneral(GiftProduct a, GiftProduct b) {
   return a.id.compareTo(b.id);
 }
 
-/// Indica si el producto podría llegar antes de [GiftSearchCriteria.eventDate].
-///
-/// Solo se evalúa cuando existen tanto `eventDate` como
-/// `estimatedDeliveryDays`.
-bool _arrivesOnTime(GiftProduct product, GiftSearchCriteria criteria) {
-  final eventDate = criteria.eventDate;
-  final deliveryDays = product.estimatedDeliveryDays;
+DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 
-  if (eventDate == null || deliveryDays == null) {
+bool _arrivesOnTime(GiftProduct product, DateTime eventDate, DateTime today) {
+  final deliveryDays = product.estimatedDeliveryDays;
+  if (deliveryDays == null) {
     return false;
   }
 
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  final eventDay = DateTime(eventDate.year, eventDate.month, eventDate.day);
   final estimatedArrival = today.add(Duration(days: deliveryDays));
-
-  return !estimatedArrival.isAfter(eventDay);
+  return !estimatedArrival.isAfter(eventDate);
 }
 
-/// Calcula la puntuación de coincidencia de un producto con los criterios.
-///
-/// Esta primera migración usa únicamente los criterios que ya existían
-/// conceptualmente en FASE 9. El scoring ampliado se implementa después.
 int _scoreFor(GiftProduct product, GiftSearchCriteria criteria) {
   var score = 0;
 
-  final giftFormat = criteria.giftFormat;
-  if (giftFormat != null && product.giftFormat == giftFormat) {
-    score += 2;
+  if (product.recipientTypes.isNotEmpty &&
+      product.recipientTypes.contains(criteria.recipientType)) {
+    score += 4;
   }
 
   if (product.occasions.contains(criteria.occasion)) {
+    score += 3;
+  }
+
+  final interestMatches = product.interests
+      .where(criteria.interests.contains)
+      .length;
+  score += (interestMatches * 2).clamp(0, 4);
+
+  final ageRange = criteria.ageRange;
+  if (ageRange != null &&
+      product.ageRanges.isNotEmpty &&
+      product.ageRanges.contains(ageRange)) {
+    score += 2;
+  }
+
+  final giftFormat = criteria.giftFormat;
+  if (giftFormat != null && product.giftFormat == giftFormat) {
     score += 2;
   }
 
@@ -65,7 +66,16 @@ int _scoreFor(GiftProduct product, GiftSearchCriteria criteria) {
     score += 1;
   }
 
-  if (_arrivesOnTime(product, criteria)) {
+  if (criteria.isPersonalizable && product.isPersonalizable) {
+    score += 1;
+  }
+
+  if (criteria.isLocal && product.isLocal) {
+    score += 1;
+  }
+
+  final deliveryDays = product.estimatedDeliveryDays;
+  if (criteria.fastDelivery && deliveryDays != null && deliveryDays <= 2) {
     score += 1;
   }
 
@@ -74,13 +84,13 @@ int _scoreFor(GiftProduct product, GiftSearchCriteria criteria) {
 
 /// Devuelve los productos filtrados y priorizados según [criteria].
 ///
-/// Si [criteria] es `null`, devuelve el catálogo completo con un orden
-/// determinista. Si existen criterios, excluye los productos cuyo precio
-/// supera `maxBudget` y ordena el resto por puntuación de coincidencia.
+/// `now` permite inyectar una fecha fija en pruebas. Si se omite, usa la
+/// fecha actual.
 List<GiftProduct> filterAndPrioritizeProducts(
   Iterable<GiftProduct> products,
-  GiftSearchCriteria? criteria,
-) {
+  GiftSearchCriteria? criteria, {
+  DateTime? now,
+}) {
   final catalog = List<GiftProduct>.from(products);
 
   if (criteria == null) {
@@ -88,11 +98,28 @@ List<GiftProduct> filterAndPrioritizeProducts(
     return catalog;
   }
 
-  final withinBudget = catalog
-      .where((product) => product.price <= criteria.maxBudget)
-      .toList();
+  final today = _dateOnly(now ?? DateTime.now());
+  final eventDate = criteria.eventDate == null
+      ? null
+      : _dateOnly(criteria.eventDate!);
 
-  final scored = withinBudget
+  final filtered = catalog.where((product) {
+    if (product.price > criteria.maxBudget) {
+      return false;
+    }
+
+    if (criteria.onlyAvailable && !product.isAvailable) {
+      return false;
+    }
+
+    if (eventDate != null && !_arrivesOnTime(product, eventDate, today)) {
+      return false;
+    }
+
+    return true;
+  }).toList();
+
+  final scored = filtered
       .map((product) => (product: product, score: _scoreFor(product, criteria)))
       .toList();
 

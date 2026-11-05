@@ -2,12 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/product_filter.dart';
 import '../../../shared/enums/gift_availability.dart';
+import '../../../shared/enums/gift_category.dart';
 
 class ProductFilterNotifier extends Notifier<ProductFilter> {
   @override
   ProductFilter build() => const ProductFilter();
 
-  void setCategory(String? category) {
+  void setCategory(GiftCategory? category) {
     state = state.copyWith(category: category, clearCategory: category == null);
   }
 
