@@ -4,7 +4,10 @@
 
 - **10G-A — Regresión funcional P0/P1 y accesibilidad crítica:** completado.
 - **10G-B — Recursos visuales y polish:** completado técnicamente con fallback A+.
-- **10G-C — QA final, documentación y PR:** pendiente.
+- **10G-C — QA final, documentación y PR:** completado técnicamente.
+- **SQLite Web:** completado.
+- **README y 16 capturas reales:** completados.
+- **QA Android manual:** pendiente de ejecución física.
 
 > No se encontraron assets WebP locales válidos. Los 10 assets por categoría
 > quedan pendientes de incorporación con origen y licencia documentados.
@@ -362,11 +365,76 @@ tree-shaker de Flutter aún espera `CupertinoIcons`.
 Se decidió **mantenerlo** para conservar un build Web limpio y evitar iconos
 faltantes. No se agregaron dependencias nuevas ni se actualizaron versiones.
 
+## SQLite Web
+
+- `sqflite_common_ffi_web` 1.2.0 como dependencia directa.
+- `databaseFactoryFfiWeb` configurado antes de `runApp` y antes de AuthGate.
+- Path Web: `giftify.db`; sin rutas nativas.
+- Binarios versionados:
+  - `web/sqlite3.wasm`
+  - `web/sqflite_sw.js`
+- Persistencia del navegador mediante IndexedDB.
+- `AppDatabase.version` permanece en 5, con las mismas tablas, FKs y
+  migraciones.
+- El soporte Web del paquete se documenta como solución de desarrollo.
+
+## README y capturas
+
+- README principal actualizado con estado real, stack, persistencia, seguridad,
+  ejecución, límites y galería.
+- 16 capturas reales en `docs/screenshots/`, referenciadas desde el README.
+- Capturas agrupadas en autenticación, inicio/búsqueda, catálogo/carrito,
+  direcciones, perfil/apariencia, pagos y checkout.
+- Prueba manual Web: realizada por el usuario; OpenCode no la sustituye.
+
+## P2 — Estado final
+
+| Hallazgo | Estado |
+|---|---|
+| Success desde ruta Cart independiente / fallback | **Corregido**: navegación limpia a Inicio y sin `MainShell` anidado |
+| AddPayment con reloj capturado | **Corregido**: evaluaciones con `DateTime.now()` o fecha fija inyectada |
+| Addresses: escritura exitosa + refresh fallido | **TECHNICAL DEBT** |
+| Payments: escritura exitosa + refresh fallido | **TECHNICAL DEBT** |
+| Register: usuario creado + fallo al guardar sesión | **KNOWN LIMITATION** |
+| DeletedProducts: escritura/concurrencia | **TECHNICAL DEBT** |
+| Ownership: error de migración cacheado | **TECHNICAL DEBT** |
+
+Ninguno es P0/P1 ni bloquea el PR.
+
+### Dead code
+
+- `ComingSoonScreen`: eliminado tras confirmar 0 referencias.
+- `AddressBook.empty()`: eliminado tras confirmar 0 referencias.
+- `CartScreen.initialItems` y `_extractCartItems`: se mantienen por
+  compatibilidad de ruta y tests de navegación.
+- `core/backend`: se mantiene como scaffold reservado, sin uso runtime.
+
+## Matriz final
+
+| Módulo | Estado funcional | Tests | Responsive | Dark | QA Android |
+|---|---|---|---|---|---|
+| Auth | Completo | PASS | PASS | PASS | Pendiente |
+| Home | Completo | PASS | PASS | PASS | Pendiente |
+| Search | Completo | PASS | PASS | PASS | Pendiente |
+| Products | Completo | PASS | PASS | PASS | Pendiente |
+| Cart | Completo | PASS | PASS | PASS | Pendiente |
+| Addresses | Completo | PASS | PASS | PASS | Pendiente |
+| Payments | Completo | PASS | PASS | PASS | Pendiente |
+| Checkout | Completo | PASS | PASS | PASS | Pendiente |
+| Profile | Completo | PASS | PASS | PASS | Pendiente |
+| Settings | Completo | PASS | PASS | PASS | Pendiente |
+| Theme | Completo | PASS | PASS | PASS | Pendiente |
+| Ownership | Completo | PASS | N/A | N/A | Pendiente |
+| SQLite Web | Completo | PASS | N/A | N/A | Pendiente |
+
+La columna Android no declara PASS manual; el checklist está en
+`docs/qa/QA_FINAL_ANDROID.md`.
+
 ## Regresión
 
 - `dart format --output=none --set-exit-if-changed lib test`: PASS.
 - `flutter analyze`: PASS.
-- `flutter test`: **421 pruebas aprobadas**.
+- `flutter test`: **423 pruebas aprobadas**.
 - `git diff --check`: PASS.
 - `flutter build web`: PASS.
 - Android: **NO EJECUTADO** por falta de SDK/adb/emulador.
@@ -376,4 +444,6 @@ faltantes. No se agregaron dependencias nuevas ni se actualizaron versiones.
 - Assets, ProductImage y Cart `Image.asset`: resueltos en 10G-B con A+;
   WebP pendiente de assets licenciados.
 - Copy/iconografía masiva: resuelta en 10G-B.
-- README, QA manual, capturas y PR: 10G-C.
+- README y capturas: completados en 10G-C.
+- QA Android manual: pendiente de ejecución física.
+- PR: preparado, no abierto.

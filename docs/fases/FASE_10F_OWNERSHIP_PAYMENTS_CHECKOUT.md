@@ -388,7 +388,7 @@ Total final FASE 10F: **385 pruebas aprobadas**.
 - No hay edición de métodos.
 - No hay PAN ni CVV.
 - Android pendiente de validación física.
-- Web no valida SQLite.
+- Web usa SQLite mediante `sqflite_common_ffi_web` desde 10G-C.
 - La atribución legacy sigue siendo por primer login.
 - El merge legacy de carrito usa máximo de cantidad para ser idempotente.
 

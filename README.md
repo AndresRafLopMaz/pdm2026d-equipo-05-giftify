@@ -144,7 +144,7 @@ flutter build web
 
 Estado verificado:
 
-- **422 pruebas aprobadas**.
+- **423 pruebas aprobadas**.
 - `flutter analyze`: sin issues.
 - `flutter build web`: correcto.
 
