@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/app/main_shell.dart';
+import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/auth/screens/register_screen.dart';
 import 'package:giftify/features/home/screens/home_screen.dart';
 
@@ -13,6 +14,7 @@ Future<void> _pumpRegisterScreen(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
+        theme: appTheme,
         initialRoute: AppRoutes.register,
         onGenerateRoute: AppRouter.onGenerateRoute,
       ),
@@ -47,18 +49,18 @@ Future<void> _selectBirthDate(WidgetTester tester) async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues({});
+
   testWidgets('renderiza el formulario de registro', (tester) async {
     await _pumpRegisterScreen(tester);
 
     expect(find.byType(RegisterScreen), findsOneWidget);
-    expect(find.text('Crea Una\nNueva Cuenta'), findsOneWidget);
+    expect(find.text('Crear cuenta'), findsOneWidget);
     expect(_field('Nombre'), findsOneWidget);
     expect(_field('Correo electrónico'), findsOneWidget);
     expect(_field('Contraseña'), findsOneWidget);
     expect(_field('Fecha de nacimiento'), findsOneWidget);
     expect(find.text('Regístrate'), findsOneWidget);
-    expect(find.text('¿Ya tienes una cuenta?'), findsOneWidget);
-    expect(find.text('Inicia sesión aquí'), findsOneWidget);
+    expect(find.text('Inicia sesión aquí'), findsNothing);
   });
 
   testWidgets('el formulario vacío muestra validaciones y no navega', (
@@ -178,18 +180,16 @@ void main() {
     expect(find.byType(RegisterScreen), findsNothing);
   });
 
-  testWidgets('el enlace de inicio de sesión muestra un SnackBar', (
+  testWidgets('no muestra el enlace de inicio de sesión sin función', (
     tester,
   ) async {
     await _pumpRegisterScreen(tester);
 
-    await tester.tap(find.text('Inicia sesión aquí'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-
+    expect(find.text('¿Ya tienes una cuenta?'), findsNothing);
+    expect(find.text('Inicia sesión aquí'), findsNothing);
     expect(
       find.text('Inicio de sesión disponible próximamente.'),
-      findsOneWidget,
+      findsNothing,
     );
   });
 
@@ -204,32 +204,14 @@ void main() {
 
       await _pumpRegisterScreen(tester);
 
-      // Ausencia de overflow o excepciones en el primer render.
       expect(tester.takeException(), isNull);
-
-      // La fila de inicio de sesión se mantiene dentro del formulario.
-      expect(find.text('¿Ya tienes una cuenta?'), findsOneWidget);
-      expect(find.text('Inicia sesión aquí'), findsOneWidget);
-
-      final Rect formRect = tester.getRect(find.byType(Form));
-      final Rect labelRect = tester.getRect(
-        find.text('¿Ya tienes una cuenta?'),
-      );
-      final Rect linkRect = tester.getRect(find.text('Inicia sesión aquí'));
-
-      expect(labelRect.left, greaterThanOrEqualTo(formRect.left));
-      expect(labelRect.right, lessThanOrEqualTo(formRect.right));
-      expect(linkRect.left, greaterThanOrEqualTo(formRect.left));
-      expect(linkRect.right, lessThanOrEqualTo(formRect.right));
-
-      // El formulario permanece dentro del contenedor desplazable.
+      expect(find.text('Crear cuenta'), findsOneWidget);
       expect(find.byType(SingleChildScrollView), findsOneWidget);
       expect(_field('Nombre'), findsOneWidget);
       expect(_field('Correo electrónico'), findsOneWidget);
       expect(_field('Contraseña'), findsOneWidget);
       expect(_field('Fecha de nacimiento'), findsOneWidget);
 
-      // El botón de registro sigue accesible mediante scroll.
       final Finder submit = find.text('Regístrate');
       await tester.ensureVisible(submit);
       await tester.pumpAndSettle();

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/app_router.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/user_profile.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -68,16 +67,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() {
       _obscurePassword = !_obscurePassword;
     });
-  }
-
-  void _showLoginMessage() {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Inicio de sesión disponible próximamente.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   String? _validateName(String? value) {
@@ -188,177 +177,116 @@ class _RegisterScreenState extends State<RegisterScreen> {
           content: Text(
             'No se pudo completar el registro. Intenta nuevamente.',
           ),
-          behavior: SnackBarBehavior.floating,
         ),
       );
     }
   }
 
-  InputDecoration _fieldDecoration({
-    required String label,
-    required IconData icon,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: textoSecundario),
-      prefixIcon: Icon(icon, color: textoSecundario),
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFE1E6E3)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFE1E6E3)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: verdePrincipal, width: 1.6),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final horizontalPadding = MediaQuery.sizeOf(context).width >= 600
+        ? 24.0
+        : 16.0;
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Crea Una\nNueva Cuenta',
-                  style: TextStyle(
-                    color: verdePrincipal,
-                    fontSize: 32,
-                    height: 1.1,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            32,
+            horizontalPadding,
+            32,
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      '¿Ya tienes una cuenta?',
-                      style: TextStyle(color: textoSecundario, fontSize: 14),
-                    ),
-                    TextButton(
-                      onPressed: _showLoginMessage,
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        minimumSize: const Size(0, 0),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    Text(
+                      'Crear cuenta',
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        color: colors.onSurface,
                       ),
-                      child: const Text(
-                        'Inicia sesión aquí',
-                        style: TextStyle(
-                          color: verdeOscuro,
-                          fontWeight: FontWeight.bold,
+                    ),
+                    const SizedBox(height: 28),
+                    TextFormField(
+                      controller: _nameController,
+                      textInputAction: TextInputAction.next,
+                      textCapitalization: TextCapitalization.words,
+                      validator: _validateName,
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre',
+                        prefixIcon: Icon(Icons.person_outline_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      autocorrect: false,
+                      validator: _validateEmail,
+                      decoration: const InputDecoration(
+                        labelText: 'Correo electrónico',
+                        prefixIcon: Icon(Icons.mail_outline_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      textInputAction: TextInputAction.next,
+                      validator: _validatePassword,
+                      decoration: InputDecoration(
+                        labelText: 'Contraseña',
+                        prefixIcon: const Icon(Icons.lock_outline_rounded),
+                        suffixIcon: IconButton(
+                          onPressed: _togglePasswordVisibility,
+                          tooltip: _obscurePassword
+                              ? 'Mostrar contraseña'
+                              : 'Ocultar contraseña',
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _birthDateController,
+                      readOnly: true,
+                      onTap: _pickBirthDate,
+                      validator: _validateBirthDate,
+                      decoration: const InputDecoration(
+                        labelText: 'Fecha de nacimiento',
+                        prefixIcon: Icon(Icons.calendar_today_outlined),
+                        suffixIcon: Icon(Icons.arrow_drop_down_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    FilledButton(
+                      onPressed: _isSubmitting ? null : _submit,
+                      child: _isSubmitting
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colors.primary,
+                              ),
+                            )
+                          : const Text('Regístrate'),
                     ),
                   ],
                 ),
-                const SizedBox(height: 28),
-                TextFormField(
-                  controller: _nameController,
-                  textInputAction: TextInputAction.next,
-                  textCapitalization: TextCapitalization.words,
-                  validator: _validateName,
-                  decoration: _fieldDecoration(
-                    label: 'Nombre',
-                    icon: Icons.person_outline_rounded,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  autocorrect: false,
-                  validator: _validateEmail,
-                  decoration: _fieldDecoration(
-                    label: 'Correo electrónico',
-                    icon: Icons.mail_outline_rounded,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.next,
-                  validator: _validatePassword,
-                  decoration: _fieldDecoration(
-                    label: 'Contraseña',
-                    icon: Icons.lock_outline_rounded,
-                    suffixIcon: IconButton(
-                      onPressed: _togglePasswordVisibility,
-                      tooltip: _obscurePassword
-                          ? 'Mostrar contraseña'
-                          : 'Ocultar contraseña',
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        color: textoSecundario,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _birthDateController,
-                  readOnly: true,
-                  onTap: _pickBirthDate,
-                  validator: _validateBirthDate,
-                  decoration: _fieldDecoration(
-                    label: 'Fecha de nacimiento',
-                    icon: Icons.calendar_today_outlined,
-                    suffixIcon: const Icon(
-                      Icons.arrow_drop_down_rounded,
-                      color: textoSecundario,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                FilledButton(
-                  onPressed: _isSubmitting ? null : _submit,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: amarilloPrincipal,
-                    foregroundColor: textoPrincipal,
-                    disabledBackgroundColor: amarilloPrincipal,
-                    disabledForegroundColor: textoPrincipal,
-                    padding: const EdgeInsets.symmetric(vertical: 17),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(17),
-                    ),
-                  ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: textoPrincipal,
-                          ),
-                        )
-                      : const Text(
-                          'Regístrate',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
