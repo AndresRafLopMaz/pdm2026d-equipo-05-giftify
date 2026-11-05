@@ -142,4 +142,24 @@ void main() {
     expect(find.byType(ProfileScreen), findsOneWidget);
     expect(find.text('ana@mail.com'), findsOneWidget);
   });
+
+  testWidgets('deep link /settings con sesión muestra Settings', (
+    tester,
+  ) async {
+    final harness = authenticatedHarness();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: harness.overrides,
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          initialRoute: AppRoutes.settings,
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SettingsScreen), findsOneWidget);
+    expect(find.text('Configuración'), findsOneWidget);
+  });
 }

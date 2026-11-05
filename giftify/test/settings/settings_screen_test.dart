@@ -105,6 +105,18 @@ void main() {
     );
   });
 
+  testWidgets('las opciones exponen semántica', (tester) async {
+    final semantics = tester.ensureSemantics();
+
+    await pumpSettings(tester);
+
+    expect(find.bySemanticsLabel(RegExp('Sistema')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('Claro')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('Oscuro')), findsOneWidget);
+
+    semantics.dispose();
+  });
+
   testWidgets('es responsive en 320x640', (tester) async {
     tester.view.physicalSize = const Size(320, 640);
     tester.view.devicePixelRatio = 1;
