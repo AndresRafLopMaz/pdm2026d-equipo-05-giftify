@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/enums/gift_category.dart';
 import '../../../shared/models/gift_product.dart';
 import 'availability_badge.dart';
 
@@ -38,8 +39,8 @@ class ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${product.category} · ${product.sellerName} '
-                    '★ ${product.sellerRating.toStringAsFixed(1)}',
+                    '${product.category.label} Â· ${product.sellerName} '
+                    'â˜… ${product.sellerRating.toStringAsFixed(1)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelMedium?.copyWith(

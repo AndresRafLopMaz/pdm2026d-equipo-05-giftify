@@ -2,15 +2,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/features/products/utils/product_filters.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_availability.dart';
+import 'package:giftify/shared/enums/gift_category.dart';
+import 'package:giftify/shared/enums/gift_occasion.dart';
+import 'package:giftify/shared/enums/gift_size.dart';
 import 'package:giftify/shared/models/gift_product.dart';
 import 'package:giftify/shared/models/gift_search_criteria.dart';
 
 GiftProduct _product({
   required String id,
   double price = 100,
-  String category = 'Joyería',
-  String size = 'Pequeño',
-  List<String> occasions = const ['Cumpleaños'],
+  GiftCategory category = GiftCategory.jewelry,
+  GiftSize size = GiftSize.small,
+  Set<GiftOccasion> occasions = const {GiftOccasion.birthday},
   int? estimatedDeliveryDays,
 }) {
   return GiftProduct(
@@ -23,7 +26,7 @@ GiftProduct _product({
     availability: GiftAvailability.inStock,
     sellerName: 'Vendedor',
     sellerRating: 4.5,
-    suggestedOccasions: occasions,
+    occasions: occasions,
     estimatedDeliveryDays: estimatedDeliveryDays,
   );
 }
@@ -52,8 +55,12 @@ void main() {
 
     test('prioriza la coincidencia de categoría con giftType', () {
       final products = [
-        _product(id: 'otro', category: 'Alimentos', occasions: const []),
-        _product(id: 'coincide', category: 'Joyería', occasions: const []),
+        _product(id: 'otro', category: GiftCategory.food, occasions: const {}),
+        _product(
+          id: 'coincide',
+          category: GiftCategory.jewelry,
+          occasions: const {},
+        ),
       ];
 
       const criteria = GiftSearchCriteria(
@@ -68,10 +75,10 @@ void main() {
       expect(result.first.id, 'coincide');
     });
 
-    test('prioriza la coincidencia dentro de suggestedOccasions', () {
+    test('prioriza la coincidencia dentro de occasions', () {
       final products = [
-        _product(id: 'otro', occasions: const ['Trabajo']),
-        _product(id: 'coincide', occasions: const ['Aniversario']),
+        _product(id: 'otro', occasions: const {GiftOccasion.thankYou}),
+        _product(id: 'coincide', occasions: const {GiftOccasion.anniversary}),
       ];
 
       const criteria = GiftSearchCriteria(
@@ -87,8 +94,8 @@ void main() {
 
     test('prioriza la coincidencia de tamaño', () {
       final products = [
-        _product(id: 'pequeno', size: 'Pequeño'),
-        _product(id: 'mediano', size: 'Mediano'),
+        _product(id: 'pequeno', size: GiftSize.small),
+        _product(id: 'mediano', size: GiftSize.medium),
       ];
 
       const criteria = GiftSearchCriteria(
@@ -116,8 +123,8 @@ void main() {
 
     test('prioriza el producto que llega antes de eventDate', () {
       final products = [
-        _product(id: 'tarde', occasions: const [], estimatedDeliveryDays: 10),
-        _product(id: 'a_tiempo', occasions: const [], estimatedDeliveryDays: 2),
+        _product(id: 'tarde', occasions: const {}, estimatedDeliveryDays: 10),
+        _product(id: 'a_tiempo', occasions: const {}, estimatedDeliveryDays: 2),
       ];
 
       final criteria = GiftSearchCriteria(

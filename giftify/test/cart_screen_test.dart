@@ -12,6 +12,7 @@ import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+import 'package:giftify/shared/enums/gift_category.dart';
 import 'package:giftify/shared/models/cart_item.dart';
 
 void main() {
@@ -210,7 +211,9 @@ void main() {
     expect(textForKey(tester, 'cart-total'), 'Q 780.00');
 
     await tester.tap(
-      find.byKey(ValueKey('cart-filter-category-${mockProducts[1].category}')),
+      find.byKey(
+        ValueKey('cart-filter-category-${mockProducts[1].category.label}'),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -222,7 +225,9 @@ void main() {
     expect(find.byKey(const ValueKey('cart-retry-button')), findsNothing);
 
     await tester.tap(
-      find.byKey(ValueKey('cart-filter-category-${mockProducts[0].category}')),
+      find.byKey(
+        ValueKey('cart-filter-category-${mockProducts[0].category.label}'),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -253,7 +258,9 @@ void main() {
     );
 
     await tester.tap(
-      find.byKey(ValueKey('cart-filter-category-${mockProducts[1].category}')),
+      find.byKey(
+        ValueKey('cart-filter-category-${mockProducts[1].category.label}'),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text(mockProducts[1].name), findsOneWidget);
@@ -551,7 +558,9 @@ void main() {
     );
 
     await tester.tap(
-      find.byKey(ValueKey('cart-filter-category-${mockProducts[1].category}')),
+      find.byKey(
+        ValueKey('cart-filter-category-${mockProducts[1].category.label}'),
+      ),
     );
     await tester.pumpAndSettle();
     expect(textForKey(tester, 'cart-total'), 'Q 780.00');
@@ -599,7 +608,9 @@ void main() {
     );
 
     await tester.tap(
-      find.byKey(ValueKey('cart-filter-category-${mockProducts[1].category}')),
+      find.byKey(
+        ValueKey('cart-filter-category-${mockProducts[1].category.label}'),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text(mockProducts[0].name), findsNothing);

@@ -1,4 +1,11 @@
+import '../enums/gift_age_range.dart';
 import '../enums/gift_availability.dart';
+import '../enums/gift_category.dart';
+import '../enums/gift_format.dart';
+import '../enums/gift_interest.dart';
+import '../enums/gift_occasion.dart';
+import '../enums/gift_recipient.dart';
+import '../enums/gift_size.dart';
 
 /// Producto recomendado por Giftify.
 ///
@@ -15,7 +22,13 @@ class GiftProduct {
     required this.availability,
     required this.sellerName,
     required this.sellerRating,
-    required this.suggestedOccasions,
+    this.occasions = const {},
+    this.recipientTypes = const {},
+    this.ageRanges = const {},
+    this.interests = const {},
+    this.giftFormat = GiftFormat.physical,
+    this.isPersonalizable = false,
+    this.isLocal = false,
     this.estimatedDeliveryDays,
     this.imageAsset,
   });
@@ -29,12 +42,8 @@ class GiftProduct {
   /// Precio expresado en quetzales.
   final double price;
 
-  /// Categoría general del producto.
-  final String category;
-
-  /// Tamaño utilizado por el filtrado inicial.
-  final String size;
-
+  final GiftCategory category;
+  final GiftSize size;
   final GiftAvailability availability;
 
   /// Nombre del comercio o proveedor.
@@ -44,7 +53,20 @@ class GiftProduct {
   final double sellerRating;
 
   /// Ocasiones para las que normalmente puede recomendarse.
-  final List<String> suggestedOccasions;
+  final Set<GiftOccasion> occasions;
+
+  /// Tipos de destinatario compatibles. Un set vacío es neutral.
+  final Set<GiftRecipient> recipientTypes;
+
+  /// Rangos de edad recomendados. Un set vacío es neutral.
+  final Set<GiftAgeRange> ageRanges;
+
+  /// Intereses afines al producto.
+  final Set<GiftInterest> interests;
+
+  final GiftFormat giftFormat;
+  final bool isPersonalizable;
+  final bool isLocal;
 
   /// Tiempo aproximado de entrega.
   final int? estimatedDeliveryDays;

@@ -6,6 +6,7 @@ import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
 import 'package:giftify/features/cart/providers/cart_filter_provider.dart';
 import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+import 'package:giftify/shared/enums/gift_category.dart';
 import 'package:giftify/shared/models/cart_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,7 +38,7 @@ void main() {
 
     container
         .read(cartFilterProvider.notifier)
-        .setCategory(mockProducts[1].category);
+        .setCategory(mockProducts[1].category.label);
     final filtered = await container.read(cartItemsProvider.future);
 
     expect(filtered.allItems, hasLength(2));
@@ -104,7 +105,7 @@ void main() {
 
       container
           .read(cartFilterProvider.notifier)
-          .setCategory(mockProducts[1].category);
+          .setCategory(mockProducts[1].category.label);
       final foods = await container.read(cartItemsProvider.future);
       expect(foods.visibleItems.map((item) => item.product.id), [
         mockProducts[1].id,
@@ -126,7 +127,7 @@ void main() {
 
       container
           .read(cartFilterProvider.notifier)
-          .setCategory(mockProducts[0].category);
+          .setCategory(mockProducts[0].category.label);
       final jewelry = await container.read(cartItemsProvider.future);
       expect(jewelry.visibleItems.single.product.id, mockProducts[0].id);
       expect(jewelry.total, 780);

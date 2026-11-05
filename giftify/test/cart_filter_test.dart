@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/features/cart/data/cart_filter.dart';
 import 'package:giftify/features/cart/providers/cart_filter_provider.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+import 'package:giftify/shared/enums/gift_category.dart';
 import 'package:giftify/shared/models/cart_item.dart';
 
 void main() {
@@ -66,10 +67,10 @@ void main() {
 
     container
         .read(cartFilterProvider.notifier)
-        .setCategory(mockProducts.first.category);
+        .setCategory(mockProducts.first.category.label);
     expect(
       container.read(cartFilterProvider),
-      CartFilter(category: mockProducts.first.category),
+      CartFilter(category: mockProducts.first.category.label),
     );
 
     container.read(cartFilterProvider.notifier).clear();

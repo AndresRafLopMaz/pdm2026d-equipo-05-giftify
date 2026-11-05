@@ -5,6 +5,8 @@ import '../../../app/app_tab.dart';
 import '../../../app/app_tab_notifier.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/enums/gift_availability.dart';
+import '../../../shared/enums/gift_category.dart';
+import '../../../shared/enums/gift_size.dart';
 import '../../../shared/models/cart_item.dart';
 import '../../../shared/models/gift_product.dart';
 import '../../cart/providers/cart_items_provider.dart';
@@ -48,8 +50,8 @@ class _DetailContent extends StatelessWidget {
         : 16.0;
     final days = product.estimatedDeliveryDays;
     final meta = <String>[
-      product.category,
-      product.size,
+      product.category.label,
+      product.size.label,
       if (days != null) 'Entrega estimada: $days ${days == 1 ? 'día' : 'días'}',
     ].join(' · ');
 

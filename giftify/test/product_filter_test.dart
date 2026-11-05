@@ -4,6 +4,7 @@ import 'package:giftify/features/products/data/product_filter.dart';
 import 'package:giftify/features/products/providers/product_filter_provider.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_availability.dart';
+import 'package:giftify/shared/enums/gift_category.dart';
 
 void main() {
   test('ProductFilter es inmutable y compara por valor', () {
@@ -30,7 +31,7 @@ void main() {
     );
     expect(byCategory, isNotEmpty);
     expect(
-      byCategory.every((product) => product.category == 'Joyería'),
+      byCategory.every((product) => product.category == GiftCategory.jewelry),
       isTrue,
     );
 

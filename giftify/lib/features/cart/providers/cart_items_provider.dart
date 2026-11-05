@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/enums/gift_category.dart';
 import '../../../shared/models/cart_item.dart';
 import '../data/cart_filter.dart';
 import '../data/cart_repository.dart';
@@ -13,7 +14,7 @@ class CartSnapshot {
     : allItems = List<CartItem>.unmodifiable(allItems),
       visibleItems = applyCartFilter(allItems, filter),
       categories = Set<String>.unmodifiable(
-        allItems.map((item) => item.product.category).toSet(),
+        allItems.map((item) => item.product.category.label).toSet(),
       );
 
   final List<CartItem> allItems;

@@ -13,6 +13,7 @@ import 'package:giftify/features/products/screens/product_results_screen.dart';
 import 'package:giftify/features/products/utils/product_filters.dart';
 import 'package:giftify/features/products/widgets/product_card.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+import 'package:giftify/shared/enums/gift_category.dart';
 import 'package:giftify/shared/models/gift_search_criteria.dart';
 
 import 'helpers/fake_product_repository.dart';
@@ -285,7 +286,10 @@ void main() {
 
     final cards = tester.widgetList<ProductCard>(find.byType(ProductCard));
     expect(cards, isNotEmpty);
-    expect(cards.every((card) => card.product.category == 'Joyería'), isTrue);
+    expect(
+      cards.every((card) => card.product.category == GiftCategory.jewelry),
+      isTrue,
+    );
     expect(repository.calls, greaterThan(1));
     expect(find.text('Recargar'), findsNothing);
   });

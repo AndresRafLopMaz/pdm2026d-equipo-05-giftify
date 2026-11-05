@@ -13,6 +13,9 @@ import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_availability.dart';
+import 'package:giftify/shared/enums/gift_category.dart';
+import 'package:giftify/shared/enums/gift_occasion.dart';
+import 'package:giftify/shared/enums/gift_size.dart';
 import 'package:giftify/shared/models/gift_product.dart';
 
 GiftProduct _buildProduct({
@@ -20,8 +23,8 @@ GiftProduct _buildProduct({
   String name = 'Producto de prueba',
   String description = 'Descripción ampliada del producto.',
   double price = 150,
-  String category = 'Joyería',
-  String size = 'Pequeño',
+  GiftCategory category = GiftCategory.jewelry,
+  GiftSize size = GiftSize.small,
   GiftAvailability availability = GiftAvailability.inStock,
   String sellerName = 'Vendedor de prueba',
   double sellerRating = 4.5,
@@ -38,7 +41,7 @@ GiftProduct _buildProduct({
     availability: availability,
     sellerName: sellerName,
     sellerRating: sellerRating,
-    suggestedOccasions: const ['Cumpleaños'],
+    occasions: const {GiftOccasion.birthday},
     estimatedDeliveryDays: estimatedDeliveryDays,
     imageAsset: imageAsset,
   );

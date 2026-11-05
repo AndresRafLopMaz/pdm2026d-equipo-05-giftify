@@ -1,3 +1,6 @@
+import '../../../shared/enums/gift_category.dart';
+import '../../../shared/enums/gift_occasion.dart';
+import '../../../shared/enums/gift_size.dart';
 import '../../../shared/models/gift_product.dart';
 import '../../../shared/models/gift_search_criteria.dart';
 
@@ -50,7 +53,7 @@ bool _arrivesOnTime(GiftProduct product, GiftSearchCriteria criteria) {
 /// Calcula la puntuación de coincidencia de un producto con los criterios.
 ///
 /// category == giftType                    +2
-/// suggestedOccasions contiene occasion    +2
+/// occasions contiene occasion             +2
 /// size == criteria.size                   +1
 /// llega antes de eventDate                +1
 int _scoreFor(GiftProduct product, GiftSearchCriteria criteria) {
@@ -59,14 +62,14 @@ int _scoreFor(GiftProduct product, GiftSearchCriteria criteria) {
   final giftType = criteria.giftType;
   if (giftType != null &&
       giftType.trim().isNotEmpty &&
-      _normalize(product.category) == _normalize(giftType)) {
+      _normalize(product.category.label) == _normalize(giftType)) {
     score += 2;
   }
 
   final occasion = criteria.occasion;
   if (occasion.trim().isNotEmpty &&
-      product.suggestedOccasions.any(
-        (suggested) => _normalize(suggested) == _normalize(occasion),
+      product.occasions.any(
+        (suggested) => _normalize(suggested.label) == _normalize(occasion),
       )) {
     score += 2;
   }
@@ -74,7 +77,7 @@ int _scoreFor(GiftProduct product, GiftSearchCriteria criteria) {
   final size = criteria.size;
   if (size != null &&
       size.trim().isNotEmpty &&
-      _normalize(product.size) == _normalize(size)) {
+      _normalize(product.size.label) == _normalize(size)) {
     score += 1;
   }
 

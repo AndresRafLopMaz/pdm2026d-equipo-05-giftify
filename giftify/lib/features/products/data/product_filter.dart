@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../shared/enums/gift_availability.dart';
+import '../../../shared/enums/gift_category.dart';
 import '../../../shared/models/gift_product.dart';
 
 /// Filtro adicional aplicado al catálogo de productos.
@@ -49,7 +50,8 @@ List<GiftProduct> applyProductFilter(
 ) {
   return products
       .where((product) {
-        if (filter.category != null && product.category != filter.category) {
+        if (filter.category != null &&
+            product.category.label != filter.category) {
           return false;
         }
 
