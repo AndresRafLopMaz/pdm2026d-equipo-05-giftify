@@ -95,7 +95,10 @@ void main() {
   testWidgets('el CTA principal abre la pestaña Buscar', (tester) async {
     final container = await _pumpShell(tester);
 
-    await tester.tap(find.byKey(const ValueKey('home-search-action')));
+    final action = find.byKey(const ValueKey('home-search-action'));
+    await tester.ensureVisible(action);
+    await tester.pumpAndSettle();
+    await tester.tap(action);
     await tester.pumpAndSettle();
 
     expect(container.read(appTabProvider), AppTab.search);
@@ -105,7 +108,10 @@ void main() {
   testWidgets('Catálogo de Home abre la pestaña Catálogo', (tester) async {
     final container = await _pumpShell(tester);
 
-    await tester.tap(find.byKey(const ValueKey('home-catalog-action')));
+    final action = find.byKey(const ValueKey('home-catalog-action'));
+    await tester.ensureVisible(action);
+    await tester.pumpAndSettle();
+    await tester.tap(action);
     await tester.pumpAndSettle();
 
     expect(container.read(appTabProvider), AppTab.catalog);

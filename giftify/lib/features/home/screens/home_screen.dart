@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/app_router.dart';
 import '../../../app/app_tab.dart';
 import '../../../app/app_tab_notifier.dart';
+import '../../../core/theme/app_theme.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -12,80 +13,125 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final giftify = GiftifyColors.of(context);
     final width = MediaQuery.sizeOf(context).width;
     final horizontalPadding = width >= 600 ? 24.0 : 16.0;
 
+    final categories = <_CategoryIdea>[
+      _CategoryIdea(
+        label: 'Cumpleaños',
+        icon: Icons.cake_rounded,
+        foreground: giftify.warmStrong,
+        background: giftify.warmSoft,
+      ),
+      _CategoryIdea(
+        label: 'Pareja',
+        icon: Icons.favorite_rounded,
+        foreground: giftify.blushStrong,
+        background: giftify.blushSoft,
+      ),
+      _CategoryIdea(
+        label: 'Familia',
+        icon: Icons.family_restroom_rounded,
+        foreground: giftify.secondaryStrong,
+        background: giftify.secondarySoft,
+      ),
+      _CategoryIdea(
+        label: 'Amigos',
+        icon: Icons.groups_rounded,
+        foreground: colors.primary,
+        background: colors.primaryContainer,
+      ),
+      _CategoryIdea(
+        label: 'Tecnología',
+        icon: Icons.devices_rounded,
+        foreground: colors.primary,
+        background: colors.primaryContainer,
+      ),
+      _CategoryIdea(
+        label: 'Experiencias',
+        icon: Icons.local_activity_rounded,
+        foreground: giftify.warmStrong,
+        background: giftify.warmSoft,
+      ),
+    ];
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Giftify')),
       body: SafeArea(
         child: SingleChildScrollView(
           key: const PageStorageKey('home-scroll'),
           padding: EdgeInsets.fromLTRB(
             horizontalPadding,
-            24,
+            20,
             horizontalPadding,
             32,
           ),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
+              constraints: const BoxConstraints(maxWidth: 960),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const _BrandHeader(),
+                  const SizedBox(height: 28),
                   Text(
-                    'Encuentra el regalo ideal',
+                    'Hola',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '¿A quién quieres sorprender?',
                     style: theme.textTheme.displaySmall?.copyWith(
                       color: colors.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Text(
-                    'Elige una ocasión, un presupuesto y descubre opciones para regalar sin complicarte.',
+                    'Encuentra ideas de regalo según la ocasión, presupuesto y persona.',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: colors.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  FilledButton.icon(
-                    key: const ValueKey('home-search-action'),
-                    onPressed: () {
+                  const SizedBox(height: 24),
+                  _SearchHero(
+                    onSearch: () {
                       ref.read(appTabProvider.notifier).select(AppTab.search);
                     },
-                    icon: const Icon(Icons.search_rounded),
-                    label: const Text('Buscar un regalo'),
                   ),
                   const SizedBox(height: 32),
-                  const Divider(),
-                  _HomeAction(
-                    key: const ValueKey('home-catalog-action'),
-                    icon: Icons.storefront_outlined,
-                    title: 'Catálogo',
-                    subtitle: 'Explora todos los regalos disponibles',
-                    onTap: () {
+                  const _SectionTitle(title: 'Explora'),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final category in categories)
+                        _CategoryPill(category: category),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  const _SectionTitle(title: 'Accesos rápidos'),
+                  const SizedBox(height: 12),
+                  _QuickAccessGrid(
+                    onCatalog: () {
                       ref.read(appTabProvider.notifier).select(AppTab.catalog);
                     },
-                  ),
-                  const Divider(),
-                  _HomeAction(
-                    key: const ValueKey('home-cart-action'),
-                    icon: Icons.shopping_cart_outlined,
-                    title: 'Carrito',
-                    subtitle: 'Revisa los productos que guardaste',
-                    onTap: () {
+                    onCart: () {
                       ref.read(appTabProvider.notifier).select(AppTab.cart);
                     },
-                  ),
-                  const Divider(),
-                  _HomeAction(
-                    key: const ValueKey('home-addresses-action'),
-                    icon: Icons.location_on_outlined,
-                    title: 'Mis direcciones',
-                    subtitle: 'Administra tus lugares de entrega',
-                    onTap: () {
+                    onAddresses: () {
                       Navigator.pushNamed(context, AppRoutes.addresses);
                     },
                   ),
-                  const Divider(),
+                  const SizedBox(height: 32),
+                  _EditorialBanner(
+                    onCatalog: () {
+                      ref.read(appTabProvider.notifier).select(AppTab.catalog);
+                    },
+                  ),
                 ],
               ),
             ),
@@ -96,18 +142,304 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _HomeAction extends StatelessWidget {
-  const _HomeAction({
+class _BrandHeader extends StatelessWidget {
+  const _BrandHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: colors.primaryContainer,
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: Icon(
+            Icons.card_giftcard_rounded,
+            color: colors.primary,
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Giftify',
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SearchHero extends StatelessWidget {
+  const _SearchHero({required this.onSearch});
+
+  final VoidCallback onSearch;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final giftify = GiftifyColors.of(context);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -34,
+            top: -42,
+            child: Container(
+              width: 160,
+              height: 160,
+              decoration: BoxDecoration(
+                color: giftify.blush.withValues(alpha: 0.32),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            color: colors.primaryContainer,
+            padding: const EdgeInsets.all(20),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        Icons.redeem_rounded,
+                        color: colors.primary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Un regalo para cada historia',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: colors.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Cuéntanos qué necesitas y descubre opciones para esa persona especial.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        key: const ValueKey('home-search-action'),
+                        onPressed: onSearch,
+                        child: const Text(
+                          'Buscar el regalo ideal',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+    );
+  }
+}
+
+class _CategoryIdea {
+  const _CategoryIdea({
+    required this.label,
+    required this.icon,
+    required this.foreground,
+    required this.background,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color foreground;
+  final Color background;
+}
+
+class _CategoryPill extends StatelessWidget {
+  const _CategoryPill({required this.category});
+
+  final _CategoryIdea category;
+
+  @override
+  Widget build(BuildContext context) {
+    // FASE 10C convertirá estas categorías en filtros reales.
+    return Semantics(
+      container: true,
+      label: 'Categoría ${category.label}',
+      child: ExcludeSemantics(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.sizeOf(context).width - 32,
+          ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: category.background,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(category.icon, size: 18, color: category.foreground),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    category.label,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: category.foreground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickAccessGrid extends StatelessWidget {
+  const _QuickAccessGrid({
+    required this.onCatalog,
+    required this.onCart,
+    required this.onAddresses,
+  });
+
+  final VoidCallback onCatalog;
+  final VoidCallback onCart;
+  final VoidCallback onAddresses;
+
+  @override
+  Widget build(BuildContext context) {
+    final giftify = GiftifyColors.of(context);
+    final colors = Theme.of(context).colorScheme;
+
+    final tiles = <Widget>[
+      _QuickAccessTile(
+        key: const ValueKey('home-catalog-action'),
+        icon: Icons.storefront_rounded,
+        iconForeground: giftify.secondaryStrong,
+        iconBackground: giftify.secondarySoft,
+        title: 'Catálogo',
+        description: 'Explora todos los regalos',
+        onTap: onCatalog,
+      ),
+      _QuickAccessTile(
+        key: const ValueKey('home-cart-action'),
+        icon: Icons.shopping_cart_rounded,
+        iconForeground: giftify.blushStrong,
+        iconBackground: giftify.blushSoft,
+        title: 'Mi carrito',
+        description: 'Revisa lo que guardaste',
+        onTap: onCart,
+      ),
+      _QuickAccessTile(
+        key: const ValueKey('home-addresses-action'),
+        icon: Icons.location_on_rounded,
+        iconForeground: colors.primary,
+        iconBackground: colors.primaryContainer,
+        title: 'Direcciones',
+        description: 'Administra tus entregas',
+        onTap: onAddresses,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 360) {
+          return Column(
+            children: [
+              tiles[0],
+              const SizedBox(height: 12),
+              tiles[1],
+              const SizedBox(height: 12),
+              tiles[2],
+            ],
+          );
+        }
+
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: tiles[0]),
+              const SizedBox(width: 12),
+              Expanded(child: tiles[1]),
+              const SizedBox(width: 12),
+              Expanded(child: tiles[2]),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _QuickAccessTile extends StatelessWidget {
+  const _QuickAccessTile({
     super.key,
     required this.icon,
+    required this.iconForeground,
+    required this.iconBackground,
     required this.title,
-    required this.subtitle,
+    required this.description,
     required this.onTap,
   });
 
   final IconData icon;
+  final Color iconForeground;
+  final Color iconBackground;
   final String title;
-  final String subtitle;
+  final String description;
   final VoidCallback onTap;
 
   @override
@@ -115,34 +447,125 @@ class _HomeAction extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    return ListTile(
-      onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-      leading: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: colors.primaryContainer,
-          borderRadius: BorderRadius.circular(12),
+    return Semantics(
+      button: true,
+      label: '$title. $description',
+      child: ExcludeSemantics(
+        child: Material(
+          color: colors.surface,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: colors.outlineVariant),
+          ),
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: iconBackground,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(icon, color: iconForeground, size: 21),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: colors.onSurfaceVariant,
+                        size: 18,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: colors.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        child: Icon(icon, color: colors.primary),
       ),
-      title: Text(
-        title,
-        style: theme.textTheme.titleMedium?.copyWith(
-          color: colors.onSurface,
-          fontWeight: FontWeight.w700,
-        ),
+    );
+  }
+}
+
+class _EditorialBanner extends StatelessWidget {
+  const _EditorialBanner({required this.onCatalog});
+
+  final VoidCallback onCatalog;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final giftify = GiftifyColors.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: giftify.warmSoft,
+        borderRadius: BorderRadius.circular(20),
       ),
-      subtitle: Text(
-        subtitle,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: colors.onSurfaceVariant,
-        ),
-      ),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: colors.onSurfaceVariant,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.auto_awesome_rounded,
+                color: giftify.warmStrong,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Ideas para regalar',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: colors.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '¿No sabes por dónde empezar? Explora nuestro catálogo y descubre opciones para diferentes ocasiones.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              key: const ValueKey('home-editorial-catalog-action'),
+              onPressed: onCatalog,
+              style: TextButton.styleFrom(foregroundColor: giftify.warmStrong),
+              child: const Text('Ver catálogo', textAlign: TextAlign.center),
+            ),
+          ),
+        ],
       ),
     );
   }
