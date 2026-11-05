@@ -5,7 +5,9 @@ import '../features/cart/screens/cart_screen.dart';
 import '../features/cart/screens/checkout_screen.dart';
 import '../features/products/screens/product_detail_screen.dart';
 import '../features/products/screens/product_results_screen.dart';
+import '../features/profile/screens/profile_screen.dart';
 import '../features/search/screens/gift_search_screen.dart';
+import '../features/settings/screens/settings_screen.dart';
 import '../shared/models/cart_item.dart';
 import '../shared/models/gift_product.dart';
 import '../shared/models/gift_search_criteria.dart';
@@ -20,6 +22,8 @@ abstract final class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String home = '/home';
+  static const String profile = '/profile';
+  static const String settings = '/settings';
   static const String search = '/search';
   static const String productResults = '/products';
   static const String productDetail = '/products/detail';
@@ -51,6 +55,18 @@ abstract final class AppRouter {
         return _buildRoute(
           settings,
           const AuthGate(initialView: AuthView.register),
+        );
+
+      case AppRoutes.profile:
+        return _buildRoute(
+          settings,
+          const AuthGate(authenticatedChild: ProfileScreen()),
+        );
+
+      case AppRoutes.settings:
+        return _buildRoute(
+          settings,
+          const AuthGate(authenticatedChild: SettingsScreen()),
         );
 
       case AppRoutes.search:

@@ -8,6 +8,7 @@ import 'package:giftify/app/auth_gate.dart';
 import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/features/auth/screens/login_screen.dart';
 import 'package:giftify/features/auth/screens/register_screen.dart';
+import 'package:giftify/features/profile/screens/profile_screen.dart';
 
 import '../helpers/auth_test_harness.dart';
 
@@ -22,11 +23,17 @@ void main() {
     WidgetTester tester,
     AuthTestHarness harness, {
     AuthView initialView = AuthView.login,
+    Widget? authenticatedChild,
   }) {
     return tester.pumpWidget(
       ProviderScope(
         overrides: harness.overrides,
-        child: MaterialApp(home: AuthGate(initialView: initialView)),
+        child: MaterialApp(
+          home: AuthGate(
+            initialView: initialView,
+            authenticatedChild: authenticatedChild,
+          ),
+        ),
       ),
     );
   }
@@ -102,7 +109,7 @@ void main() {
     expect(find.byType(RegisterScreen), findsOneWidget);
   });
 
-  testWidgets('logout muestra Login y Back no revela MainShell', (
+  testWidgets('logout desde Profile muestra Login y Back no revela MainShell', (
     tester,
   ) async {
     final harness = AuthTestHarness();
@@ -112,11 +119,11 @@ void main() {
     );
     harness.session.userId = user.id;
 
-    await pumpGate(tester, harness);
+    await pumpGate(tester, harness, authenticatedChild: const ProfileScreen());
     await tester.pumpAndSettle();
-    expect(find.byType(MainShell), findsOneWidget);
+    expect(find.byType(ProfileScreen), findsOneWidget);
 
-    await tester.tap(find.byKey(const ValueKey('logout-button')));
+    await tester.tap(find.byKey(const ValueKey('profile-logout-button')));
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginScreen), findsOneWidget);

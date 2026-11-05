@@ -10,12 +10,15 @@ import 'package:giftify/features/addresses/providers/addresses_provider.dart';
 import 'package:giftify/features/addresses/screens/address_list_screen.dart';
 import 'package:giftify/features/home/screens/home_screen.dart';
 import 'package:giftify/features/products/screens/product_results_screen.dart';
+import 'package:giftify/features/profile/screens/profile_screen.dart';
 import 'package:giftify/features/search/providers/search_prefill_provider.dart';
 import 'package:giftify/shared/enums/gift_format.dart';
 import 'package:giftify/shared/enums/gift_interest.dart';
 import 'package:giftify/shared/enums/gift_occasion.dart';
 import 'package:giftify/shared/enums/gift_recipient.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/auth_test_harness.dart';
 import 'helpers/fake_address_repository.dart';
 
 Future<ProviderContainer> _pumpHomeScreen(
@@ -52,6 +55,9 @@ void _setTextScale(WidgetTester tester, double scale) {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
+
   testWidgets('renderiza Home como dashboard de descubrimiento', (
     tester,
   ) async {
@@ -204,6 +210,8 @@ void main() {
     await _pumpHomeScreen(tester);
 
     expect(find.text('Hola'), findsOneWidget);
+    expect(find.byKey(const ValueKey('profile-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('logout-button')), findsNothing);
 
     for (final name in ['Andrés', 'Catherine', 'Diego', 'Brayan']) {
       expect(find.textContaining(name), findsNothing);
@@ -218,6 +226,26 @@ void main() {
     ]) {
       expect(find.text(futureText), findsNothing);
     }
+  });
+
+  testWidgets('saluda con el primer nombre y abre Profile', (tester) async {
+    final harness = AuthTestHarness();
+    final user = harness.repository.seedUser(
+      name: 'Andrés Rafael López',
+      email: 'andres@mail.com',
+    );
+    harness.session.userId = user.id;
+
+    await _pumpHomeScreen(tester, overrides: harness.overrides);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hola, Andrés'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('profile-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProfileScreen), findsOneWidget);
+    expect(find.text('andres@mail.com'), findsOneWidget);
   });
 
   testWidgets('Home no desborda en pantalla movil de 320x640', (tester) async {

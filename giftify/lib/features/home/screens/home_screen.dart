@@ -9,9 +9,10 @@ import '../../../shared/enums/gift_format.dart';
 import '../../../shared/enums/gift_interest.dart';
 import '../../../shared/enums/gift_occasion.dart';
 import '../../../shared/enums/gift_recipient.dart';
+import '../../auth/providers/auth_controller.dart';
+import '../../profile/widgets/user_avatar.dart';
 import '../../search/models/search_prefill.dart';
 import '../../search/providers/search_prefill_provider.dart';
-import '../../auth/providers/auth_controller.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -23,6 +24,8 @@ class HomeScreen extends ConsumerWidget {
     final giftify = GiftifyColors.of(context);
     final width = MediaQuery.sizeOf(context).width;
     final horizontalPadding = width >= 600 ? 24.0 : 16.0;
+    final user = ref.watch(authControllerProvider).value;
+    final greeting = _greetingFor(user?.name);
 
     final categories = <_CategoryIdea>[
       _CategoryIdea(
@@ -92,13 +95,14 @@ class HomeScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _BrandHeader(
-                    onLogout: () {
-                      _logout(context, ref);
+                    name: user?.name ?? '',
+                    onProfile: () {
+                      Navigator.pushNamed(context, AppRoutes.profile);
                     },
                   ),
                   const SizedBox(height: 28),
                   Text(
-                    'Hola',
+                    greeting,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: colors.primary,
                       fontWeight: FontWeight.w700,
@@ -174,27 +178,22 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _logout(BuildContext context, WidgetRef ref) async {
-    try {
-      await ref.read(authControllerProvider.notifier).logout();
-    } catch (_) {
-      if (!context.mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No pudimos cerrar la sesión. Intenta nuevamente.'),
-        ),
-      );
+  String _greetingFor(String? name) {
+    final normalized = name?.trim() ?? '';
+    if (normalized.isEmpty) {
+      return 'Hola';
     }
+
+    final firstName = normalized.split(RegExp(r'\s+')).first;
+    return 'Hola, $firstName';
   }
 }
 
 class _BrandHeader extends StatelessWidget {
-  const _BrandHeader({required this.onLogout});
+  const _BrandHeader({required this.name, required this.onProfile});
 
-  final VoidCallback onLogout;
+  final String name;
+  final VoidCallback onProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -232,10 +231,10 @@ class _BrandHeader extends StatelessWidget {
         ),
         const Spacer(),
         IconButton(
-          key: const ValueKey('logout-button'),
-          onPressed: onLogout,
-          tooltip: 'Cerrar sesión',
-          icon: const Icon(Icons.logout_rounded),
+          key: const ValueKey('profile-button'),
+          onPressed: onProfile,
+          tooltip: 'Ver perfil',
+          icon: UserAvatar(name: name, radius: 18),
         ),
       ],
     );

@@ -9,9 +9,14 @@ import 'main_shell.dart';
 enum AuthView { login, register }
 
 class AuthGate extends ConsumerStatefulWidget {
-  const AuthGate({super.key, this.initialView = AuthView.login});
+  const AuthGate({
+    super.key,
+    this.initialView = AuthView.login,
+    this.authenticatedChild,
+  });
 
   final AuthView initialView;
+  final Widget? authenticatedChild;
 
   @override
   ConsumerState<AuthGate> createState() => _AuthGateState();
@@ -47,7 +52,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
       ),
       data: (user) {
         if (user != null) {
-          return const MainShell();
+          return widget.authenticatedChild ?? const MainShell();
         }
 
         return _AuthFlow(
