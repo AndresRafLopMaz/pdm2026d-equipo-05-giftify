@@ -30,6 +30,14 @@ Future<void> _pumpSearchScreen(
   );
 }
 
+Future<void> _openMoreOptions(WidgetTester tester) async {
+  final moreOptions = find.text('Más opciones');
+  await tester.ensureVisible(moreOptions);
+  await tester.pumpAndSettle();
+  await tester.tap(moreOptions);
+  await tester.pumpAndSettle();
+}
+
 Future<void> _selectDropdown(
   WidgetTester tester,
   String label,
@@ -56,7 +64,7 @@ Future<void> _fillRequiredFields(
 }
 
 Future<void> _submit(WidgetTester tester) async {
-  final button = find.text('Buscar regalos');
+  final button = find.byKey(const ValueKey('search-submit-button'));
   await tester.ensureVisible(button);
   await tester.pumpAndSettle();
   await tester.tap(button);
@@ -64,16 +72,22 @@ Future<void> _submit(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('renderiza los seis campos y el CTA de busqueda', (tester) async {
+  testWidgets('renderiza los campos obligatorios y Más opciones', (
+    tester,
+  ) async {
     await _pumpSearchScreen(tester);
 
     expect(_dropdownField('Ocasión *'), findsOneWidget);
     expect(_dropdownField('Destinatario *'), findsOneWidget);
     expect(_textField('Presupuesto máximo *'), findsOneWidget);
+    expect(find.text('Más opciones'), findsOneWidget);
+    expect(find.text('Buscar regalos'), findsOneWidget);
+
+    await _openMoreOptions(tester);
+
     expect(_textField('Fecha (opcional)'), findsOneWidget);
     expect(_dropdownField('Tipo de regalo (opcional)'), findsOneWidget);
     expect(_dropdownField('Tamaño (opcional)'), findsOneWidget);
-    expect(find.text('Buscar regalos'), findsOneWidget);
   });
 
   testWidgets('el formulario vacio muestra validaciones y no navega', (
@@ -160,7 +174,8 @@ void main() {
       occasion: 'Aniversario',
       recipient: 'Familiar',
     );
-    await _selectDropdown(tester, 'Tipo de regalo (opcional)', 'Tecnología');
+    await _openMoreOptions(tester);
+    await _selectDropdown(tester, 'Tipo de regalo (opcional)', 'Joyería');
     await _selectDropdown(tester, 'Tamaño (opcional)', 'Mediano');
 
     final today = DateTime.now();
@@ -182,7 +197,7 @@ void main() {
     expect(criteria.recipient, 'Familiar');
     expect(criteria.maxBudget, 325.5);
     expect(criteria.eventDate, DateTime(today.year, today.month, today.day));
-    expect(criteria.giftType, 'Tecnología');
+    expect(criteria.giftType, 'Joyería');
     expect(criteria.size, 'Mediano');
   });
 

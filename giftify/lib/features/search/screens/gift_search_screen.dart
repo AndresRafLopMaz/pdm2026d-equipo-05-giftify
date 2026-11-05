@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/app_router.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/gift_search_criteria.dart';
 
 class GiftSearchScreen extends StatefulWidget {
@@ -33,11 +32,11 @@ class _GiftSearchScreenState extends State<GiftSearchScreen> {
   ];
 
   static const _giftTypes = [
+    'Joyería',
+    'Alimentos',
     'Accesorios',
-    'Bienestar',
-    'Detalles',
-    'Tecnología',
-    'Experiencias',
+    'Artesanías',
+    'Personalizados',
   ];
 
   static const _sizes = ['Pequeño', 'Mediano', 'Grande'];
@@ -47,59 +46,13 @@ class _GiftSearchScreenState extends State<GiftSearchScreen> {
   String? _selectedGiftType;
   String? _selectedSize;
   DateTime? _selectedDate;
+  bool _showOptionalFields = false;
 
   @override
   void dispose() {
     _dateController.dispose();
     _budgetController.dispose();
     super.dispose();
-  }
-
-  InputDecoration _inputDecoration({
-    required String label,
-    required IconData icon,
-    String? hint,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      prefixIcon: Icon(icon, color: verdeOscuro),
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFE1E6E3)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFE1E6E3)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: verdePrincipal, width: 2),
-      ),
-    );
-  }
-
-  Widget _responsiveRow({
-    required double availableWidth,
-    required Widget first,
-    required Widget second,
-  }) {
-    if (availableWidth < 620) {
-      return Column(children: [first, const SizedBox(height: 16), second]);
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: first),
-        const SizedBox(width: 16),
-        Expanded(child: second),
-      ],
-    );
   }
 
   Future<void> _selectDate() async {
@@ -149,7 +102,6 @@ class _GiftSearchScreenState extends State<GiftSearchScreen> {
         ..showSnackBar(
           const SnackBar(
             content: Text('Revisa los campos obligatorios antes de continuar.'),
-            behavior: SnackBarBehavior.floating,
           ),
         );
       return;
@@ -167,90 +119,72 @@ class _GiftSearchScreenState extends State<GiftSearchScreen> {
     Navigator.pushNamed(context, AppRoutes.productResults, arguments: criteria);
   }
 
+  Widget _twoColumns({
+    required double availableWidth,
+    required Widget first,
+    required Widget second,
+  }) {
+    if (availableWidth < 620) {
+      return Column(children: [first, const SizedBox(height: 16), second]);
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: first),
+        const SizedBox(width: 16),
+        Expanded(child: second),
+      ],
+    );
+  }
+
+  InputDecoration _decoration({
+    required String label,
+    required IconData icon,
+    String? hint,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon),
+      suffixIcon: suffixIcon,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Personalizar búsqueda'),
-        backgroundColor: fondoPrincipal,
-        scrolledUnderElevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Personalizar búsqueda')),
       body: SafeArea(
         top: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 16.0;
+
             return SingleChildScrollView(
               key: const PageStorageKey('search-scroll'),
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                16,
+                horizontalPadding,
+                32,
+              ),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 760),
+                  constraints: const BoxConstraints(maxWidth: 720),
                   child: Form(
                     key: _formKey,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(22),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [verdePrincipal, verdeOscuro],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                Icons.tune_rounded,
-                                color: Colors.white,
-                                size: 34,
-                              ),
-                              SizedBox(height: 14),
-                              Text(
-                                'Cuéntanos qué estás buscando',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Usaremos estos datos para encontrar opciones que se adapten a tu regalo.',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 26),
-                        const Text(
-                          'Datos principales',
-                          style: TextStyle(
-                            color: textoPrincipal,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Los campos marcados con * son obligatorios.',
-                          style: TextStyle(color: textoSecundario),
-                        ),
-                        const SizedBox(height: 18),
-                        _responsiveRow(
+                        _twoColumns(
                           availableWidth: constraints.maxWidth,
                           first: DropdownButtonFormField<String>(
+                            key: const ValueKey('search-occasion-field'),
                             initialValue: _selectedOccasion,
                             isExpanded: true,
-                            decoration: _inputDecoration(
+                            decoration: _decoration(
                               label: 'Ocasión *',
                               icon: Icons.celebration_outlined,
                             ),
@@ -270,9 +204,10 @@ class _GiftSearchScreenState extends State<GiftSearchScreen> {
                                 : null,
                           ),
                           second: DropdownButtonFormField<String>(
+                            key: const ValueKey('search-recipient-field'),
                             initialValue: _selectedRecipient,
                             isExpanded: true,
-                            decoration: _inputDecoration(
+                            decoration: _decoration(
                               label: 'Destinatario *',
                               icon: Icons.person_outline_rounded,
                             ),
@@ -293,119 +228,146 @@ class _GiftSearchScreenState extends State<GiftSearchScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _responsiveRow(
-                          availableWidth: constraints.maxWidth,
-                          first: TextFormField(
-                            controller: _dateController,
-                            readOnly: true,
-                            onTap: _selectDate,
-                            decoration: _inputDecoration(
-                              label: 'Fecha (opcional)',
-                              hint: 'DD/MM/AAAA',
-                              icon: Icons.calendar_today_outlined,
-                              suffixIcon: _selectedDate == null
-                                  ? const Icon(Icons.arrow_drop_down_rounded)
-                                  : IconButton(
-                                      tooltip: 'Quitar fecha',
-                                      onPressed: _clearDate,
-                                      icon: const Icon(Icons.close_rounded),
+                        TextFormField(
+                          key: const ValueKey('search-budget-field'),
+                          controller: _budgetController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _submitSearch(),
+                          decoration: _decoration(
+                            label: 'Presupuesto máximo *',
+                            hint: 'Ej. 250.00',
+                            icon: Icons.payments_outlined,
+                          ).copyWith(prefixText: 'Q '),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Ingresa un presupuesto.';
+                            }
+
+                            final budget = _parseBudget(value);
+                            if (budget == null) {
+                              return 'Ingresa un monto válido.';
+                            }
+
+                            if (budget <= 0) {
+                              return 'El presupuesto debe ser mayor que 0.';
+                            }
+
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton.icon(
+                            key: const ValueKey('search-more-options'),
+                            onPressed: () {
+                              setState(() {
+                                _showOptionalFields = !_showOptionalFields;
+                              });
+                            },
+                            icon: Icon(
+                              _showOptionalFields
+                                  ? Icons.expand_less_rounded
+                                  : Icons.expand_more_rounded,
+                            ),
+                            label: Text(
+                              _showOptionalFields
+                                  ? 'Menos opciones'
+                                  : 'Más opciones',
+                            ),
+                          ),
+                        ),
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          alignment: Alignment.topCenter,
+                          child: _showOptionalFields
+                              ? Column(
+                                  children: [
+                                    _twoColumns(
+                                      availableWidth: constraints.maxWidth,
+                                      first: TextFormField(
+                                        key: const ValueKey(
+                                          'search-date-field',
+                                        ),
+                                        controller: _dateController,
+                                        readOnly: true,
+                                        onTap: _selectDate,
+                                        decoration: _decoration(
+                                          label: 'Fecha (opcional)',
+                                          hint: 'DD/MM/AAAA',
+                                          icon: Icons.calendar_today_outlined,
+                                          suffixIcon: _selectedDate == null
+                                              ? const Icon(
+                                                  Icons.arrow_drop_down_rounded,
+                                                )
+                                              : IconButton(
+                                                  tooltip: 'Quitar fecha',
+                                                  onPressed: _clearDate,
+                                                  icon: const Icon(
+                                                    Icons.close_rounded,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                      second: DropdownButtonFormField<String>(
+                                        key: const ValueKey(
+                                          'search-gift-type-field',
+                                        ),
+                                        initialValue: _selectedGiftType,
+                                        isExpanded: true,
+                                        decoration: _decoration(
+                                          label: 'Tipo de regalo (opcional)',
+                                          icon: Icons.card_giftcard_rounded,
+                                        ),
+                                        items: _giftTypes
+                                            .map(
+                                              (giftType) => DropdownMenuItem(
+                                                value: giftType,
+                                                child: Text(giftType),
+                                              ),
+                                            )
+                                            .toList(),
+                                        onChanged: (value) {
+                                          setState(
+                                            () => _selectedGiftType = value,
+                                          );
+                                        },
+                                      ),
                                     ),
-                            ),
-                          ),
-                          second: DropdownButtonFormField<String>(
-                            initialValue: _selectedGiftType,
-                            isExpanded: true,
-                            decoration: _inputDecoration(
-                              label: 'Tipo de regalo (opcional)',
-                              icon: Icons.card_giftcard_rounded,
-                            ),
-                            items: _giftTypes
-                                .map(
-                                  (giftType) => DropdownMenuItem(
-                                    value: giftType,
-                                    child: Text(giftType),
-                                  ),
+                                    const SizedBox(height: 16),
+                                    DropdownButtonFormField<String>(
+                                      key: const ValueKey('search-size-field'),
+                                      initialValue: _selectedSize,
+                                      isExpanded: true,
+                                      decoration: _decoration(
+                                        label: 'Tamaño (opcional)',
+                                        icon: Icons.straighten_rounded,
+                                      ),
+                                      items: _sizes
+                                          .map(
+                                            (size) => DropdownMenuItem(
+                                              value: size,
+                                              child: Text(size),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: (value) {
+                                        setState(() => _selectedSize = value);
+                                      },
+                                    ),
+                                  ],
                                 )
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() => _selectedGiftType = value);
-                            },
-                          ),
+                              : const SizedBox(width: double.infinity),
                         ),
-                        const SizedBox(height: 16),
-                        _responsiveRow(
-                          availableWidth: constraints.maxWidth,
-                          first: DropdownButtonFormField<String>(
-                            initialValue: _selectedSize,
-                            isExpanded: true,
-                            decoration: _inputDecoration(
-                              label: 'Tamaño (opcional)',
-                              icon: Icons.straighten_rounded,
-                            ),
-                            items: _sizes
-                                .map(
-                                  (size) => DropdownMenuItem(
-                                    value: size,
-                                    child: Text(size),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() => _selectedSize = value);
-                            },
-                          ),
-                          second: TextFormField(
-                            controller: _budgetController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            textInputAction: TextInputAction.done,
-                            onFieldSubmitted: (_) => _submitSearch(),
-                            decoration: _inputDecoration(
-                              label: 'Presupuesto máximo *',
-                              hint: 'Ej. 250.00',
-                              icon: Icons.payments_outlined,
-                            ).copyWith(prefixText: 'Q '),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Ingresa un presupuesto.';
-                              }
-
-                              final budget = _parseBudget(value);
-                              if (budget == null) {
-                                return 'Ingresa un monto válido.';
-                              }
-
-                              if (budget <= 0) {
-                                return 'El presupuesto debe ser mayor que 0.';
-                              }
-
-                              return null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.icon(
-                            onPressed: _submitSearch,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: rosaPrincipal,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 17),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(17),
-                              ),
-                            ),
-                            icon: const Icon(Icons.search_rounded),
-                            label: const Text(
-                              'Buscar regalos',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                        const SizedBox(height: 24),
+                        FilledButton.icon(
+                          key: const ValueKey('search-submit-button'),
+                          onPressed: _submitSearch,
+                          icon: const Icon(Icons.search_rounded),
+                          label: const Text('Buscar regalos'),
                         ),
                       ],
                     ),
