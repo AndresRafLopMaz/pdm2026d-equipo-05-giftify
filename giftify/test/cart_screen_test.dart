@@ -59,7 +59,7 @@ void main() {
     await pumpCart(tester, [CartItem(product: product, quantity: 2)]);
 
     expect(find.text(product.name), findsOneWidget);
-    expect(find.text('Precio unitario: Q 125.00'), findsOneWidget);
+    expect(find.text('Q 125.00 c/u'), findsOneWidget);
     expect(textForKey(tester, 'subtotal-${product.id}'), 'Q 250.00');
     expect(textForKey(tester, 'cart-total'), 'Q 250.00');
     expect(
