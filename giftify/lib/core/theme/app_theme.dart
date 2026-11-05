@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
 
-const Color verdePrincipal = Color(0xFF18B870);
-const Color verdeClaro = Color(0xFFE9F8F1);
-
-const Color fondoPrincipal = Color(0xFFF8FAF9);
-const Color textoPrincipal = Color(0xFF252A28);
-const Color textoSecundario = Color(0xFF777D7A);
-
 const Color giftifyPrimary = Color(0xFF087A4A);
 const Color giftifyPrimaryContainer = Color(0xFFE6F4EC);
 const Color giftifyBackground = Color(0xFFF7F8F7);

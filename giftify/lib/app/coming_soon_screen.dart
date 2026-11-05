@@ -1,57 +1,38 @@
 import 'package:flutter/material.dart';
 
-import '../core/theme/app_theme.dart';
-
-/// Pantalla temporal para accesos que todavía no tienen implementación.
 class ComingSoonScreen extends StatelessWidget {
   const ComingSoonScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Próximamente'),
-        backgroundColor: fondoPrincipal,
-      ),
+      appBar: AppBar(title: const Text('Próximamente')),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 76,
-                height: 76,
-                decoration: BoxDecoration(
-                  color: verdeClaro,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Icon(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
                   Icons.hourglass_empty_rounded,
-                  color: verdePrincipal,
-                  size: 40,
+                  color: colors.primary,
+                  size: 48,
                 ),
-              ),
-              const SizedBox(height: 18),
-              const Text(
-                'Próximamente',
-                style: TextStyle(
-                  color: textoPrincipal,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 16),
+                Text(
+                  'Esta función todavía no está disponible.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Estamos trabajando en esta sección de Giftify.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: textoSecundario,
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
