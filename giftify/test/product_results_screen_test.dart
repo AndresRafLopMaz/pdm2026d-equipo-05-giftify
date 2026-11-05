@@ -6,6 +6,7 @@ import 'package:giftify/app/app_tab.dart';
 import 'package:giftify/app/app_tab_notifier.dart';
 import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/core/theme/app_theme.dart';
+import 'package:giftify/features/auth/providers/current_user_provider.dart';
 import 'package:giftify/features/products/data/product_repository.dart';
 import 'package:giftify/features/products/providers/products_provider.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
@@ -19,6 +20,7 @@ import 'package:giftify/shared/enums/gift_recipient.dart';
 import 'package:giftify/shared/models/gift_search_criteria.dart';
 
 import 'helpers/fake_product_repository.dart';
+import 'helpers/ownership_test_overrides.dart';
 
 Widget _testApp({
   required Widget home,
@@ -27,6 +29,8 @@ Widget _testApp({
 }) {
   return ProviderScope(
     overrides: [
+      currentUserIdProvider.overrideWithValue(1),
+      ownershipNotNeededOverride,
       if (repository != null)
         productRepositoryProvider.overrideWithValue(repository),
     ],

@@ -1,5 +1,10 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+const String legacyDeletedProductsStorageKey = 'giftify.deleted_product_ids';
+
+String deletedProductsKeyForUser(int userId) =>
+    '$legacyDeletedProductsStorageKey.$userId';
+
 /// Persistencia local de los IDs de productos eliminados.
 abstract class DeletedProductsStore {
   Future<Set<String>> load();
@@ -29,7 +34,10 @@ class InMemoryDeletedProductsStore implements DeletedProductsStore {
 
 /// Implementación persistente usada por la aplicación.
 class SharedPreferencesDeletedProductsStore implements DeletedProductsStore {
-  static const String _key = 'giftify.deleted_product_ids';
+  SharedPreferencesDeletedProductsStore({required int userId})
+    : _key = deletedProductsKeyForUser(userId);
+
+  final String _key;
 
   @override
   Future<Set<String>> load() async {

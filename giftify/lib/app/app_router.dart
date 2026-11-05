@@ -93,15 +93,24 @@ abstract final class AppRouter {
       case AppRoutes.cart:
         final items = _extractCartItems(settings.arguments);
 
-        return _buildRoute(settings, CartScreen(initialItems: items));
+        return _buildRoute(
+          settings,
+          AuthGate(authenticatedChild: CartScreen(initialItems: items)),
+        );
 
       case AppRoutes.checkout:
         final items = _extractCartItems(settings.arguments);
 
-        return _buildRoute(settings, CheckoutScreen(items: items));
+        return _buildRoute(
+          settings,
+          AuthGate(authenticatedChild: CheckoutScreen(items: items)),
+        );
 
       case AppRoutes.addresses:
-        return _buildRoute(settings, const AddressListScreen());
+        return _buildRoute(
+          settings,
+          const AuthGate(authenticatedChild: AddressListScreen()),
+        );
 
       default:
         return _buildRoute(settings, const _UnknownRouteScreen());

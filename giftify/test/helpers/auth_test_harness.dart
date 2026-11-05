@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:giftify/features/auth/data/password_hasher.dart';
 import 'package:giftify/features/auth/models/user.dart';
 import 'package:giftify/features/auth/providers/auth_providers.dart';
+import 'package:giftify/features/ownership/data/ownership_migration_service.dart';
+import 'package:giftify/features/ownership/providers/ownership_providers.dart';
 
 import 'fake_auth.dart';
 
@@ -19,6 +21,9 @@ class AuthTestHarness {
     userRepositoryProvider.overrideWithValue(repository),
     sessionStoreProvider.overrideWithValue(session),
     passwordHasherProvider.overrideWithValue(hasher),
+    ownershipMigrationProvider.overrideWith(
+      (ref) async => OwnershipMigrationResult.notNeeded,
+    ),
   ];
 
   Future<User> seedUserWithPassword({

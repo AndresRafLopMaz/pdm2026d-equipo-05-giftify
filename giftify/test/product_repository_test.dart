@@ -128,7 +128,7 @@ void main() {
       TestWidgetsFlutterBinding.ensureInitialized();
       SharedPreferences.setMockInitialValues({});
 
-      final store = SharedPreferencesDeletedProductsStore();
+      final store = SharedPreferencesDeletedProductsStore(userId: 1);
       final repository1 = MockProductRepository(
         deletedStore: store,
         delay: Duration.zero,

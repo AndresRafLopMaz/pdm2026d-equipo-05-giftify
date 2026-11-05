@@ -15,6 +15,8 @@ import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_category.dart';
 import 'package:giftify/shared/models/cart_item.dart';
 
+import 'helpers/auth_test_harness.dart';
+
 void main() {
   Future<void> pumpCartWithRepository(
     WidgetTester tester,
@@ -22,9 +24,19 @@ void main() {
     List<CartItem> initialItems = const [],
     bool settle = true,
   }) async {
+    final harness = AuthTestHarness();
+    final user = harness.repository.seedUser(
+      name: 'Ana',
+      email: 'ana@mail.com',
+    );
+    harness.session.userId = user.id;
+
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [cartRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          ...harness.overrides,
+          cartRepositoryProvider.overrideWithValue(repository),
+        ],
         child: MaterialApp(
           theme: appTheme,
           home: CartScreen(initialItems: initialItems),

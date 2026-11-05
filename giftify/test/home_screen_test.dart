@@ -292,10 +292,19 @@ void main() {
 
   testWidgets('Mis direcciones navega al CRUD de direcciones', (tester) async {
     final repository = FakeAddressRepository();
+    final harness = AuthTestHarness();
+    final user = harness.repository.seedUser(
+      name: 'Ana',
+      email: 'ana@mail.com',
+    );
+    harness.session.userId = user.id;
 
     await _pumpHomeScreen(
       tester,
-      overrides: [addressRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        ...harness.overrides,
+        addressRepositoryProvider.overrideWithValue(repository),
+      ],
     );
 
     final addresses = find.byKey(const ValueKey('home-addresses-action'));

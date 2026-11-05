@@ -19,4 +19,6 @@ abstract class CartRepository {
   Future<RemovedCartItem> removeItem(String productId);
 
   Future<void> restoreItem(RemovedCartItem removed);
+
+  Future<void> clearItems();
 }

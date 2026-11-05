@@ -175,7 +175,7 @@ void main() {
     () async {
       SharedPreferences.setMockInitialValues({});
       final firstRepository = PersistentCartRepository(
-        store: SharedPreferencesCartStore(),
+        store: SharedPreferencesCartStore(userId: 1),
       );
       final first = _containerWith(firstRepository);
       addTearDown(first.dispose);
@@ -192,7 +192,7 @@ void main() {
       expect(first.read(cartItemsProvider).requireValue.isEmpty, isFalse);
 
       final secondRepository = PersistentCartRepository(
-        store: SharedPreferencesCartStore(),
+        store: SharedPreferencesCartStore(userId: 1),
       );
       final second = _containerWith(secondRepository);
       addTearDown(second.dispose);
@@ -211,7 +211,7 @@ void main() {
       expect(afterRestore.allItems.map((item) => item.quantity), [2, 1]);
 
       final thirdRepository = PersistentCartRepository(
-        store: SharedPreferencesCartStore(),
+        store: SharedPreferencesCartStore(userId: 1),
       );
       final third = _containerWith(thirdRepository);
       addTearDown(third.dispose);

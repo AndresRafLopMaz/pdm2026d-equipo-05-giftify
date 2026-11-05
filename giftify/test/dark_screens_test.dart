@@ -8,6 +8,7 @@ import 'package:giftify/core/theme/app_theme.dart';
 import 'package:giftify/features/addresses/providers/addresses_provider.dart';
 import 'package:giftify/features/addresses/screens/address_form_screen.dart';
 import 'package:giftify/features/addresses/screens/address_list_screen.dart';
+import 'package:giftify/features/auth/providers/current_user_provider.dart';
 import 'package:giftify/features/auth/screens/login_screen.dart';
 import 'package:giftify/features/auth/screens/register_screen.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
@@ -24,6 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/auth_test_harness.dart';
 import 'helpers/fake_address_repository.dart';
+import 'helpers/ownership_test_overrides.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -36,10 +38,15 @@ void main() {
     WidgetTester tester,
     Widget home, {
     List<Override> overrides = const [],
+    bool includeOwnership = true,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: overrides,
+        overrides: [
+          if (includeOwnership) currentUserIdProvider.overrideWithValue(1),
+          if (includeOwnership) ownershipNotNeededOverride,
+          ...overrides,
+        ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
           home: home,
@@ -71,13 +78,23 @@ void main() {
 
   testWidgets('AuthGate Login en dark', (tester) async {
     final harness = AuthTestHarness();
-    await pumpDark(tester, const AuthGate(), overrides: harness.overrides);
+    await pumpDark(
+      tester,
+      const AuthGate(),
+      overrides: harness.overrides,
+      includeOwnership: false,
+    );
     expect(find.byType(LoginScreen), findsOneWidget);
   });
 
   testWidgets('AuthGate error en dark', (tester) async {
     final failing = AuthTestHarness()..session.failRead = true;
-    await pumpDark(tester, const AuthGate(), overrides: failing.overrides);
+    await pumpDark(
+      tester,
+      const AuthGate(),
+      overrides: failing.overrides,
+      includeOwnership: false,
+    );
     expect(find.text('No pudimos restaurar tu sesión.'), findsOneWidget);
   });
 
@@ -86,13 +103,19 @@ void main() {
   ) async {
     final harness = authenticatedHarness();
 
-    await pumpDark(tester, const HomeScreen(), overrides: harness.overrides);
+    await pumpDark(
+      tester,
+      const HomeScreen(),
+      overrides: harness.overrides,
+      includeOwnership: false,
+    );
     expect(find.text('Hola, Ana'), findsOneWidget);
 
     await pumpDark(
       tester,
       const AuthGate(authenticatedChild: ProfileScreen()),
       overrides: harness.overrides,
+      includeOwnership: false,
     );
     expect(find.byType(ProfileScreen), findsOneWidget);
     expect(find.text('ana@mail.com'), findsOneWidget);

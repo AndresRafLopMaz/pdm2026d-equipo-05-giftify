@@ -78,22 +78,20 @@ void main() {
       () async {
         SharedPreferences.setMockInitialValues({});
         final repository = PersistentCartRepository(
-          store: SharedPreferencesCartStore(),
+          store: SharedPreferencesCartStore(userId: 1),
         );
         await repository.addItems([
           CartItem(product: mockProducts[1], quantity: 2),
         ]);
 
         final preferences = await SharedPreferences.getInstance();
-        final raw = preferences.getString(
-          SharedPreferencesCartStore.storageKey,
-        )!;
+        final raw = preferences.getString(cartKeyForUser(1))!;
         expect(raw, contains('"productId":"${mockProducts[1].id}"'));
         expect(raw, contains('"quantity":2'));
         expect(raw, isNot(contains(mockProducts[1].name)));
 
         final reopened = PersistentCartRepository(
-          store: SharedPreferencesCartStore(),
+          store: SharedPreferencesCartStore(userId: 1),
         );
         final items = await reopened.loadItems();
         expect(items.single.product, same(mockProducts[1]));

@@ -2,6 +2,10 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+const String legacyCartStorageKey = 'giftify.cart_entries';
+
+String cartKeyForUser(int userId) => '$legacyCartStorageKey.$userId';
+
 /// Datos mínimos necesarios para reconstruir un elemento del carrito.
 class CartEntry {
   const CartEntry({required this.productId, required this.quantity});
@@ -40,6 +44,8 @@ abstract class CartStore {
   Future<List<CartEntry>> load();
 
   Future<void> save(List<CartEntry> entries);
+
+  Future<void> clear() => save(const []);
 }
 
 /// Implementación en memoria para pruebas.
@@ -57,19 +63,27 @@ class InMemoryCartStore extends CartStore {
   Future<void> save(List<CartEntry> entries) async {
     _entries = List<CartEntry>.of(entries);
   }
+
+  @override
+  Future<void> clear() async {
+    _entries = <CartEntry>[];
+  }
 }
 
 /// Persistencia local basada exclusivamente en `productId` y `quantity`.
 class SharedPreferencesCartStore extends CartStore {
-  static const String storageKey = 'giftify.cart_entries';
+  SharedPreferencesCartStore({required int userId})
+    : _storageKey = cartKeyForUser(userId);
+
+  final String _storageKey;
 
   @override
-  Object get synchronizationKey => storageKey;
+  Object get synchronizationKey => _storageKey;
 
   @override
   Future<List<CartEntry>> load() async {
     final preferences = await SharedPreferences.getInstance();
-    final encoded = preferences.getString(storageKey);
+    final encoded = preferences.getString(_storageKey);
     if (encoded == null) {
       return const [];
     }
@@ -86,9 +100,21 @@ class SharedPreferencesCartStore extends CartStore {
   Future<void> save(List<CartEntry> entries) async {
     final preferences = await SharedPreferences.getInstance();
     final encoded = jsonEncode(entries.map((entry) => entry.toJson()).toList());
-    final saved = await preferences.setString(storageKey, encoded);
+    final saved = await preferences.setString(_storageKey, encoded);
     if (!saved) {
       throw StateError('No se pudo guardar el carrito.');
+    }
+  }
+
+  @override
+  Future<void> clear() async {
+    final preferences = await SharedPreferences.getInstance();
+    if (!preferences.containsKey(_storageKey)) {
+      return;
+    }
+    final removed = await preferences.remove(_storageKey);
+    if (!removed) {
+      throw StateError('No se pudo vaciar el carrito.');
     }
   }
 }

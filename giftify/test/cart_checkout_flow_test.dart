@@ -14,6 +14,8 @@ import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_availability.dart';
 import 'package:giftify/shared/models/cart_item.dart';
 
+import 'helpers/auth_test_harness.dart';
+
 void main() {
   String textForKey(WidgetTester tester, String key) {
     return tester.widget<Text>(find.byKey(ValueKey(key))).data!;
@@ -25,9 +27,17 @@ void main() {
     final expectedItem = initialItem.copyWith(quantity: 2);
     final expectedTotalText = 'Q ${expectedItem.subtotal.toStringAsFixed(2)}';
 
+    final harness = AuthTestHarness();
+    final user = harness.repository.seedUser(
+      name: 'Ana',
+      email: 'ana@mail.com',
+    );
+    harness.session.userId = user.id;
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ...harness.overrides,
           cartRepositoryProvider.overrideWithValue(
             PersistentCartRepository(store: InMemoryCartStore()),
           ),
@@ -106,9 +116,17 @@ void main() {
     final store = InMemoryCartStore();
     final navigatorKey = GlobalKey<NavigatorState>();
 
+    final harness = AuthTestHarness();
+    final user = harness.repository.seedUser(
+      name: 'Ana',
+      email: 'ana@mail.com',
+    );
+    harness.session.userId = user.id;
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ...harness.overrides,
           cartRepositoryProvider.overrideWithValue(
             PersistentCartRepository(store: store),
           ),

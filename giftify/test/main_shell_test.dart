@@ -9,14 +9,23 @@ import 'package:giftify/app/main_shell.dart';
 import 'package:giftify/features/cart/data/cart_store.dart';
 import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
 import 'package:giftify/features/cart/providers/cart_items_provider.dart';
+import 'package:giftify/features/auth/providers/current_user_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+
+import 'helpers/ownership_test_overrides.dart';
 
 Future<ProviderContainer> _pumpShell(
   WidgetTester tester, {
   List<Override> overrides = const [],
 }) async {
-  final container = ProviderContainer(overrides: overrides);
+  final container = ProviderContainer(
+    overrides: [
+      ...overrides,
+      currentUserIdProvider.overrideWithValue(1),
+      ownershipNotNeededOverride,
+    ],
+  );
   addTearDown(container.dispose);
 
   await tester.pumpWidget(

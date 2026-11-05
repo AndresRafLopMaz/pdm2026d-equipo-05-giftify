@@ -117,6 +117,13 @@ class PersistentCartRepository implements CartRepository {
   }
 
   @override
+  Future<void> clearItems() {
+    return _serialize(() async {
+      await store.clear();
+    });
+  }
+
+  @override
   Future<void> restoreItem(RemovedCartItem removed) {
     return _serialize(() async {
       final productId = removed.item.product.id;
