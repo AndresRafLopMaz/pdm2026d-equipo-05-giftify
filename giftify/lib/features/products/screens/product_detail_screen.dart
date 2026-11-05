@@ -11,6 +11,7 @@ import '../../../shared/models/cart_item.dart';
 import '../../../shared/models/gift_product.dart';
 import '../../cart/providers/cart_items_provider.dart';
 import '../widgets/availability_badge.dart';
+import '../widgets/product_image.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   const ProductDetailScreen({super.key, this.product});
@@ -68,7 +69,12 @@ class _DetailContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _ProductImage(imageAsset: product.imageAsset),
+              ProductImage(
+                product: product,
+                width: double.infinity,
+                height: 240,
+                borderRadius: BorderRadius.circular(16),
+              ),
               const SizedBox(height: 20),
               Text(
                 product.name,
@@ -233,37 +239,6 @@ class _AddToCartBar extends ConsumerWidget {
     } finally {
       cartSubscription.close();
     }
-  }
-}
-
-class _ProductImage extends StatelessWidget {
-  const _ProductImage({this.imageAsset});
-
-  final String? imageAsset;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final asset = imageAsset;
-    final placeholder = ColoredBox(
-      color: colors.primaryContainer,
-      child: Icon(Icons.card_giftcard_rounded, color: colors.primary, size: 64),
-    );
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: SizedBox(
-        width: double.infinity,
-        height: 240,
-        child: asset == null
-            ? placeholder
-            : Image.asset(
-                asset,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => placeholder,
-              ),
-      ),
-    );
   }
 }
 

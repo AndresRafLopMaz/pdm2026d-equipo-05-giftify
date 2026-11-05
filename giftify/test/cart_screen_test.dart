@@ -13,6 +13,8 @@ import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
 import 'package:giftify/features/payments/providers/payment_methods_provider.dart';
+import 'package:giftify/features/products/data/category_visuals.dart';
+import 'package:giftify/features/products/widgets/product_image.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_category.dart';
 import 'package:giftify/shared/enums/payment_brand.dart';
@@ -112,8 +114,9 @@ void main() {
     expect(find.text('Q 125.00 c/u'), findsOneWidget);
     expect(textForKey(tester, 'subtotal-${product.id}'), 'Q 250.00');
     expect(textForKey(tester, 'cart-total'), 'Q 250.00');
+    expect(find.byType(ProductImage), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('product-image-placeholder')),
+      find.byIcon(CategoryVisuals.iconFor(product.category)),
       findsOneWidget,
     );
     expect(

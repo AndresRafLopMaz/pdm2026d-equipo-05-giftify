@@ -10,7 +10,9 @@ import 'package:giftify/features/cart/data/cart_store.dart';
 import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
 import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
+import 'package:giftify/features/products/data/category_visuals.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
+import 'package:giftify/features/products/widgets/product_image.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_availability.dart';
 import 'package:giftify/shared/enums/gift_category.dart';
@@ -142,13 +144,19 @@ void main() {
     expect(find.widgetWithText(OutlinedButton, 'Volver'), findsOneWidget);
   });
 
-  testWidgets('producto sin imageAsset muestra placeholder', (tester) async {
+  testWidgets('producto sin imageAsset usa el fallback de su categoría', (
+    tester,
+  ) async {
     final product = _buildProduct(imageAsset: null);
 
     await tester.pumpWidget(_detailApp(product));
 
+    expect(find.byType(ProductImage), findsOneWidget);
     expect(find.byType(Image), findsNothing);
-    expect(find.byIcon(Icons.card_giftcard_rounded), findsOneWidget);
+    expect(
+      find.byIcon(CategoryVisuals.iconFor(product.category)),
+      findsOneWidget,
+    );
   });
 
   testWidgets('producto disponible permite agregar al carrito', (tester) async {
@@ -329,6 +337,29 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byType(SingleChildScrollView), findsOneWidget);
+  });
+
+  testWidgets('Detail soporta text scale 2.0 en 320x640', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    final product = _buildProduct(
+      name: 'Nombre de producto largo para verificar el ajuste de texto',
+      description:
+          'Descripción extensa para comprobar que el contenido se adapta '
+          'correctamente a pantallas móviles pequeñas sin desbordar.',
+    );
+
+    await tester.pumpWidget(_detailApp(product));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(ProductImage), findsOneWidget);
+    expect(find.byType(FilledButton), findsOneWidget);
   });
 }
 

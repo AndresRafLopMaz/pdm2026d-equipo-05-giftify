@@ -6,6 +6,7 @@ import '../../../shared/models/cart_item.dart';
 import '../data/cart_repository.dart';
 import '../providers/cart_filter_provider.dart';
 import '../providers/cart_items_provider.dart';
+import '../../products/widgets/product_image.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key, this.initialItems = const []});
@@ -184,46 +185,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     Navigator.pushNamed(context, AppRoutes.checkout);
   }
 
-  bool _hasValidImageUrl(String? value) {
-    if (value == null) {
-      return false;
-    }
-
-    final uri = Uri.tryParse(value);
-    return uri != null &&
-        (uri.scheme == 'http' || uri.scheme == 'https') &&
-        uri.host.isNotEmpty;
-  }
-
-  Widget _buildProductImage(CartItem item) {
-    final imageUrl = item.product.imageAsset;
-
-    if (_hasValidImageUrl(imageUrl)) {
-      return Image.network(
-        imageUrl!,
-        width: 80,
-        height: 80,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => _buildImagePlaceholder(),
-      );
-    }
-
-    return _buildImagePlaceholder();
-  }
-
-  Widget _buildImagePlaceholder() {
-    final colors = Theme.of(context).colorScheme;
-
-    return Container(
-      key: const ValueKey('product-image-placeholder'),
-      width: 80,
-      height: 80,
-      color: colors.primaryContainer,
-      alignment: Alignment.center,
-      child: Icon(Icons.card_giftcard_rounded, color: colors.primary, size: 32),
-    );
-  }
-
   Widget _buildCartItem(BuildContext context, CartItem item) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
@@ -236,9 +197,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
+          ProductImage(
+            product: item.product,
+            width: 80,
+            height: 80,
             borderRadius: BorderRadius.circular(12),
-            child: _buildProductImage(item),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -502,7 +465,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_rounded, size: 48, color: colors.error),
+            Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
             const SizedBox(height: 16),
             Text(
               'No pudimos cargar el carrito.',
