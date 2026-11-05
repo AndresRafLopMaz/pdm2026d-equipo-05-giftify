@@ -6,10 +6,31 @@ import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
 import 'package:giftify/features/cart/providers/cart_filter_provider.dart';
 import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+import 'package:giftify/shared/enums/gift_category.dart';
 import 'package:giftify/shared/models/cart_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  test('un carrito persistido corrupto se recupera como vacío', () async {
+    SharedPreferences.setMockInitialValues({cartKeyForUser(1): '{corrupto'});
+    final store = SharedPreferencesCartStore(userId: 1);
+    final container = _containerWith(PersistentCartRepository(store: store));
+    addTearDown(container.dispose);
+
+    final snapshot = await container.read(cartItemsProvider.future);
+
+    expect(snapshot.isEmpty, isTrue);
+    expect(container.read(cartItemsProvider).hasError, isFalse);
+    expect(
+      (await SharedPreferences.getInstance()).containsKey(cartKeyForUser(1)),
+      isFalse,
+    );
+  });
+
   test('carga allItems y calcula total y categorías', () async {
     final store = InMemoryCartStore([
       CartEntry(productId: mockProducts[0].id, quantity: 2),
@@ -37,7 +58,7 @@ void main() {
 
     container
         .read(cartFilterProvider.notifier)
-        .setCategory(mockProducts[1].category);
+        .setCategory(mockProducts[1].category.label);
     final filtered = await container.read(cartItemsProvider.future);
 
     expect(filtered.allItems, hasLength(2));
@@ -104,7 +125,7 @@ void main() {
 
       container
           .read(cartFilterProvider.notifier)
-          .setCategory(mockProducts[1].category);
+          .setCategory(mockProducts[1].category.label);
       final foods = await container.read(cartItemsProvider.future);
       expect(foods.visibleItems.map((item) => item.product.id), [
         mockProducts[1].id,
@@ -126,7 +147,7 @@ void main() {
 
       container
           .read(cartFilterProvider.notifier)
-          .setCategory(mockProducts[0].category);
+          .setCategory(mockProducts[0].category.label);
       final jewelry = await container.read(cartItemsProvider.future);
       expect(jewelry.visibleItems.single.product.id, mockProducts[0].id);
       expect(jewelry.total, 780);
@@ -174,7 +195,7 @@ void main() {
     () async {
       SharedPreferences.setMockInitialValues({});
       final firstRepository = PersistentCartRepository(
-        store: SharedPreferencesCartStore(),
+        store: SharedPreferencesCartStore(userId: 1),
       );
       final first = _containerWith(firstRepository);
       addTearDown(first.dispose);
@@ -191,7 +212,7 @@ void main() {
       expect(first.read(cartItemsProvider).requireValue.isEmpty, isFalse);
 
       final secondRepository = PersistentCartRepository(
-        store: SharedPreferencesCartStore(),
+        store: SharedPreferencesCartStore(userId: 1),
       );
       final second = _containerWith(secondRepository);
       addTearDown(second.dispose);
@@ -210,7 +231,7 @@ void main() {
       expect(afterRestore.allItems.map((item) => item.quantity), [2, 1]);
 
       final thirdRepository = PersistentCartRepository(
-        store: SharedPreferencesCartStore(),
+        store: SharedPreferencesCartStore(userId: 1),
       );
       final third = _containerWith(thirdRepository);
       addTearDown(third.dispose);

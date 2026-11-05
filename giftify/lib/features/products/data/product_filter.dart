@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../shared/enums/gift_availability.dart';
+import '../../../shared/enums/gift_category.dart';
 import '../../../shared/models/gift_product.dart';
 
 /// Filtro adicional aplicado al catálogo de productos.
@@ -11,13 +12,13 @@ import '../../../shared/models/gift_product.dart';
 class ProductFilter {
   const ProductFilter({this.category, this.availability});
 
-  final String? category;
+  final GiftCategory? category;
   final GiftAvailability? availability;
 
   bool get isEmpty => category == null && availability == null;
 
   ProductFilter copyWith({
-    String? category,
+    GiftCategory? category,
     GiftAvailability? availability,
     bool clearCategory = false,
     bool clearAvailability = false,

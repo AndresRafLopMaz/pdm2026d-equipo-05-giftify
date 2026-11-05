@@ -6,13 +6,14 @@ import 'address_book.dart';
 import 'address_repository.dart';
 
 class SqfliteAddressRepository implements AddressRepository {
-  SqfliteAddressRepository({AppDatabase? database})
+  SqfliteAddressRepository({AppDatabase? database, required this.userId})
     : _database = database ?? AppDatabase.instance;
 
   static final Map<Object, Future<void>> _operations = {};
   static int _idSequence = 0;
 
   final AppDatabase _database;
+  final int userId;
 
   Future<Database> get _db => _database.database;
 
@@ -23,6 +24,8 @@ class SqfliteAddressRepository implements AddressRepository {
         final db = await _db;
         final rows = await db.query(
           AppDatabase.deliveryAddressesTable,
+          where: 'user_id = ?',
+          whereArgs: [userId],
           orderBy: 'is_default DESC, label COLLATE NOCASE ASC',
         );
         return AddressBook(
@@ -45,9 +48,12 @@ class SqfliteAddressRepository implements AddressRepository {
           final makeDefault = normalized.isDefault || !await _hasDefault(txn);
 
           if (makeDefault) {
-            await txn.update(AppDatabase.deliveryAddressesTable, {
-              'is_default': 0,
-            }, where: 'is_default = 1');
+            await txn.update(
+              AppDatabase.deliveryAddressesTable,
+              {'is_default': 0},
+              where: 'is_default = 1 AND user_id = ?',
+              whereArgs: [userId],
+            );
           }
 
           final address = DeliveryAddress(
@@ -87,9 +93,12 @@ class SqfliteAddressRepository implements AddressRepository {
           final makeDefault = normalized.isDefault || existing.isDefault;
 
           if (makeDefault && !existing.isDefault) {
-            await txn.update(AppDatabase.deliveryAddressesTable, {
-              'is_default': 0,
-            }, where: 'is_default = 1');
+            await txn.update(
+              AppDatabase.deliveryAddressesTable,
+              {'is_default': 0},
+              where: 'is_default = 1 AND user_id = ?',
+              whereArgs: [userId],
+            );
           }
 
           final updated = DeliveryAddress(
@@ -107,8 +116,8 @@ class SqfliteAddressRepository implements AddressRepository {
           await txn.update(
             AppDatabase.deliveryAddressesTable,
             _toRow(updated),
-            where: 'id = ?',
-            whereArgs: [existing.id],
+            where: 'id = ? AND user_id = ?',
+            whereArgs: [existing.id, userId],
           );
           return updated;
         });
@@ -131,8 +140,8 @@ class SqfliteAddressRepository implements AddressRepository {
 
           await txn.delete(
             AppDatabase.deliveryAddressesTable,
-            where: 'id = ?',
-            whereArgs: [existing.id],
+            where: 'id = ? AND user_id = ?',
+            whereArgs: [existing.id, userId],
           );
         });
       } on DatabaseException catch (error) {
@@ -156,8 +165,8 @@ class SqfliteAddressRepository implements AddressRepository {
             await txn.update(
               AppDatabase.deliveryAddressesTable,
               {'archived': 1},
-              where: 'id = ?',
-              whereArgs: [existing.id],
+              where: 'id = ? AND user_id = ?',
+              whereArgs: [existing.id, userId],
             );
             return;
           }
@@ -165,15 +174,15 @@ class SqfliteAddressRepository implements AddressRepository {
           await txn.update(
             AppDatabase.deliveryAddressesTable,
             {'archived': 1, 'is_default': 0},
-            where: 'id = ?',
-            whereArgs: [existing.id],
+            where: 'id = ? AND user_id = ?',
+            whereArgs: [existing.id, userId],
           );
 
           final nextRows = await txn.query(
             AppDatabase.deliveryAddressesTable,
             columns: ['id'],
-            where: 'archived = 0 AND id <> ?',
-            whereArgs: [existing.id],
+            where: 'archived = 0 AND id <> ? AND user_id = ?',
+            whereArgs: [existing.id, userId],
             orderBy: 'label COLLATE NOCASE ASC',
             limit: 1,
           );
@@ -182,8 +191,8 @@ class SqfliteAddressRepository implements AddressRepository {
             await txn.update(
               AppDatabase.deliveryAddressesTable,
               {'is_default': 1},
-              where: 'id = ?',
-              whereArgs: [nextRows.single['id']],
+              where: 'id = ? AND user_id = ?',
+              whereArgs: [nextRows.single['id'], userId],
             );
           }
         });
@@ -208,8 +217,8 @@ class SqfliteAddressRepository implements AddressRepository {
           await txn.update(
             AppDatabase.deliveryAddressesTable,
             {'archived': 0, 'is_default': hasDefault ? 0 : 1},
-            where: 'id = ?',
-            whereArgs: [existing.id],
+            where: 'id = ? AND user_id = ?',
+            whereArgs: [existing.id, userId],
           );
         });
       } on DatabaseException catch (error) {
@@ -234,14 +243,17 @@ class SqfliteAddressRepository implements AddressRepository {
             return;
           }
 
-          await txn.update(AppDatabase.deliveryAddressesTable, {
-            'is_default': 0,
-          }, where: 'is_default = 1');
+          await txn.update(
+            AppDatabase.deliveryAddressesTable,
+            {'is_default': 0},
+            where: 'is_default = 1 AND user_id = ?',
+            whereArgs: [userId],
+          );
           await txn.update(
             AppDatabase.deliveryAddressesTable,
             {'is_default': 1},
-            where: 'id = ?',
-            whereArgs: [existing.id],
+            where: 'id = ? AND user_id = ?',
+            whereArgs: [existing.id, userId],
           );
         });
       } on DatabaseException catch (error) {
@@ -256,8 +268,8 @@ class SqfliteAddressRepository implements AddressRepository {
   ) async {
     final rows = await executor.query(
       AppDatabase.deliveryAddressesTable,
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND user_id = ?',
+      whereArgs: [id, userId],
       limit: 1,
     );
 
@@ -272,7 +284,8 @@ class SqfliteAddressRepository implements AddressRepository {
     final rows = await executor.query(
       AppDatabase.deliveryAddressesTable,
       columns: ['id'],
-      where: 'is_default = 1 AND archived = 0',
+      where: 'is_default = 1 AND archived = 0 AND user_id = ?',
+      whereArgs: [userId],
       limit: 1,
     );
     return rows.isNotEmpty;
@@ -338,6 +351,7 @@ class SqfliteAddressRepository implements AddressRepository {
   Map<String, Object?> _toRow(DeliveryAddress address) {
     return {
       'id': address.id,
+      'user_id': userId,
       'label': address.label,
       'recipient_name': address.recipientName,
       'address_line': address.addressLine,
@@ -366,7 +380,7 @@ class SqfliteAddressRepository implements AddressRepository {
   AddressException _translate(DatabaseException error) {
     final details = error.toString().toLowerCase();
     final isLabelConstraint =
-        details.contains(AppDatabase.labelNocaseIndex.toLowerCase()) ||
+        details.contains(AppDatabase.userLabelIndex.toLowerCase()) ||
         details.contains(
           '${AppDatabase.deliveryAddressesTable}.label'.toLowerCase(),
         );

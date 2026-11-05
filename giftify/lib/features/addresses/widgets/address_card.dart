@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/delivery_address.dart';
 
 enum AddressCardAction { edit, setDefault, archive, restore, delete }
@@ -25,203 +24,191 @@ class AddressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: Color(0xFFE4E8E6)),
-      ),
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Semantics(
+      button: !address.isArchived,
+      hint: address.isArchived ? null : 'Editar dirección',
       child: InkWell(
         onTap: address.isArchived ? null : onEdit,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 8, 16),
-          child: Column(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Wrap(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
                       spacing: 8,
-                      runSpacing: 6,
+                      runSpacing: 4,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           address.label,
-                          style: const TextStyle(
-                            color: textoPrincipal,
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: colors.onSurface,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         if (address.isDefault && !address.isArchived)
-                          const _Badge(
-                            label: 'Principal',
-                            background: verdeClaro,
-                            foreground: verdeOscuro,
-                          ),
-                        if (address.isArchived)
-                          const _Badge(
-                            label: 'Archivada',
-                            background: Color(0xFFF1F2F2),
-                            foreground: textoSecundario,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colors.primaryContainer,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              'Principal',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: colors.onPrimaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                       ],
                     ),
-                  ),
-                  PopupMenuButton<AddressCardAction>(
-                    key: ValueKey('address-menu-${address.id}'),
-                    tooltip: 'Acciones de la dirección',
-                    onSelected: (action) {
-                      switch (action) {
-                        case AddressCardAction.edit:
-                          onEdit();
-                          break;
-                        case AddressCardAction.setDefault:
-                          onSetDefault();
-                          break;
-                        case AddressCardAction.archive:
-                          onArchive();
-                          break;
-                        case AddressCardAction.restore:
-                          onRestore();
-                          break;
-                        case AddressCardAction.delete:
-                          onDelete();
-                          break;
-                      }
-                    },
-                    itemBuilder: (context) {
-                      if (address.isArchived) {
-                        return const [
-                          PopupMenuItem(
-                            value: AddressCardAction.restore,
-                            child: ListTile(
-                              leading: Icon(Icons.unarchive_outlined),
-                              title: Text('Restaurar'),
-                              contentPadding: EdgeInsets.zero,
-                            ),
+                    const SizedBox(height: 6),
+                    Text(
+                      address.recipientName,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      address.addressLine,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${address.city}, ${address.department}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    if (address.reference != null &&
+                        address.reference!.trim().isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        'Referencia: ${address.reference!.trim()}',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: colors.onSurfaceVariant,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
+              PopupMenuButton<AddressCardAction>(
+                key: ValueKey('address-menu-${address.id}'),
+                tooltip: 'Acciones de la dirección',
+                icon: Icon(
+                  Icons.more_vert_rounded,
+                  color: colors.onSurfaceVariant,
+                ),
+                onSelected: (action) {
+                  switch (action) {
+                    case AddressCardAction.edit:
+                      onEdit();
+                      break;
+                    case AddressCardAction.setDefault:
+                      onSetDefault();
+                      break;
+                    case AddressCardAction.archive:
+                      onArchive();
+                      break;
+                    case AddressCardAction.restore:
+                      onRestore();
+                      break;
+                    case AddressCardAction.delete:
+                      onDelete();
+                      break;
+                  }
+                },
+                itemBuilder: (context) {
+                  if (address.isArchived) {
+                    return [
+                      const PopupMenuItem(
+                        value: AddressCardAction.restore,
+                        child: ListTile(
+                          leading: Icon(Icons.unarchive_outlined),
+                          title: Text('Restaurar'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: AddressCardAction.delete,
+                        child: ListTile(
+                          leading: Icon(
+                            Icons.delete_outline_rounded,
+                            color: colors.error,
                           ),
-                          PopupMenuItem(
-                            value: AddressCardAction.delete,
-                            child: ListTile(
-                              leading: Icon(Icons.delete_outline_rounded),
-                              title: Text('Eliminar'),
-                              contentPadding: EdgeInsets.zero,
-                            ),
+                          title: Text(
+                            'Eliminar',
+                            style: TextStyle(color: colors.error),
                           ),
-                        ];
-                      }
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ];
+                  }
 
-                      return [
-                        const PopupMenuItem(
-                          value: AddressCardAction.edit,
-                          child: ListTile(
-                            leading: Icon(Icons.edit_outlined),
-                            title: Text('Editar'),
-                            contentPadding: EdgeInsets.zero,
-                          ),
+                  return [
+                    const PopupMenuItem(
+                      value: AddressCardAction.edit,
+                      child: ListTile(
+                        leading: Icon(Icons.edit_outlined),
+                        title: Text('Editar'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    if (!address.isDefault)
+                      const PopupMenuItem(
+                        value: AddressCardAction.setDefault,
+                        child: ListTile(
+                          leading: Icon(Icons.check_circle_outline_rounded),
+                          title: Text('Usar como principal'),
+                          contentPadding: EdgeInsets.zero,
                         ),
-                        if (!address.isDefault)
-                          const PopupMenuItem(
-                            value: AddressCardAction.setDefault,
-                            child: ListTile(
-                              leading: Icon(Icons.check_circle_outline_rounded),
-                              title: Text('Usar como principal'),
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                          ),
-                        const PopupMenuItem(
-                          value: AddressCardAction.archive,
-                          child: ListTile(
-                            leading: Icon(Icons.archive_outlined),
-                            title: Text('Archivar'),
-                            contentPadding: EdgeInsets.zero,
-                          ),
+                      ),
+                    const PopupMenuItem(
+                      value: AddressCardAction.archive,
+                      child: ListTile(
+                        leading: Icon(Icons.archive_outlined),
+                        title: Text('Archivar'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: AddressCardAction.delete,
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.delete_outline_rounded,
+                          color: colors.error,
                         ),
-                        const PopupMenuItem(
-                          value: AddressCardAction.delete,
-                          child: ListTile(
-                            leading: Icon(Icons.delete_outline_rounded),
-                            title: Text('Eliminar'),
-                            contentPadding: EdgeInsets.zero,
-                          ),
+                        title: Text(
+                          'Eliminar',
+                          style: TextStyle(color: colors.error),
                         ),
-                      ];
-                    },
-                  ),
-                ],
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ];
+                },
               ),
-              const SizedBox(height: 8),
-              Text(
-                address.recipientName,
-                style: const TextStyle(
-                  color: textoPrincipal,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                address.addressLine,
-                style: const TextStyle(
-                  color: textoSecundario,
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '${address.city}, ${address.department}',
-                style: const TextStyle(color: textoSecundario, fontSize: 14),
-              ),
-              if (address.reference != null &&
-                  address.reference!.trim().isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(
-                  'Referencia: ${address.reference!.trim()}',
-                  style: const TextStyle(
-                    color: textoSecundario,
-                    fontSize: 13,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ],
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge({
-    required this.label,
-    required this.background,
-    required this.foreground,
-  });
-
-  final String label;
-  final Color background;
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: foreground,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
         ),
       ),
     );

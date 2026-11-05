@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/app_router.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/cart_item.dart';
 import '../data/cart_repository.dart';
 import '../providers/cart_filter_provider.dart';
 import '../providers/cart_items_provider.dart';
+import '../../products/widgets/product_image.dart';
 
-/// Pantalla 6 — Carrito de compras.
-///
-/// Responsable principal: Catherine.
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key, this.initialItems = const []});
 
@@ -179,194 +176,112 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
-  }
-
-  void _continueToCheckout(CartSnapshot snapshot) {
-    Navigator.pushNamed(
+    ScaffoldMessenger.of(
       context,
-      AppRoutes.checkout,
-      arguments: List<CartItem>.of(snapshot.allItems),
-    );
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  bool _hasValidImageUrl(String? value) {
-    if (value == null) {
-      return false;
-    }
-
-    final uri = Uri.tryParse(value);
-    return uri != null &&
-        (uri.scheme == 'http' || uri.scheme == 'https') &&
-        uri.host.isNotEmpty;
-  }
-
-  Widget _buildProductImage(CartItem item) {
-    final imageUrl = item.product.imageAsset;
-
-    if (_hasValidImageUrl(imageUrl)) {
-      return Image.network(
-        imageUrl!,
-        width: 80,
-        height: 80,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => _buildImagePlaceholder(),
-      );
-    }
-
-    return _buildImagePlaceholder();
-  }
-
-  Widget _buildImagePlaceholder() {
-    return Container(
-      key: const ValueKey('product-image-placeholder'),
-      width: 80,
-      height: 80,
-      color: rosaClaro,
-      alignment: Alignment.center,
-      child: Icon(Icons.card_giftcard_rounded, color: rosaPrincipal, size: 32),
-    );
+  void _continueToCheckout() {
+    Navigator.pushNamed(context, AppRoutes.checkout);
   }
 
   Widget _buildCartItem(BuildContext context, CartItem item) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final product = item.product;
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final isUpdating = _updatingIds.contains(product.id);
     final isDeleting = _deletingIds.contains(product.id);
 
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      color: colors.surface,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.7)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ProductImage(
+            product: item.product,
+            width: 80,
+            height: 80,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: _buildProductImage(item),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        product.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colors.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      key: ValueKey('remove-${product.id}'),
+                      tooltip: 'Eliminar ${product.name}',
+                      onPressed: isDeleting
+                          ? null
+                          : () => _removeWithButton(item),
+                      visualDensity: VisualDensity.compact,
+                      color: colors.error,
+                      icon: const Icon(Icons.delete_outline_rounded),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              product.name,
-                              style: textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            key: ValueKey('remove-${product.id}'),
-                            tooltip: 'Eliminar ${product.name}',
-                            onPressed: isDeleting
-                                ? null
-                                : () => _removeWithButton(item),
-                            visualDensity: VisualDensity.compact,
-                            color: rosaPrincipal,
-                            icon: const Icon(Icons.delete_outline_rounded),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        'Precio unitario: ${_formatPrice(product.price)}',
-                        style: textTheme.bodyMedium,
-                      ),
-                    ],
+                Text(
+                  '${_formatPrice(product.price)} c/u',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 16,
-              runSpacing: 8,
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    IconButton(
-                      key: ValueKey('decrease-${product.id}'),
-                      tooltip: 'Disminuir cantidad',
-                      onPressed: item.quantity > 1 && !isUpdating
+                    _QuantityControl(
+                      quantity: item.quantity,
+                      onDecrease: item.quantity > 1 && !isUpdating
                           ? () => _changeQuantity(item, item.quantity - 1)
                           : null,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 36,
-                        height: 36,
-                      ),
-                      padding: EdgeInsets.zero,
-                      style: IconButton.styleFrom(
-                        backgroundColor: rosaClaro,
-                        foregroundColor: rosaPrincipal,
-                        disabledBackgroundColor: colors.surfaceContainerHighest,
-                      ),
-                      icon: const Icon(Icons.remove_rounded),
-                    ),
-                    SizedBox(
-                      width: 36,
-                      child: Text(
-                        '${item.quantity}',
-                        key: ValueKey('quantity-${product.id}'),
-                        textAlign: TextAlign.center,
-                        style: textTheme.titleMedium,
-                      ),
-                    ),
-                    IconButton(
-                      key: ValueKey('increase-${product.id}'),
-                      tooltip: 'Aumentar cantidad',
-                      onPressed: isUpdating
+                      onIncrease: isUpdating
                           ? null
                           : () => _changeQuantity(item, item.quantity + 1),
-                      constraints: const BoxConstraints.tightFor(
-                        width: 36,
-                        height: 36,
-                      ),
-                      padding: EdgeInsets.zero,
-                      style: IconButton.styleFrom(
-                        backgroundColor: rosaClaro,
-                        foregroundColor: rosaPrincipal,
-                      ),
-                      icon: const Icon(Icons.add_rounded),
+                      productId: product.id,
                     ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text('Subtotal', style: textTheme.labelMedium),
-                    Text(
-                      _formatPrice(item.subtotal),
-                      key: ValueKey('subtotal-${product.id}'),
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Subtotal',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          _formatPrice(item.subtotal),
+                          key: ValueKey('subtotal-${product.id}'),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: colors.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -376,14 +291,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final categories = snapshot.categories.toList()..sort();
 
     return SizedBox(
-      height: 52,
+      height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         children: [
           FilterChip(
             key: const ValueKey('cart-filter-all'),
-            label: const Text('Todos'),
+            label: const Text('Todas'),
             selected: selectedCategory == null,
             onSelected: _hasPendingOperation
                 ? null
@@ -418,42 +333,43 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       children: [
         _buildFilters(snapshot),
         const SizedBox(height: 6),
-        for (final item in snapshot.visibleItems)
+        for (var index = 0; index < snapshot.visibleItems.length; index++) ...[
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Dismissible(
-              key: ValueKey(item.product.id),
+              key: ValueKey(snapshot.visibleItems[index].product.id),
               direction: DismissDirection.endToStart,
               background: const _DeleteBackground(),
-              confirmDismiss: (_) => _confirmDismiss(item),
-              onDismissed: (_) => _onDismissed(item),
-              child: _buildCartItem(context, item),
+              confirmDismiss: (_) =>
+                  _confirmDismiss(snapshot.visibleItems[index]),
+              onDismissed: (_) => _onDismissed(snapshot.visibleItems[index]),
+              child: _buildCartItem(context, snapshot.visibleItems[index]),
             ),
           ),
+          if (index < snapshot.visibleItems.length - 1)
+            const Divider(indent: 16, endIndent: 16),
+        ],
       ],
     );
   }
 
   Widget _buildEmptyCart(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.shopping_cart_outlined,
-              size: 72,
-              color: rosaPrincipal,
-            ),
-            const SizedBox(height: 20),
+            Icon(Icons.shopping_cart_outlined, size: 48, color: colors.primary),
+            const SizedBox(height: 16),
             Text(
               'Tu carrito está vacío',
               textAlign: TextAlign.center,
-              style: textTheme.headlineSmall?.copyWith(
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colors.onSurface,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -461,7 +377,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             Text(
               'Agrega un regalo para continuar con tu compra.',
               textAlign: TextAlign.center,
-              style: textTheme.bodyLarge?.copyWith(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 color: colors.onSurfaceVariant,
               ),
             ),
@@ -472,26 +388,32 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _buildFilteredEmpty(CartSnapshot snapshot) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Column(
       children: [
         _buildFilters(snapshot),
         Expanded(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.all(28),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.filter_alt_off_rounded,
-                    size: 64,
-                    color: rosaPrincipal,
+                    size: 48,
+                    color: colors.primary,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'No hay productos en esta categoría.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: colors.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   OutlinedButton.icon(
@@ -512,38 +434,56 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _buildLoading() {
-    return const Center(
+    final theme = Theme.of(context);
+
+    return Center(
       child: Column(
-        key: ValueKey('cart-loading'),
+        key: const ValueKey('cart-loading'),
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Cargando carrito…'),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
+          Text(
+            'Cargando carrito…',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildError() {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Center(
       child: Padding(
         key: const ValueKey('cart-error'),
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.cloud_off_rounded, size: 64, color: rosaPrincipal),
+            Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No pudimos cargar el carrito.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 8),
-            const Text('Inténtalo de nuevo.'),
+            Text(
+              'Inténtalo de nuevo.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: 20),
-            FilledButton.icon(
+            OutlinedButton.icon(
               key: const ValueKey('cart-retry-button'),
               onPressed: _retry,
               icon: const Icon(Icons.refresh_rounded),
@@ -556,56 +496,63 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _buildCheckoutBar(BuildContext context, CartSnapshot? snapshot) {
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final hasItems = snapshot != null && snapshot.allItems.isNotEmpty;
 
-    return Material(
-      color: colors.surface,
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(top: BorderSide(color: colors.outlineVariant)),
+      ),
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (hasItems) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Total', style: textTheme.titleMedium),
-                    Text(
-                      _formatPrice(snapshot.total),
-                      key: const ValueKey('cart-total'),
-                      style: textTheme.titleLarge?.copyWith(
-                        color: rosaPrincipal,
-                        fontWeight: FontWeight.w800,
+        minimum: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+        child: Center(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasItems) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Total',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: colors.onSurface,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-              ],
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  key: const ValueKey('checkout-button'),
-                  onPressed: hasItems && !_hasPendingOperation
-                      ? () => _continueToCheckout(snapshot)
-                      : null,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: rosaPrincipal,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: colors.surfaceContainerHighest,
-                    minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                      Flexible(
+                        child: Text(
+                          _formatPrice(snapshot.total),
+                          key: const ValueKey('cart-total'),
+                          textAlign: TextAlign.end,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: colors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: const Text('Continuar al pago'),
+                  const SizedBox(height: 12),
+                ],
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    key: const ValueKey('checkout-button'),
+                    onPressed: hasItems && !_hasPendingOperation
+                        ? _continueToCheckout
+                        : null,
+                    child: const Text('Continuar al pago'),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -635,24 +582,87 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Carrito'),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(
-            height: 1,
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
+      appBar: AppBar(title: const Text('Carrito')),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Align(
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: constraints.maxWidth > 720 ? 720 : constraints.maxWidth,
+                height: constraints.maxHeight,
+                child: body,
+              ),
+            );
+          },
         ),
       ),
-      body: body,
       bottomNavigationBar: _buildCheckoutBar(
         context,
         _isSeeding || _seedFailed ? null : snapshot,
       ),
+    );
+  }
+}
+
+class _QuantityControl extends StatelessWidget {
+  const _QuantityControl({
+    required this.quantity,
+    required this.onDecrease,
+    required this.onIncrease,
+    required this.productId,
+  });
+
+  final int quantity;
+  final VoidCallback? onDecrease;
+  final VoidCallback? onIncrease;
+  final String productId;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          key: ValueKey('decrease-$productId'),
+          tooltip: 'Disminuir cantidad',
+          onPressed: onDecrease,
+          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+          padding: EdgeInsets.zero,
+          style: IconButton.styleFrom(
+            backgroundColor: colors.surfaceContainer,
+            foregroundColor: colors.primary,
+            disabledBackgroundColor: colors.surfaceContainerHighest,
+            disabledForegroundColor: colors.onSurfaceVariant,
+          ),
+          icon: const Icon(Icons.remove_rounded),
+        ),
+        SizedBox(
+          width: 36,
+          child: Text(
+            '$quantity',
+            key: ValueKey('quantity-$productId'),
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        IconButton(
+          key: ValueKey('increase-$productId'),
+          tooltip: 'Aumentar cantidad',
+          onPressed: onIncrease,
+          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+          padding: EdgeInsets.zero,
+          style: IconButton.styleFrom(
+            backgroundColor: colors.surfaceContainer,
+            foregroundColor: colors.primary,
+            disabledBackgroundColor: colors.surfaceContainerHighest,
+            disabledForegroundColor: colors.onSurfaceVariant,
+          ),
+          icon: const Icon(Icons.add_rounded),
+        ),
+      ],
     );
   }
 }
@@ -662,18 +672,13 @@ class _DeleteBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.only(right: 24),
-      decoration: BoxDecoration(
-        color: rosaClaro,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: const Icon(
-        Icons.delete_outline_rounded,
-        color: rosaPrincipal,
-        size: 28,
-      ),
+      color: colors.errorContainer,
+      child: Icon(Icons.delete_outline_rounded, color: colors.error, size: 28),
     );
   }
 }

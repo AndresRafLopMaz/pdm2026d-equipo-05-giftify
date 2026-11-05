@@ -45,7 +45,24 @@ void main() {
     tempDirectory = await createDatabaseTestDirectory();
     databasePath = databasePathIn(tempDirectory);
     appDatabase = AppDatabase(factory: databaseFactoryFfi, path: databasePath);
-    repository = SqfliteAddressRepository(database: appDatabase);
+    final db = await appDatabase.database;
+    await db.insert(AppDatabase.usersTable, {
+      'id': 1,
+      'name': 'Ana',
+      'email': 'ana@mail.com',
+      'password_hash': 'hash',
+      'password_salt': 'salt',
+      'created_at': 1,
+    });
+    await db.insert(AppDatabase.usersTable, {
+      'id': 2,
+      'name': 'Beto',
+      'email': 'beto@mail.com',
+      'password_hash': 'hash',
+      'password_salt': 'salt',
+      'created_at': 2,
+    });
+    repository = SqfliteAddressRepository(database: appDatabase, userId: 1);
   });
 
   tearDown(() async {
@@ -201,7 +218,7 @@ void main() {
         isA<AddressInUseException>().having(
           (error) => error.message,
           'message',
-          'No puedes eliminar la dirección principal porque está en uso.',
+          'No puedes eliminar la dirección principal.',
         ),
       ),
     );
@@ -336,6 +353,43 @@ void main() {
     );
   });
 
+  test('aísla direcciones, labels y defaults por usuario', () async {
+    final repository2 = SqfliteAddressRepository(
+      database: appDatabase,
+      userId: 2,
+    );
+
+    final casaA = await repository.create(_draft('Casa'));
+    final casaB = await repository2.create(_draft('Casa'));
+
+    expect(casaA.isDefault, isTrue);
+    expect(casaB.isDefault, isTrue);
+
+    final bookA = await repository.loadBook();
+    final bookB = await repository2.loadBook();
+    expect(bookA.active.single.id, casaA.id);
+    expect(bookB.active.single.id, casaB.id);
+    expect(bookA.defaultAddressId, casaA.id);
+    expect(bookB.defaultAddressId, casaB.id);
+
+    await expectLater(
+      repository.create(_draft('casa')),
+      throwsA(isA<DuplicateAddressLabelException>()),
+    );
+
+    await expectLater(
+      repository2.update(casaA.id, _draft('Casa A')),
+      throwsA(isA<AddressNotFoundException>()),
+    );
+    await expectLater(
+      repository2.delete(casaA.id),
+      throwsA(isA<AddressNotFoundException>()),
+    );
+
+    await repository.archive(casaA.id);
+    expect((await repository2.loadBook()).active.single.id, casaB.id);
+  });
+
   test('los datos persisten al cerrar y reabrir SQLite', () async {
     final casa = await repository.create(_draft('Casa'));
     final trabajo = await repository.create(_draft('Trabajo'));
@@ -349,7 +403,10 @@ void main() {
       path: databasePath,
     );
     addTearDown(reopened.close);
-    final reopenedRepository = SqfliteAddressRepository(database: reopened);
+    final reopenedRepository = SqfliteAddressRepository(
+      database: reopened,
+      userId: 1,
+    );
 
     final book = await reopenedRepository.loadBook();
     expect(book.active, hasLength(1));

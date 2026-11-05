@@ -1,104 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/app_router.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../shared/models/user_profile.dart';
+import '../models/auth_exceptions.dart';
+import '../providers/auth_controller.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class RegisterScreen extends ConsumerStatefulWidget {
+  const RegisterScreen({super.key, required this.onLogin});
+
+  final VoidCallback onLogin;
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _birthDateController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   static final RegExp _emailRegExp = RegExp(r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$');
 
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   bool _isSubmitting = false;
-  DateTime? _birthDate;
+  String? _errorMessage;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _birthDateController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickBirthDate() async {
-    final DateTime now = DateTime.now();
-
-    final DateTime? selected = await showDatePicker(
-      context: context,
-      initialDate: _birthDate ?? DateTime(now.year - 18, now.month, now.day),
-      firstDate: DateTime(now.year - 120),
-      lastDate: now,
-      helpText: 'Selecciona tu fecha de nacimiento',
-      cancelText: 'Cancelar',
-      confirmText: 'Aceptar',
-    );
-
-    if (selected == null || !mounted) {
-      return;
-    }
-
-    setState(() {
-      _birthDate = selected;
-      _birthDateController.text = _formatDate(selected);
-    });
-  }
-
-  String _formatDate(DateTime date) {
-    final String day = date.day.toString().padLeft(2, '0');
-    final String month = date.month.toString().padLeft(2, '0');
-
-    return '$day/$month/${date.year}';
-  }
-
-  void _togglePasswordVisibility() {
-    setState(() {
-      _obscurePassword = !_obscurePassword;
-    });
-  }
-
-  void _showLoginMessage() {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Inicio de sesión disponible próximamente.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   String? _validateName(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Ingresa tu nombre.';
     }
-
     return null;
   }
 
   String? _validateEmail(String? value) {
-    final String email = value?.trim() ?? '';
-
+    final email = value?.trim() ?? '';
     if (email.isEmpty) {
       return 'Ingresa tu correo electrónico.';
     }
-
     if (!_emailRegExp.hasMatch(email)) {
       return 'Ingresa un correo válido.';
     }
-
     return null;
   }
 
@@ -106,35 +59,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (value == null || value.isEmpty) {
       return 'Ingresa tu contraseña.';
     }
-
     if (value.length < 8) {
       return 'La contraseña debe tener al menos 8 caracteres.';
     }
-
-    return null;
-  }
-
-  String? _validateBirthDate(String? value) {
-    if (_birthDate == null) {
-      return 'Selecciona tu fecha de nacimiento.';
+    if (value.length > 128) {
+      return 'La contraseña no puede superar 128 caracteres.';
     }
-
     return null;
   }
 
-  Future<UserProfile> _register({
-    required String name,
-    required String email,
-    required DateTime birthDate,
-  }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-
-    return UserProfile(
-      id: 'local-user',
-      name: name,
-      email: email,
-      birthDate: birthDate,
-    );
+  String? _validateConfirmPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Confirma tu contraseña.';
+    }
+    if (value != _passwordController.text) {
+      return 'Las contraseñas no coinciden.';
+    }
+    return null;
   }
 
   Future<void> _submit() async {
@@ -142,223 +83,212 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    final FormState? form = _formKey.currentState;
-    if (form == null) {
-      return;
-    }
-
-    if (!form.validate()) {
-      return;
-    }
-
-    final DateTime? birthDate = _birthDate;
-    if (birthDate == null) {
+    final form = _formKey.currentState;
+    if (form == null || !form.validate()) {
       return;
     }
 
     FocusScope.of(context).unfocus();
     setState(() {
       _isSubmitting = true;
+      _errorMessage = null;
     });
 
     try {
-      await _register(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        birthDate: birthDate,
-      );
-
-      if (!mounted) {
-        return;
-      }
-
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      await ref
+          .read(authControllerProvider.notifier)
+          .register(
+            name: _nameController.text,
+            email: _emailController.text,
+            password: _passwordController.text,
+          );
+    } on EmailAlreadyRegisteredException {
+      _showError('Ya existe una cuenta con este correo.');
+    } on AuthStorageException {
+      _showError('No pudimos guardar tu cuenta. Intenta nuevamente.');
+    } on AuthValidationException catch (error) {
+      _showError(error.message);
+    } on AuthException catch (error) {
+      _showError(error.message);
     } catch (_) {
-      if (!mounted) {
-        return;
+      _showError('No pudimos guardar tu cuenta. Intenta nuevamente.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
       }
-
-      setState(() {
-        _isSubmitting = false;
-      });
-
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'No se pudo completar el registro. Intenta nuevamente.',
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
     }
   }
 
-  InputDecoration _fieldDecoration({
-    required String label,
-    required IconData icon,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: textoSecundario),
-      prefixIcon: Icon(icon, color: textoSecundario),
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFE1E6E3)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFE1E6E3)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: verdePrincipal, width: 1.6),
-      ),
-    );
+  void _showError(String message) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _errorMessage = message;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final width = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = width >= 600 ? 24.0 : 16.0;
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Crea Una\nNueva Cuenta',
-                  style: TextStyle(
-                    color: verdePrincipal,
-                    fontSize: 32,
-                    height: 1.1,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Text(
-                      '¿Ya tienes una cuenta?',
-                      style: TextStyle(color: textoSecundario, fontSize: 14),
-                    ),
-                    TextButton(
-                      onPressed: _showLoginMessage,
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        minimumSize: const Size(0, 0),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        'Inicia sesión aquí',
-                        style: TextStyle(
-                          color: verdeOscuro,
-                          fontWeight: FontWeight.bold,
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            32,
+            horizontalPadding,
+            32,
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Form(
+                key: _formKey,
+                child: AutofillGroup(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Crear cuenta',
+                        style: theme.textTheme.displaySmall?.copyWith(
+                          color: colors.onSurface,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-                TextFormField(
-                  controller: _nameController,
-                  textInputAction: TextInputAction.next,
-                  textCapitalization: TextCapitalization.words,
-                  validator: _validateName,
-                  decoration: _fieldDecoration(
-                    label: 'Nombre',
-                    icon: Icons.person_outline_rounded,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  autocorrect: false,
-                  validator: _validateEmail,
-                  decoration: _fieldDecoration(
-                    label: 'Correo electrónico',
-                    icon: Icons.mail_outline_rounded,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.next,
-                  validator: _validatePassword,
-                  decoration: _fieldDecoration(
-                    label: 'Contraseña',
-                    icon: Icons.lock_outline_rounded,
-                    suffixIcon: IconButton(
-                      onPressed: _togglePasswordVisibility,
-                      tooltip: _obscurePassword
-                          ? 'Mostrar contraseña'
-                          : 'Ocultar contraseña',
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        color: textoSecundario,
+                      const SizedBox(height: 8),
+                      Text(
+                        'Guarda tu cuenta, tus direcciones y tu carrito.',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _birthDateController,
-                  readOnly: true,
-                  onTap: _pickBirthDate,
-                  validator: _validateBirthDate,
-                  decoration: _fieldDecoration(
-                    label: 'Fecha de nacimiento',
-                    icon: Icons.calendar_today_outlined,
-                    suffixIcon: const Icon(
-                      Icons.arrow_drop_down_rounded,
-                      color: textoSecundario,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                FilledButton(
-                  onPressed: _isSubmitting ? null : _submit,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: amarilloPrincipal,
-                    foregroundColor: textoPrincipal,
-                    disabledBackgroundColor: amarilloPrincipal,
-                    disabledForegroundColor: textoPrincipal,
-                    padding: const EdgeInsets.symmetric(vertical: 17),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(17),
-                    ),
-                  ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: textoPrincipal,
-                          ),
-                        )
-                      : const Text(
-                          'Regístrate',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                      const SizedBox(height: 28),
+                      TextFormField(
+                        key: const ValueKey('register-name'),
+                        controller: _nameController,
+                        textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.words,
+                        autofillHints: const [AutofillHints.name],
+                        validator: _validateName,
+                        decoration: const InputDecoration(
+                          labelText: 'Nombre',
+                          prefixIcon: Icon(Icons.person_outline_rounded),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const ValueKey('register-email'),
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        autocorrect: false,
+                        autofillHints: const [AutofillHints.newUsername],
+                        validator: _validateEmail,
+                        decoration: const InputDecoration(
+                          labelText: 'Correo electrónico',
+                          prefixIcon: Icon(Icons.mail_outline_rounded),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const ValueKey('register-password'),
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [AutofillHints.newPassword],
+                        validator: _validatePassword,
+                        decoration: InputDecoration(
+                          labelText: 'Contraseña',
+                          helperText: 'Mínimo 8 caracteres.',
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                            tooltip: _obscurePassword
+                                ? 'Mostrar contraseña'
+                                : 'Ocultar contraseña',
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const ValueKey('register-confirm-password'),
+                        controller: _confirmPasswordController,
+                        obscureText: _obscureConfirmPassword,
+                        textInputAction: TextInputAction.done,
+                        autofillHints: const [AutofillHints.newPassword],
+                        validator: _validateConfirmPassword,
+                        onFieldSubmitted: (_) => _submit(),
+                        decoration: InputDecoration(
+                          labelText: 'Confirmar contraseña',
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _obscureConfirmPassword =
+                                    !_obscureConfirmPassword;
+                              });
+                            },
+                            tooltip: _obscureConfirmPassword
+                                ? 'Mostrar contraseña'
+                                : 'Ocultar contraseña',
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (_errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          _errorMessage!,
+                          key: const ValueKey('register-error'),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colors.error,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 28),
+                      FilledButton(
+                        key: const ValueKey('register-submit'),
+                        onPressed: _isSubmitting ? null : _submit,
+                        child: _isSubmitting
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colors.primary,
+                                ),
+                              )
+                            : const Text('Crear cuenta'),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        key: const ValueKey('register-login'),
+                        onPressed: _isSubmitting ? null : widget.onLogin,
+                        child: const Text('¿Ya tienes cuenta? Inicia sesión'),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
         ),

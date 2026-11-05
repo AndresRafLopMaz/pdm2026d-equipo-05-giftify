@@ -4,6 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:giftify/app/app_router.dart';
 import 'package:giftify/app/app_tab.dart';
 import 'package:giftify/app/app_tab_notifier.dart';
+import 'package:giftify/app/main_shell.dart';
+import 'package:giftify/core/theme/app_theme.dart';
+import 'package:giftify/features/auth/providers/current_user_provider.dart';
 import 'package:giftify/features/products/data/product_repository.dart';
 import 'package:giftify/features/products/providers/products_provider.dart';
 import 'package:giftify/features/products/screens/product_detail_screen.dart';
@@ -11,21 +14,34 @@ import 'package:giftify/features/products/screens/product_results_screen.dart';
 import 'package:giftify/features/products/utils/product_filters.dart';
 import 'package:giftify/features/products/widgets/product_card.dart';
 import 'package:giftify/shared/data/mock_products.dart';
+import 'package:giftify/shared/enums/gift_category.dart';
+import 'package:giftify/shared/enums/gift_occasion.dart';
+import 'package:giftify/shared/enums/gift_recipient.dart';
 import 'package:giftify/shared/models/gift_search_criteria.dart';
 
+import 'helpers/auth_test_harness.dart';
 import 'helpers/fake_product_repository.dart';
+import 'helpers/ownership_test_overrides.dart';
 
 Widget _testApp({
   required Widget home,
   ProductRepository? repository,
   RouteFactory? onGenerateRoute,
+  AuthTestHarness? authHarness,
 }) {
   return ProviderScope(
     overrides: [
+      if (authHarness != null) ...authHarness.overrides,
+      currentUserIdProvider.overrideWithValue(1),
+      if (authHarness == null) ownershipNotNeededOverride,
       if (repository != null)
         productRepositoryProvider.overrideWithValue(repository),
     ],
-    child: MaterialApp(home: home, onGenerateRoute: onGenerateRoute),
+    child: MaterialApp(
+      theme: appTheme,
+      home: home,
+      onGenerateRoute: onGenerateRoute,
+    ),
   );
 }
 
@@ -43,7 +59,27 @@ Future<void> _pumpResults(
   await tester.pumpAndSettle();
 }
 
+Future<void> _openFilters(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('results-filter-button')));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _closeFilters(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('filters-close-button')));
+  await tester.pumpAndSettle();
+}
+
 void main() {
+  AuthTestHarness authenticatedHarness() {
+    final harness = AuthTestHarness();
+    final user = harness.repository.seedUser(
+      name: 'Ana',
+      email: 'ana@mail.com',
+    );
+    harness.session.userId = user.id;
+    return harness;
+  }
+
   testWidgets('sin criterios muestra el catálogo general', (tester) async {
     await _pumpResults(
       tester,
@@ -52,13 +88,16 @@ void main() {
 
     expect(find.byType(ProductCard), findsWidgets);
     expect(find.text('Resultados'), findsOneWidget);
-    expect(find.text('Filtrar catálogo'), findsOneWidget);
+    expect(find.text('Catálogo'), findsOneWidget);
+    expect(find.text('Filtrar'), findsOneWidget);
   });
 
-  testWidgets('con criterios renderiza resultados y resumen', (tester) async {
+  testWidgets('con criterios renderiza resultados y resumen compacto', (
+    tester,
+  ) async {
     const criteria = GiftSearchCriteria(
-      occasion: 'Cumpleaños',
-      recipient: 'Amigo',
+      occasion: GiftOccasion.birthday,
+      recipientType: GiftRecipient.friend,
       maxBudget: 1000,
     );
 
@@ -68,7 +107,9 @@ void main() {
       criteria: criteria,
     );
 
-    expect(find.text('Tu búsqueda'), findsOneWidget);
+    expect(find.textContaining('Para Amigo/a'), findsOneWidget);
+    expect(find.textContaining('hasta Q1000.00'), findsOneWidget);
+    expect(find.text('Cambiar'), findsOneWidget);
     expect(find.byType(ProductCard), findsWidgets);
   });
 
@@ -76,8 +117,8 @@ void main() {
     tester,
   ) async {
     const criteria = GiftSearchCriteria(
-      occasion: 'Cumpleaños',
-      recipient: 'Amigo',
+      occasion: GiftOccasion.birthday,
+      recipientType: GiftRecipient.friend,
       maxBudget: 1,
     );
 
@@ -117,12 +158,12 @@ void main() {
     expect(container.read(appTabProvider), AppTab.search);
   });
 
-  testWidgets('al pulsar una tarjeta navega al detalle con el producto', (
+  testWidgets('al pulsar una fila navega al detalle con el producto', (
     tester,
   ) async {
     const criteria = GiftSearchCriteria(
-      occasion: 'Cumpleaños',
-      recipient: 'Amigo',
+      occasion: GiftOccasion.birthday,
+      recipientType: GiftRecipient.friend,
       maxBudget: 1000,
     );
     final expected = filterAndPrioritizeProducts(mockProducts, criteria).first;
@@ -132,6 +173,7 @@ void main() {
         home: const ProductResultsScreen(criteria: criteria),
         repository: FakeProductRepository.success(mockProducts),
         onGenerateRoute: AppRouter.onGenerateRoute,
+        authHarness: authenticatedHarness(),
       ),
     );
     await tester.pumpAndSettle();
@@ -144,6 +186,51 @@ void main() {
     );
 
     expect(detail.product, same(expected));
+  });
+
+  testWidgets('desde MainShell, tap en Catálogo abre el detalle y vuelve', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _testApp(
+        home: const MainShell(),
+        repository: FakeProductRepository.success(mockProducts),
+        onGenerateRoute: AppRouter.onGenerateRoute,
+        authHarness: authenticatedHarness(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Catálogo'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProductCard), findsWidgets);
+
+    final firstCard = tester.widget<ProductCard>(
+      find.byType(ProductCard).first,
+    );
+
+    await tester.tap(find.byType(ProductCard).first);
+    await tester.pumpAndSettle();
+
+    final detail = tester.widget<ProductDetailScreen>(
+      find.byType(ProductDetailScreen),
+    );
+
+    expect(detail.product, same(firstCard.product));
+    expect(find.text(firstCard.product.name), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProductDetailScreen), findsNothing);
+    expect(find.byType(ProductCard), findsWidgets);
+    expect(find.text('Ruta no encontrada'), findsNothing);
   });
 
   testWidgets('muestra loading mientras el repositorio responde', (
@@ -213,12 +300,17 @@ void main() {
 
     expect(repository.calls, 1);
 
-    await tester.tap(find.byKey(const ValueKey('filter-category-Joyería')));
+    await _openFilters(tester);
+    await tester.tap(find.byKey(const ValueKey('filter-category-jewelry')));
     await tester.pumpAndSettle();
+    await _closeFilters(tester);
 
     final cards = tester.widgetList<ProductCard>(find.byType(ProductCard));
     expect(cards, isNotEmpty);
-    expect(cards.every((card) => card.product.category == 'Joyería'), isTrue);
+    expect(
+      cards.every((card) => card.product.category == GiftCategory.jewelry),
+      isTrue,
+    );
     expect(repository.calls, greaterThan(1));
     expect(find.text('Recargar'), findsNothing);
   });
@@ -229,12 +321,14 @@ void main() {
     final repository = FakeProductRepository.success(mockProducts);
     await _pumpResults(tester, repository: repository);
 
-    await tester.tap(find.byKey(const ValueKey('filter-category-Joyería')));
+    await _openFilters(tester);
+    await tester.tap(find.byKey(const ValueKey('filter-category-jewelry')));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey('filter-availability-outOfStock')),
     );
     await tester.pumpAndSettle();
+    await _closeFilters(tester);
 
     expect(find.text('No encontramos productos.'), findsOneWidget);
     expect(
@@ -392,8 +486,8 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     const criteria = GiftSearchCriteria(
-      occasion: 'Cumpleaños',
-      recipient: 'Un destinatario con nombre largo',
+      occasion: GiftOccasion.birthday,
+      recipientType: GiftRecipient.friend,
       maxBudget: 1000,
     );
 
@@ -407,5 +501,31 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byType(ListView), findsOneWidget);
+  });
+
+  testWidgets('Results soporta text scale 2.0 en 320x640', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    const criteria = GiftSearchCriteria(
+      occasion: GiftOccasion.birthday,
+      recipientType: GiftRecipient.friend,
+      maxBudget: 1000,
+    );
+
+    await tester.pumpWidget(
+      _testApp(
+        home: const ProductResultsScreen(criteria: criteria),
+        repository: FakeProductRepository.success(mockProducts),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(ProductCard), findsWidgets);
   });
 }

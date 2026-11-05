@@ -1,5 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../auth/providers/current_user_provider.dart';
+import '../../ownership/providers/ownership_providers.dart';
+
+import '../../../shared/enums/gift_category.dart';
 import '../../../shared/models/cart_item.dart';
 import '../data/cart_filter.dart';
 import '../data/cart_repository.dart';
@@ -13,7 +17,7 @@ class CartSnapshot {
     : allItems = List<CartItem>.unmodifiable(allItems),
       visibleItems = applyCartFilter(allItems, filter),
       categories = Set<String>.unmodifiable(
-        allItems.map((item) => item.product.category).toSet(),
+        allItems.map((item) => item.product.category.label).toSet(),
       );
 
   final List<CartItem> allItems;
@@ -30,13 +34,21 @@ class CartSnapshot {
 
 /// Repositorio persistente usado por la aplicación.
 final cartRepositoryProvider = Provider<CartRepository>((ref) {
-  return PersistentCartRepository(store: SharedPreferencesCartStore());
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) {
+    throw StateError('No hay un usuario autenticado.');
+  }
+
+  return PersistentCartRepository(
+    store: SharedPreferencesCartStore(userId: userId),
+  );
 });
 
 class CartItemsNotifier extends AsyncNotifier<CartSnapshot> {
   @override
   Future<CartSnapshot> build() async {
     final filter = ref.watch(cartFilterProvider);
+    await ref.watch(ownershipMigrationProvider.future);
     final repository = ref.watch(cartRepositoryProvider);
     final items = await repository.loadItems();
     return CartSnapshot(allItems: items, filter: filter);
@@ -65,6 +77,11 @@ class CartItemsNotifier extends AsyncNotifier<CartSnapshot> {
         .map((item) => item.product.id == productId ? updated : item)
         .toList(growable: false);
     _setItems(allItems);
+  }
+
+  Future<void> clear() async {
+    await ref.read(cartRepositoryProvider).clearItems();
+    _setItems(const []);
   }
 
   Future<RemovedCartItem> deleteFromRepository(String productId) {

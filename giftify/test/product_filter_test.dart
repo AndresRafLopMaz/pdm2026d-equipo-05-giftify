@@ -4,15 +4,16 @@ import 'package:giftify/features/products/data/product_filter.dart';
 import 'package:giftify/features/products/providers/product_filter_provider.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/gift_availability.dart';
+import 'package:giftify/shared/enums/gift_category.dart';
 
 void main() {
   test('ProductFilter es inmutable y compara por valor', () {
-    const filter = ProductFilter(category: 'Joyería');
+    const filter = ProductFilter(category: GiftCategory.jewelry);
     final copy = filter.copyWith(availability: GiftAvailability.inStock);
 
-    expect(filter.category, 'Joyería');
+    expect(filter.category, GiftCategory.jewelry);
     expect(filter.availability, isNull);
-    expect(copy.category, 'Joyería');
+    expect(copy.category, GiftCategory.jewelry);
     expect(copy.availability, GiftAvailability.inStock);
     expect(copy, isNot(filter));
 
@@ -26,11 +27,11 @@ void main() {
   test('applyProductFilter filtra por categoría y disponibilidad', () {
     final byCategory = applyProductFilter(
       mockProducts,
-      const ProductFilter(category: 'Joyería'),
+      const ProductFilter(category: GiftCategory.jewelry),
     );
     expect(byCategory, isNotEmpty);
     expect(
-      byCategory.every((product) => product.category == 'Joyería'),
+      byCategory.every((product) => product.category == GiftCategory.jewelry),
       isTrue,
     );
 
@@ -49,7 +50,7 @@ void main() {
     final empty = applyProductFilter(
       mockProducts,
       const ProductFilter(
-        category: 'Joyería',
+        category: GiftCategory.jewelry,
         availability: GiftAvailability.outOfStock,
       ),
     );
@@ -62,8 +63,13 @@ void main() {
 
     expect(container.read(productFilterProvider), const ProductFilter());
 
-    container.read(productFilterProvider.notifier).setCategory('Joyería');
-    expect(container.read(productFilterProvider).category, 'Joyería');
+    container
+        .read(productFilterProvider.notifier)
+        .setCategory(GiftCategory.jewelry);
+    expect(
+      container.read(productFilterProvider).category,
+      GiftCategory.jewelry,
+    );
 
     container
         .read(productFilterProvider.notifier)

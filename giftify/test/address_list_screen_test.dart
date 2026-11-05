@@ -140,7 +140,7 @@ void main() {
     await _pumpList(tester, repository);
     await tester.pumpAndSettle();
 
-    expect(find.text('No tienes direcciones activas.'), findsOneWidget);
+    expect(find.text('No tienes direcciones guardadas.'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('add-address-button')));
     await tester.pumpAndSettle();
@@ -194,11 +194,9 @@ void main() {
     await tester.tap(find.text('Eliminar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Dirección en uso'), findsOneWidget);
+    expect(find.text('Dirección principal'), findsOneWidget);
     expect(
-      find.textContaining(
-        'No puedes eliminar la dirección principal porque está en uso.',
-      ),
+      find.textContaining('No puedes eliminar la dirección principal.'),
       findsOneWidget,
     );
     expect(repository.addresses, hasLength(1));
@@ -251,7 +249,7 @@ void main() {
           .isArchived,
       isFalse,
     );
-    expect(find.text('No hay direcciones archivadas.'), findsOneWidget);
+    expect(find.text('No tienes direcciones archivadas.'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('addresses-tab-active')));
     await tester.pumpAndSettle();
@@ -300,7 +298,7 @@ void main() {
 
     expect(repository.addresses, hasLength(1));
     expect(repository.addresses.single.id, 'addr-casa');
-    expect(find.text('No hay direcciones archivadas.'), findsOneWidget);
+    expect(find.text('No tienes direcciones archivadas.'), findsOneWidget);
     expect(find.text('Dirección eliminada.'), findsOneWidget);
   });
 
@@ -321,6 +319,29 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Casa'), findsOneWidget);
+  });
+
+  testWidgets('la lista soporta text scale 2.0 en 320x640', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    final repository = FakeAddressRepository(
+      initial: [_address('addr-casa', 'Casa', isDefault: true)],
+    );
+
+    await _pumpList(tester, repository);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Casa'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('address-menu-addr-casa')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('cambia la dirección principal desde la tarjeta', (tester) async {

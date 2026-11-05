@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/delivery_address.dart';
 import '../data/address_book.dart';
 import '../data/address_repository.dart';
@@ -129,7 +128,7 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Dirección en uso'),
+          title: const Text('Dirección principal'),
           content: Text(
             '$message\n\n'
             'Puedes cambiar la dirección principal o archivarla.',
@@ -190,10 +189,7 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
             for (final candidate in candidates)
               ListTile(
                 key: ValueKey('choose-default-${candidate.id}'),
-                leading: const Icon(
-                  Icons.location_on_outlined,
-                  color: verdePrincipal,
-                ),
+                leading: const Icon(Icons.location_on_outlined),
                 title: Text(candidate.label),
                 subtitle: Text(candidate.recipientName),
                 onTap: () => Navigator.of(dialogContext).pop(candidate.id),
@@ -215,9 +211,9 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -225,60 +221,56 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
     final addresses = ref.watch(addressesProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mis direcciones'),
-        backgroundColor: fondoPrincipal,
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const ValueKey('add-address-button'),
-        onPressed: _openCreate,
-        backgroundColor: verdePrincipal,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Nueva dirección'),
-      ),
+      appBar: AppBar(title: const Text('Mis direcciones')),
+      bottomNavigationBar: _AddAddressBar(onPressed: _openCreate),
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: SegmentedButton<bool>(
-                segments: const [
-                  ButtonSegment<bool>(
-                    value: false,
-                    label: Text(
-                      'Activas',
-                      key: ValueKey('addresses-tab-active'),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Align(
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: constraints.maxWidth > 720 ? 720 : constraints.maxWidth,
+                height: constraints.maxHeight,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                      child: SegmentedButton<bool>(
+                        showSelectedIcon: false,
+                        segments: const [
+                          ButtonSegment<bool>(
+                            value: false,
+                            label: Text(
+                              'Activas',
+                              key: ValueKey('addresses-tab-active'),
+                            ),
+                          ),
+                          ButtonSegment<bool>(
+                            value: true,
+                            label: Text(
+                              'Archivadas',
+                              key: ValueKey('addresses-tab-archived'),
+                            ),
+                          ),
+                        ],
+                        selected: {_showArchived},
+                        onSelectionChanged: (selection) {
+                          setState(() => _showArchived = selection.first);
+                        },
+                      ),
                     ),
-                    icon: Icon(Icons.check_circle_outline_rounded),
-                  ),
-                  ButtonSegment<bool>(
-                    value: true,
-                    label: Text(
-                      'Archivadas',
-                      key: ValueKey('addresses-tab-archived'),
+                    Expanded(
+                      child: addresses.when(
+                        loading: () => const _AddressLoading(),
+                        error: (_, _) => _AddressError(onRetry: _retry),
+                        data: (book) => _buildBook(book),
+                      ),
                     ),
-                    icon: Icon(Icons.archive_outlined),
-                  ),
-                ],
-                selected: {_showArchived},
-                onSelectionChanged: (selection) {
-                  setState(() => _showArchived = selection.first);
-                },
-              ),
-            ),
-            Expanded(
-              child: addresses.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    key: ValueKey('addresses-loading'),
-                  ),
+                  ],
                 ),
-                error: (_, _) => _AddressError(onRetry: _retry),
-                data: (book) => _buildBook(book),
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -293,9 +285,9 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
 
     return ListView.separated(
       key: const PageStorageKey('addresses-list'),
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 110),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       itemCount: visible.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final address = visible[index];
         return AddressCard(
@@ -312,6 +304,69 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
   }
 }
 
+class _AddAddressBar extends StatelessWidget {
+  const _AddAddressBar({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(top: BorderSide(color: colors.outlineVariant)),
+      ),
+      child: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+        child: Center(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                key: const ValueKey('add-address-button'),
+                onPressed: onPressed,
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Nueva dirección'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AddressLoading extends StatelessWidget {
+  const _AddressLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Column(
+        key: const ValueKey('addresses-loading'),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
+          Text(
+            'Cargando direcciones…',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _AddressEmpty extends StatelessWidget {
   const _AddressEmpty({required this.showArchived});
 
@@ -319,38 +374,32 @@ class _AddressEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Center(
       child: Padding(
         key: const ValueKey('addresses-empty'),
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 76,
-              height: 76,
-              decoration: BoxDecoration(
-                color: verdeClaro,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Icon(
-                showArchived
-                    ? Icons.inventory_2_outlined
-                    : Icons.location_on_outlined,
-                color: verdePrincipal,
-                size: 38,
-              ),
+            Icon(
+              showArchived
+                  ? Icons.inventory_2_outlined
+                  : Icons.location_on_outlined,
+              color: colors.primary,
+              size: 48,
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             Text(
               showArchived
-                  ? 'No hay direcciones archivadas.'
-                  : 'No tienes direcciones activas.',
+                  ? 'No tienes direcciones archivadas.'
+                  : 'No tienes direcciones guardadas.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: textoPrincipal,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
@@ -359,10 +408,8 @@ class _AddressEmpty extends StatelessWidget {
                   ? 'Las direcciones que archives aparecerán aquí.'
                   : 'Agrega una dirección para usarla en tus entregas.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: textoSecundario,
-                fontSize: 14,
-                height: 1.4,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
               ),
             ),
           ],
@@ -379,48 +426,36 @@ class _AddressError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Center(
       child: Padding(
         key: const ValueKey('addresses-error'),
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 76,
-              height: 76,
-              decoration: BoxDecoration(
-                color: rosaClaro,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Icon(
-                Icons.cloud_off_rounded,
-                color: rosaPrincipal,
-                size: 38,
-              ),
-            ),
-            const SizedBox(height: 18),
-            const Text(
+            Icon(Icons.error_outline_rounded, color: colors.error, size: 48),
+            const SizedBox(height: 16),
+            Text(
               'No pudimos cargar tus direcciones.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: textoPrincipal,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Inténtalo de nuevo.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: textoSecundario,
-                fontSize: 14,
-                height: 1.4,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 20),
-            FilledButton.icon(
+            OutlinedButton.icon(
               key: const ValueKey('retry-addresses'),
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),

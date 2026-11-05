@@ -33,14 +33,14 @@ class PersistentCartRepository implements CartRepository {
 
   @override
   Future<List<CartItem>> loadItems() {
-    return _serialize(() async => _hydrate(await store.load()));
+    return _serialize(() async => _hydrate(await _loadSanitizedEntries()));
   }
 
   @override
   Future<List<CartItem>> addItems(List<CartItem> incoming) {
     return _serialize(() async {
       if (incoming.isEmpty) {
-        return _hydrate(await store.load());
+        return _hydrate(await _loadSanitizedEntries());
       }
 
       for (final item in incoming) {
@@ -50,7 +50,7 @@ class PersistentCartRepository implements CartRepository {
         }
       }
 
-      final entries = List<CartEntry>.of(await store.load());
+      final entries = List<CartEntry>.of(await _loadSanitizedEntries());
       for (final item in incoming) {
         final index = entries.indexWhere(
           (entry) => entry.productId == item.product.id,
@@ -81,7 +81,7 @@ class PersistentCartRepository implements CartRepository {
         throw ArgumentError.value(quantity, 'quantity');
       }
 
-      final entries = List<CartEntry>.of(await store.load());
+      final entries = List<CartEntry>.of(await _loadSanitizedEntries());
       _validateUniqueEntries(entries);
       final index = entries.indexWhere((entry) => entry.productId == productId);
       if (index == -1) {
@@ -97,7 +97,7 @@ class PersistentCartRepository implements CartRepository {
   @override
   Future<RemovedCartItem> removeItem(String productId) {
     return _serialize(() async {
-      final entries = List<CartEntry>.of(await store.load());
+      final entries = List<CartEntry>.of(await _loadSanitizedEntries());
       _validateUniqueEntries(entries);
       final index = entries.indexWhere((entry) => entry.productId == productId);
       if (index == -1) {
@@ -117,11 +117,18 @@ class PersistentCartRepository implements CartRepository {
   }
 
   @override
+  Future<void> clearItems() {
+    return _serialize(() async {
+      await store.clear();
+    });
+  }
+
+  @override
   Future<void> restoreItem(RemovedCartItem removed) {
     return _serialize(() async {
       final productId = removed.item.product.id;
       _productFor(productId);
-      final entries = List<CartEntry>.of(await store.load());
+      final entries = List<CartEntry>.of(await _loadSanitizedEntries());
       _validateUniqueEntries(entries);
       if (entries.any((entry) => entry.productId == productId)) {
         throw StateError('El producto $productId ya está en el carrito.');
@@ -134,6 +141,31 @@ class PersistentCartRepository implements CartRepository {
       );
       await store.save(entries);
     });
+  }
+
+  Future<List<CartEntry>> _loadSanitizedEntries() async {
+    final loaded = await store.load();
+    final sanitized = <CartEntry>[];
+    final seenIds = <String>{};
+    for (final entry in loaded) {
+      if (!_catalogById.containsKey(entry.productId) || entry.quantity < 1) {
+        continue;
+      }
+      if (!seenIds.add(entry.productId)) {
+        continue;
+      }
+      sanitized.add(entry);
+    }
+
+    if (sanitized.length != loaded.length) {
+      try {
+        await store.save(sanitized);
+      } on StateError {
+        // La sesión puede continuar con los datos válidos ya saneados.
+      }
+    }
+
+    return sanitized;
   }
 
   GiftProduct _productFor(String productId) {

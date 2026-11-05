@@ -1,17 +1,25 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/models/delivery_address.dart';
+import '../../auth/providers/current_user_provider.dart';
+import '../../ownership/providers/ownership_providers.dart';
 import '../data/address_book.dart';
 import '../data/address_repository.dart';
 import '../data/sqflite_address_repository.dart';
 
 final addressRepositoryProvider = Provider<AddressRepository>((ref) {
-  return SqfliteAddressRepository();
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) {
+    throw StateError('No hay un usuario autenticado.');
+  }
+
+  return SqfliteAddressRepository(userId: userId);
 });
 
 class AddressesNotifier extends AsyncNotifier<AddressBook> {
   @override
-  Future<AddressBook> build() {
+  Future<AddressBook> build() async {
+    await ref.watch(ownershipMigrationProvider.future);
     return ref.watch(addressRepositoryProvider).loadBook();
   }
 
@@ -40,7 +48,8 @@ class AddressesNotifier extends AsyncNotifier<AddressBook> {
   }
 }
 
-final addressesProvider = AsyncNotifierProvider<AddressesNotifier, AddressBook>(
-  AddressesNotifier.new,
-  retry: (retryCount, error) => null,
-);
+final addressesProvider =
+    AsyncNotifierProvider.autoDispose<AddressesNotifier, AddressBook>(
+      AddressesNotifier.new,
+      retry: (retryCount, error) => null,
+    );

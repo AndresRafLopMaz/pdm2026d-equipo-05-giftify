@@ -27,8 +27,6 @@ class AddressBook {
   }) : addresses = List<DeliveryAddress>.unmodifiable(_sorted(addresses)),
        defaultAddressId = defaultAddressId ?? _findDefaultId(addresses);
 
-  factory AddressBook.empty() => AddressBook(addresses: const []);
-
   final List<DeliveryAddress> addresses;
   final String? defaultAddressId;
 

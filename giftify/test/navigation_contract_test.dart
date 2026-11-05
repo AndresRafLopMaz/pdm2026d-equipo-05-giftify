@@ -10,18 +10,32 @@ import 'package:giftify/features/products/screens/product_detail_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/models/cart_item.dart';
 
+import 'helpers/auth_test_harness.dart';
 import 'helpers/fake_address_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues({});
+
+  AuthTestHarness authenticatedHarness() {
+    final harness = AuthTestHarness();
+    final user = harness.repository.seedUser(
+      name: 'Ana',
+      email: 'ana@mail.com',
+    );
+    harness.session.userId = user.id;
+    return harness;
+  }
+
   testWidgets('el router envía GiftProduct a ProductDetailScreen', (
     tester,
   ) async {
     final navigatorKey = GlobalKey<NavigatorState>();
+    final harness = authenticatedHarness();
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: harness.overrides,
         child: MaterialApp(
           navigatorKey: navigatorKey,
           initialRoute: AppRoutes.home,
@@ -29,6 +43,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     navigatorKey.currentState!.pushNamed(
       AppRoutes.productDetail,
@@ -48,9 +63,11 @@ void main() {
     final navigatorKey = GlobalKey<NavigatorState>();
 
     final items = [CartItem(product: mockProducts.first)];
+    final harness = authenticatedHarness();
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: harness.overrides,
         child: MaterialApp(
           navigatorKey: navigatorKey,
           initialRoute: AppRoutes.home,
@@ -58,6 +75,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     navigatorKey.currentState!.pushNamed(AppRoutes.cart, arguments: items);
 
@@ -72,10 +90,14 @@ void main() {
   testWidgets('el router abre AddressListScreen', (tester) async {
     final navigatorKey = GlobalKey<NavigatorState>();
     final repository = FakeAddressRepository();
+    final harness = authenticatedHarness();
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [addressRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          ...harness.overrides,
+          addressRepositoryProvider.overrideWithValue(repository),
+        ],
         child: MaterialApp(
           navigatorKey: navigatorKey,
           initialRoute: AppRoutes.home,

@@ -1,2 +1,1 @@
-/// Pestañas principales de Giftify.
-enum AppTab { home, search, catalog, comingSoon }
+enum AppTab { home, search, catalog, cart }

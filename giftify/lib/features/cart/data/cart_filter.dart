@@ -1,3 +1,4 @@
+import '../../../shared/enums/gift_category.dart';
 import '../../../shared/models/cart_item.dart';
 
 /// Filtro inmutable aplicado únicamente a la lista visible del carrito.
@@ -30,6 +31,6 @@ List<CartItem> applyCartFilter(Iterable<CartItem> items, CartFilter filter) {
   }
 
   return List<CartItem>.unmodifiable(
-    items.where((item) => item.product.category == category),
+    items.where((item) => item.product.category.label == category),
   );
 }

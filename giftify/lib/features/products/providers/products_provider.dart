@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../auth/providers/current_user_provider.dart';
+import '../../ownership/providers/ownership_providers.dart';
+
 import '../../../shared/models/gift_product.dart';
 import '../../../shared/models/gift_search_criteria.dart';
 import '../data/deleted_products_store.dart';
@@ -11,8 +14,13 @@ import 'product_filter_provider.dart';
 
 /// Repositorio local persistente usado por la aplicación.
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) {
+    throw StateError('No hay un usuario autenticado.');
+  }
+
   return MockProductRepository(
-    deletedStore: SharedPreferencesDeletedProductsStore(),
+    deletedStore: SharedPreferencesDeletedProductsStore(userId: userId),
   );
 });
 
@@ -28,6 +36,7 @@ class ProductsNotifier extends AsyncNotifier<List<GiftProduct>> {
   @override
   Future<List<GiftProduct>> build() async {
     final filter = ref.watch(productFilterProvider);
+    await ref.watch(ownershipMigrationProvider.future);
     final repository = ref.watch(productRepositoryProvider);
     final products = await repository.fetchProducts();
     final byCriteria = filterAndPrioritizeProducts(products, criteria);
