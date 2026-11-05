@@ -147,7 +147,7 @@ void main() {
     await v3.close();
   }
 
-  test('migra v2 a v4 preservando direcciones y agregando users', () async {
+  test('migra v2 a v5 preservando direcciones y agregando users', () async {
     await createV2Database();
 
     final appDatabase = AppDatabase(
@@ -157,7 +157,7 @@ void main() {
     addTearDown(appDatabase.close);
     final db = await appDatabase.database;
 
-    expect(await db.getVersion(), 4);
+    expect(await db.getVersion(), 5);
     expect(
       (await db.rawQuery('PRAGMA foreign_keys')).single['foreign_keys'],
       1,
@@ -192,7 +192,7 @@ void main() {
     );
   });
 
-  test('migra v3 a v4 conservando users y addresses', () async {
+  test('migra v3 a v5 conservando users y addresses', () async {
     await createV3Database();
 
     final appDatabase = AppDatabase(
@@ -202,7 +202,7 @@ void main() {
     addTearDown(appDatabase.close);
     final db = await appDatabase.database;
 
-    expect(await db.getVersion(), 4);
+    expect(await db.getVersion(), 5);
 
     final users = await db.query(AppDatabase.usersTable);
     expect(users, hasLength(1));
@@ -223,7 +223,7 @@ void main() {
     addTearDown(appDatabase.close);
     final db = await appDatabase.database;
 
-    expect(await db.getVersion(), 4);
+    expect(await db.getVersion(), 5);
     expect(
       (await db.rawQuery('PRAGMA foreign_keys')).single['foreign_keys'],
       1,
@@ -235,7 +235,7 @@ void main() {
     final names = tables.map((row) => row['name']).toSet();
     expect(names, contains(AppDatabase.usersTable));
     expect(names, contains(AppDatabase.deliveryAddressesTable));
-    expect(names, isNot(contains('payment_methods')));
+    expect(names, contains('payment_methods'));
 
     final userColumns = await db.rawQuery(
       'PRAGMA table_info(${AppDatabase.usersTable})',

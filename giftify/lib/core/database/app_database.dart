@@ -7,10 +7,11 @@ class AppDatabase {
 
   static final AppDatabase instance = AppDatabase();
 
-  static const int version = 4;
+  static const int version = 5;
   static const String fileName = 'giftify.db';
   static const String deliveryAddressesTable = 'delivery_addresses';
   static const String usersTable = 'users';
+  static const String paymentMethodsTable = 'payment_methods';
 
   static const String userLabelIndex =
       'idx_delivery_addresses_user_label_nocase';
@@ -19,6 +20,9 @@ class AppDatabase {
   static const String userArchivedIndex =
       'idx_delivery_addresses_user_archived';
   static const String usersEmailIndex = 'idx_users_email_nocase';
+  static const String paymentMethodsUserIndex = 'idx_payment_methods_user';
+  static const String paymentMethodsDefaultIndex =
+      'idx_payment_methods_user_default';
 
   final DatabaseFactory _factory;
   final String? path;
@@ -84,6 +88,7 @@ class AppDatabase {
     await _createUsersTable(db);
     await _createFinalAddressesTable(db, deliveryAddressesTable);
     await _createAddressIndexes(db);
+    await _createPaymentMethodsTable(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -106,6 +111,10 @@ class AppDatabase {
 
     if (oldVersion < 4) {
       await _rebuildAddressesV4(db);
+    }
+
+    if (oldVersion < 5) {
+      await _createPaymentMethodsTable(db);
     }
   }
 
@@ -181,6 +190,37 @@ class AppDatabase {
       'ALTER TABLE $temporaryTable RENAME TO $deliveryAddressesTable',
     );
     await _createAddressIndexes(db);
+  }
+
+  Future<void> _createPaymentMethodsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE $paymentMethodsTable (
+        id TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL
+          REFERENCES $usersTable(id) ON DELETE CASCADE,
+        holder_name TEXT NOT NULL,
+        brand TEXT NOT NULL
+          CHECK (brand IN ('visa', 'mastercard', 'amex', 'other')),
+        last4 TEXT NOT NULL
+          CHECK (last4 GLOB '[0-9][0-9][0-9][0-9]'),
+        expiry_month INTEGER NOT NULL
+          CHECK (expiry_month BETWEEN 1 AND 12),
+        expiry_year INTEGER NOT NULL,
+        is_default INTEGER NOT NULL DEFAULT 0
+          CHECK (is_default IN (0, 1))
+      )
+    ''');
+
+    await db.execute('''
+      CREATE INDEX $paymentMethodsUserIndex
+      ON $paymentMethodsTable(user_id)
+    ''');
+
+    await db.execute('''
+      CREATE UNIQUE INDEX $paymentMethodsDefaultIndex
+      ON $paymentMethodsTable(user_id)
+      WHERE is_default = 1
+    ''');
   }
 
   Future<void> _createV2Indexes(Database db) async {

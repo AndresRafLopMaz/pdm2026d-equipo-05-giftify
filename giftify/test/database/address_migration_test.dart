@@ -71,7 +71,7 @@ void main() {
   }
 
   test(
-    'migra v1 a v4 conservando direcciones y creando schema scoped',
+    'migra v1 a v5 conservando direcciones y creando schema scoped',
     () async {
       final v1 = await databaseFactoryFfi.openDatabase(
         databasePath,
@@ -118,7 +118,7 @@ void main() {
       );
       final tableNames = tables.map((row) => row['name']).toSet();
       expect(tableNames, contains(AppDatabase.usersTable));
-      expect(tableNames, isNot(contains('payment_methods')));
+      expect(tableNames, contains('payment_methods'));
 
       final rows = await db.query(AppDatabase.deliveryAddressesTable);
       expect(rows, hasLength(1));
@@ -130,7 +130,7 @@ void main() {
     },
   );
 
-  test('fresh v4 crea users, addresses scoped e índices', () async {
+  test('fresh v5 crea users, addresses scoped e índices', () async {
     final appDatabase = AppDatabase(
       factory: databaseFactoryFfi,
       path: databasePath,
@@ -150,9 +150,6 @@ void main() {
         AppDatabase.deliveryAddressesTable,
       }),
     );
-    expect(
-      tables.map((row) => row['name']),
-      isNot(contains('payment_methods')),
-    );
+    expect(tables.map((row) => row['name']), contains('payment_methods'));
   });
 }

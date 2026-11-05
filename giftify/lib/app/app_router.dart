@@ -4,6 +4,8 @@ import '../features/addresses/screens/address_list_screen.dart';
 import '../features/cart/screens/cart_screen.dart';
 import '../features/cart/screens/checkout_screen.dart';
 import '../features/products/screens/product_detail_screen.dart';
+import '../features/payments/screens/add_payment_method_screen.dart';
+import '../features/payments/screens/payment_methods_screen.dart';
 import '../features/products/screens/product_results_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/search/screens/gift_search_screen.dart';
@@ -24,6 +26,8 @@ abstract final class AppRoutes {
   static const String home = '/home';
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String paymentMethods = '/payment-methods';
+  static const String addPaymentMethod = '/payment-methods/new';
   static const String search = '/search';
   static const String productResults = '/products';
   static const String productDetail = '/products/detail';
@@ -67,6 +71,18 @@ abstract final class AppRouter {
         return _buildRoute(
           settings,
           const AuthGate(authenticatedChild: SettingsScreen()),
+        );
+
+      case AppRoutes.paymentMethods:
+        return _buildRoute(
+          settings,
+          const AuthGate(authenticatedChild: PaymentMethodsScreen()),
+        );
+
+      case AppRoutes.addPaymentMethod:
+        return _buildRoute(
+          settings,
+          const AuthGate(authenticatedChild: AddPaymentMethodScreen()),
         );
 
       case AppRoutes.search:

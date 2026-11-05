@@ -123,7 +123,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(ProfileScreen), findsOneWidget);
 
-    await tester.tap(find.byKey(const ValueKey('profile-logout-button')));
+    final logoutButton = find.byKey(const ValueKey('profile-logout-button'));
+    await tester.ensureVisible(logoutButton);
+    await tester.pumpAndSettle();
+    await tester.tap(logoutButton);
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginScreen), findsOneWidget);

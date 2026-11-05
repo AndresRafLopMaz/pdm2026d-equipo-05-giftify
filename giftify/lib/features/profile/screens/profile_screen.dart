@@ -86,6 +86,19 @@ class ProfileScreen extends ConsumerWidget {
                       },
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  Card(
+                    child: ListTile(
+                      key: const ValueKey('profile-payment-methods'),
+                      leading: const Icon(Icons.credit_card_rounded),
+                      title: const Text('Métodos de pago'),
+                      subtitle: const Text('Administra tus métodos ficticios.'),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.paymentMethods);
+                      },
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   const _SectionTitle('Preferencias'),
                   const SizedBox(height: 8),
