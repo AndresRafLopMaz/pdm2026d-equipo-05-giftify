@@ -102,6 +102,7 @@ class AppDatabase {
         ADD COLUMN is_default INTEGER NOT NULL DEFAULT 0
       ''');
 
+      await _dedupeV2Labels(db);
       await _createV2Indexes(db);
     }
 
@@ -221,6 +222,48 @@ class AppDatabase {
       ON $paymentMethodsTable(user_id)
       WHERE is_default = 1
     ''');
+  }
+
+  Future<void> _dedupeV2Labels(Database db) async {
+    final rows = await db.query(
+      deliveryAddressesTable,
+      columns: ['id', 'label'],
+      orderBy: 'rowid ASC',
+    );
+    final reserved = <String>{
+      for (final row in rows) (row['label'] as String).toLowerCase(),
+    };
+    final claimed = <String>{};
+    final baseLabels = <String, String>{};
+
+    for (final row in rows) {
+      final id = row['id'] as String;
+      final label = row['label'] as String;
+      final key = label.toLowerCase();
+      baseLabels.putIfAbsent(key, () => label);
+
+      if (claimed.add(key)) {
+        continue;
+      }
+
+      final base = baseLabels[key]!;
+      var suffix = 2;
+      String candidate;
+      do {
+        candidate = '$base ($suffix)';
+        suffix += 1;
+      } while (reserved.contains(candidate.toLowerCase()) ||
+          claimed.contains(candidate.toLowerCase()));
+
+      claimed.add(candidate.toLowerCase());
+      reserved.add(candidate.toLowerCase());
+      await db.update(
+        deliveryAddressesTable,
+        {'label': candidate},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    }
   }
 
   Future<void> _createV2Indexes(Database db) async {

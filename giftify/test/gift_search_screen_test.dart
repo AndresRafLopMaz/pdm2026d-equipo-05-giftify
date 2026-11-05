@@ -149,6 +149,64 @@ void main() {
     expect(find.text('El presupuesto debe ser mayor que 0.'), findsOneWidget);
   });
 
+  testWidgets('rechaza montos no finitos y formatos ambiguos', (tester) async {
+    RouteSettings? captured;
+    await _pumpSearch(tester, onResults: (settings) => captured = settings);
+    await _selectRecipient(tester, GiftRecipient.friend);
+    await _selectOccasion(tester, GiftOccasion.birthday);
+
+    for (final invalid in [
+      'NaN',
+      'Infinity',
+      '+Infinity',
+      '-Infinity',
+      '1e309',
+      '1,000',
+      '1.000,50',
+      '100,500',
+      '-1',
+    ]) {
+      await _enterBudget(tester, invalid);
+      await _submit(tester);
+
+      expect(captured, isNull, reason: 'No debe navegar con "$invalid"');
+      expect(find.textContaining('QNaN'), findsNothing);
+      expect(find.textContaining('QInfinity'), findsNothing);
+    }
+  });
+
+  testWidgets('el error de presupuesto se limpia al corregir el monto', (
+    tester,
+  ) async {
+    await _pumpSearch(tester);
+    await _selectRecipient(tester, GiftRecipient.friend);
+    await _selectOccasion(tester, GiftOccasion.birthday);
+
+    await _enterBudget(tester, 'abc');
+    await _submit(tester);
+    expect(find.text('Ingresa un monto válido.'), findsOneWidget);
+
+    await _enterBudget(tester, '250');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ingresa un monto válido.'), findsNothing);
+  });
+
+  testWidgets('acepta punto decimal y rechaza separadores múltiples', (
+    tester,
+  ) async {
+    RouteSettings? captured;
+    await _pumpSearch(tester, onResults: (settings) => captured = settings);
+    await _selectRecipient(tester, GiftRecipient.friend);
+    await _selectOccasion(tester, GiftOccasion.birthday);
+
+    await _enterBudget(tester, '100.50');
+    await _submit(tester);
+
+    final criteria = captured!.arguments! as GiftSearchCriteria;
+    expect(criteria.maxBudget, 100.5);
+  });
+
   testWidgets('acepta presupuesto con coma y genera los criterios', (
     tester,
   ) async {

@@ -11,6 +11,7 @@ import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
 import 'package:giftify/features/checkout/screens/checkout_success_screen.dart';
 import 'package:giftify/features/payments/providers/payment_methods_provider.dart';
+import 'package:giftify/features/payments/screens/add_payment_method_screen.dart';
 import 'package:giftify/shared/data/mock_products.dart';
 import 'package:giftify/shared/enums/payment_brand.dart';
 import 'package:giftify/shared/models/delivery_address.dart';
@@ -212,16 +213,19 @@ void main() {
     );
   });
 
-  testWidgets('un método de pago vencido no permite confirmar', (tester) async {
+  testWidgets('todos los pagos vencidos ofrecen agregar uno vigente', (
+    tester,
+  ) async {
     await pumpCheckout(tester, payments: const [expired]);
 
     await scrollTo(
       tester,
       find.byKey(const ValueKey('checkout-payment-expired')),
     );
-    expect(find.text('Método vencido'), findsOneWidget);
+    expect(find.text('Sin método de pago vigente'), findsOneWidget);
+    expect(find.text('No tienes un método de pago vigente.'), findsOneWidget);
     expect(
-      find.text('El método de pago está vencido. Elige otro para continuar.'),
+      find.byKey(const ValueKey('checkout-payment-add-expired')),
       findsOneWidget,
     );
     expect(
@@ -231,6 +235,74 @@ void main() {
           )
           .onPressed,
       isNull,
+    );
+  });
+
+  testWidgets('el selector con pagos vencidos no permite elegirlos', (
+    tester,
+  ) async {
+    await pumpCheckout(tester, payments: const [expired]);
+
+    await scrollTo(
+      tester,
+      find.byKey(const ValueKey('checkout-payment-expired-change')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('checkout-payment-expired-change')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Vence 01/20 · Vencido'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('checkout-payment-add-from-selector')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('checkout-payment-add-from-selector')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(AddPaymentMethodScreen), findsOneWidget);
+  });
+
+  testWidgets('agrega un pago vigente desde checkout y permite confirmar', (
+    tester,
+  ) async {
+    await pumpCheckout(tester, payments: const [expired]);
+
+    await scrollTo(
+      tester,
+      find.byKey(const ValueKey('checkout-payment-add-expired')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('checkout-payment-add-expired')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AddPaymentMethodScreen), findsOneWidget);
+
+    await tester.enterText(find.byKey(const ValueKey('payment-holder')), 'Ana');
+    await tester.tap(find.byKey(const ValueKey('payment-brand')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Visa').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('payment-last4')), '4242');
+    final submit = find.byKey(const ValueKey('payment-submit'));
+    await tester.ensureVisible(submit);
+    await tester.pumpAndSettle();
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CheckoutScreen), findsOneWidget);
+    await scrollTo(tester, find.byKey(const ValueKey('checkout-payment-card')));
+    expect(find.text('Visa •••• 4242'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('confirm-order-button')),
+          )
+          .onPressed,
+      isNotNull,
     );
   });
 

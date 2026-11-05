@@ -18,6 +18,8 @@ import 'package:giftify/shared/enums/gift_occasion.dart';
 import 'package:giftify/shared/enums/gift_size.dart';
 import 'package:giftify/shared/models/gift_product.dart';
 
+import 'helpers/auth_test_harness.dart';
+
 GiftProduct _buildProduct({
   String id = 'test',
   String name = 'Producto de prueba',
@@ -234,10 +236,17 @@ void main() {
     );
     final store = InMemoryCartStore();
     final navigatorKey = GlobalKey<NavigatorState>();
+    final harness = AuthTestHarness();
+    final user = harness.repository.seedUser(
+      name: 'Ana',
+      email: 'ana@mail.com',
+    );
+    harness.session.userId = user.id;
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ...harness.overrides,
           cartRepositoryProvider.overrideWithValue(
             PersistentCartRepository(store: store),
           ),

@@ -39,8 +39,8 @@ class ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${product.category.label} Â· ${product.sellerName} '
-                    'â˜… ${product.sellerRating.toStringAsFixed(1)}',
+                    '${product.category.label} · ${product.sellerName} '
+                    '★ ${product.sellerRating.toStringAsFixed(1)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelMedium?.copyWith(

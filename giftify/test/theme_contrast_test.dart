@@ -33,6 +33,14 @@ void main() {
     expectContrast(giftifyText, giftifyBackground);
     expectContrast(scheme.error, scheme.errorContainer);
     expectContrast(scheme.onError, scheme.error);
+    expectContrast(scheme.onSurfaceVariant, scheme.surfaceContainerHighest);
+    expectContrast(scheme.outline, scheme.surface, minimum: 3);
+    expectContrast(
+      scheme.outline,
+      AppTheme.lightTheme.scaffoldBackgroundColor,
+      minimum: 3,
+    );
+    expect(AppTheme.lightTheme.chipTheme.showCheckmark, isTrue);
   });
 
   test('los tokens críticos dark cumplen contraste AA', () {
@@ -55,5 +63,7 @@ void main() {
     expectContrast(scheme.error, scheme.errorContainer);
     expectContrast(scheme.onError, scheme.error);
     expectContrast(scheme.onErrorContainer, scheme.errorContainer);
+    expectContrast(scheme.outline, scheme.surface, minimum: 3);
+    expectContrast(scheme.outline, theme.scaffoldBackgroundColor, minimum: 3);
   });
 }

@@ -19,6 +19,7 @@ import 'package:giftify/shared/enums/gift_occasion.dart';
 import 'package:giftify/shared/enums/gift_recipient.dart';
 import 'package:giftify/shared/models/gift_search_criteria.dart';
 
+import 'helpers/auth_test_harness.dart';
 import 'helpers/fake_product_repository.dart';
 import 'helpers/ownership_test_overrides.dart';
 
@@ -26,11 +27,13 @@ Widget _testApp({
   required Widget home,
   ProductRepository? repository,
   RouteFactory? onGenerateRoute,
+  AuthTestHarness? authHarness,
 }) {
   return ProviderScope(
     overrides: [
+      if (authHarness != null) ...authHarness.overrides,
       currentUserIdProvider.overrideWithValue(1),
-      ownershipNotNeededOverride,
+      if (authHarness == null) ownershipNotNeededOverride,
       if (repository != null)
         productRepositoryProvider.overrideWithValue(repository),
     ],
@@ -67,6 +70,16 @@ Future<void> _closeFilters(WidgetTester tester) async {
 }
 
 void main() {
+  AuthTestHarness authenticatedHarness() {
+    final harness = AuthTestHarness();
+    final user = harness.repository.seedUser(
+      name: 'Ana',
+      email: 'ana@mail.com',
+    );
+    harness.session.userId = user.id;
+    return harness;
+  }
+
   testWidgets('sin criterios muestra el catálogo general', (tester) async {
     await _pumpResults(
       tester,
@@ -160,6 +173,7 @@ void main() {
         home: const ProductResultsScreen(criteria: criteria),
         repository: FakeProductRepository.success(mockProducts),
         onGenerateRoute: AppRouter.onGenerateRoute,
+        authHarness: authenticatedHarness(),
       ),
     );
     await tester.pumpAndSettle();
@@ -182,6 +196,7 @@ void main() {
         home: const MainShell(),
         repository: FakeProductRepository.success(mockProducts),
         onGenerateRoute: AppRouter.onGenerateRoute,
+        authHarness: authenticatedHarness(),
       ),
     );
     await tester.pumpAndSettle();

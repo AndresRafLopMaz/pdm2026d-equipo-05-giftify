@@ -383,32 +383,37 @@ class _CategoryPill extends StatelessWidget {
             onTap: onTap,
             child: ConstrainedBox(
               constraints: BoxConstraints(
+                minHeight: 48,
                 maxWidth: MediaQuery.sizeOf(context).width - 32,
               ),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: category.background,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(category.icon, size: 18, color: category.foreground),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        category.label,
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: category.foreground,
-                          fontWeight: FontWeight.w600,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: category.background,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(category.icon, size: 18, color: category.foreground),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          category.label,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: category.foreground,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

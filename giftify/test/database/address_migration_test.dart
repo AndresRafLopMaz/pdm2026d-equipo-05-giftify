@@ -130,6 +130,75 @@ void main() {
     },
   );
 
+  test('migra v1 a v5 sin perder labels que difieren solo en casing', () async {
+    final v1 = await databaseFactoryFfi.openDatabase(
+      databasePath,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (db, version) async {
+          await db.execute('''
+            CREATE TABLE ${AppDatabase.deliveryAddressesTable} (
+              id TEXT PRIMARY KEY,
+              label TEXT NOT NULL UNIQUE,
+              recipient_name TEXT NOT NULL,
+              address_line TEXT NOT NULL,
+              city TEXT NOT NULL,
+              department TEXT NOT NULL,
+              reference TEXT
+            )
+          ''');
+        },
+      ),
+    );
+
+    for (final entry in [
+      ('addr-v1-001', 'Casa'),
+      ('addr-v1-002', 'casa'),
+      ('addr-v1-003', 'CASA'),
+      ('addr-v1-004', 'Casa (2)'),
+    ]) {
+      await v1.insert(AppDatabase.deliveryAddressesTable, {
+        'id': entry.$1,
+        'label': entry.$2,
+        'recipient_name': 'Ana',
+        'address_line': '5a avenida 10-20',
+        'city': 'Guatemala',
+        'department': 'Guatemala',
+      });
+    }
+    await v1.close();
+
+    final appDatabase = AppDatabase(
+      factory: databaseFactoryFfi,
+      path: databasePath,
+    );
+    addTearDown(appDatabase.close);
+    final db = await appDatabase.database;
+
+    await expectScopedAddressSchema(db);
+
+    final rows = await db.query(
+      AppDatabase.deliveryAddressesTable,
+      orderBy: 'rowid ASC',
+    );
+    expect(rows.map((row) => row['id']), [
+      'addr-v1-001',
+      'addr-v1-002',
+      'addr-v1-003',
+      'addr-v1-004',
+    ]);
+    expect(rows.map((row) => row['label']), [
+      'Casa',
+      'Casa (3)',
+      'Casa (4)',
+      'Casa (2)',
+    ]);
+    expect(
+      rows.map((row) => (row['label'] as String).toLowerCase()).toSet(),
+      hasLength(4),
+    );
+  });
+
   test('fresh v5 crea users, addresses scoped e índices', () async {
     final appDatabase = AppDatabase(
       factory: databaseFactoryFfi,

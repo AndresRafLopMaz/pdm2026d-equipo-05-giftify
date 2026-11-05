@@ -105,8 +105,15 @@ class _GiftSearchScreenState extends ConsumerState<GiftSearchScreen> {
     });
   }
 
+  final RegExp _budgetPattern = RegExp(r'^\d+(?:[.,]\d{1,2})?$');
+
   double? _parseBudget(String value) {
-    return double.tryParse(value.trim().replaceAll(',', '.'));
+    final normalized = value.trim();
+    if (!_budgetPattern.hasMatch(normalized)) {
+      return null;
+    }
+
+    return double.tryParse(normalized.replaceAll(',', '.'));
   }
 
   Future<void> _selectDate() async {
@@ -316,10 +323,11 @@ class _GiftSearchScreenState extends ConsumerState<GiftSearchScreen> {
                             decimal: true,
                           ),
                           textInputAction: TextInputAction.done,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           onFieldSubmitted: (_) => _submitSearch(),
                           decoration: const InputDecoration(
                             labelText: 'Presupuesto',
-                            hintText: 'Ej. 250.00',
+                            hintText: 'Ej. 250 o 250.50',
                             prefixIcon: Icon(Icons.payments_outlined),
                             prefixText: 'Q ',
                           ),
@@ -329,7 +337,7 @@ class _GiftSearchScreenState extends ConsumerState<GiftSearchScreen> {
                             }
 
                             final budget = _parseBudget(value);
-                            if (budget == null) {
+                            if (budget == null || !budget.isFinite) {
                               return 'Ingresa un monto válido.';
                             }
 

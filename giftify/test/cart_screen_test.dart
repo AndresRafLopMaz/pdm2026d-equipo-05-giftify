@@ -116,6 +116,10 @@ void main() {
       find.byKey(const ValueKey('product-image-placeholder')),
       findsOneWidget,
     );
+    expect(
+      tester.getSize(find.byKey(ValueKey('increase-${product.id}'))).height,
+      greaterThanOrEqualTo(48),
+    );
   });
 
   testWidgets('incrementa la cantidad y recalcula importes', (tester) async {

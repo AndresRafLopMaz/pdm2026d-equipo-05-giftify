@@ -88,12 +88,53 @@ class SharedPreferencesCartStore extends CartStore {
       return const [];
     }
 
-    final decoded = jsonDecode(encoded);
-    if (decoded is! List<Object?>) {
-      throw const FormatException('El carrito persistido no es una lista.');
+    Object? decoded;
+    try {
+      decoded = jsonDecode(encoded);
+    } on FormatException {
+      await _discard(preferences);
+      return const [];
     }
 
-    return decoded.map(CartEntry.fromJson).toList(growable: false);
+    if (decoded is! List) {
+      await _discard(preferences);
+      return const [];
+    }
+
+    final entries = <CartEntry>[];
+    var discardedEntries = false;
+    for (final raw in decoded) {
+      try {
+        entries.add(CartEntry.fromJson(raw));
+      } on FormatException {
+        discardedEntries = true;
+      }
+    }
+
+    if (entries.isEmpty) {
+      if (decoded.isNotEmpty) {
+        await _discard(preferences);
+      }
+      return const [];
+    }
+
+    if (discardedEntries) {
+      try {
+        await save(entries);
+      } on StateError {
+        // La lectura puede continuar; se reintentará sanear en la próxima carga.
+      }
+    }
+
+    return List<CartEntry>.unmodifiable(entries);
+  }
+
+  Future<void> _discard(SharedPreferences preferences) async {
+    try {
+      await preferences.remove(_storageKey);
+    } on StateError {
+      // Si el almacenamiento no permite limpiar, la app continúa con vacío.
+    }
   }
 
   @override

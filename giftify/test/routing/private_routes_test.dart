@@ -15,6 +15,10 @@ import 'package:giftify/features/checkout/screens/checkout_success_screen.dart';
 import 'package:giftify/features/payments/providers/payment_methods_provider.dart';
 import 'package:giftify/features/payments/screens/add_payment_method_screen.dart';
 import 'package:giftify/features/payments/screens/payment_methods_screen.dart';
+import 'package:giftify/features/products/screens/product_detail_screen.dart';
+import 'package:giftify/features/products/screens/product_results_screen.dart';
+import 'package:giftify/features/search/screens/gift_search_screen.dart';
+import 'package:giftify/shared/data/mock_products.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/auth_test_harness.dart';
@@ -110,6 +114,78 @@ void main() {
 
     expect(find.byType(LoginScreen), findsOneWidget);
     expect(find.byType(CheckoutSuccessScreen), findsNothing);
+  });
+
+  testWidgets('/search sin sesión muestra Login', (tester) async {
+    final harness = AuthTestHarness();
+
+    await pumpRoute(tester, AppRoutes.search, harness: harness);
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(GiftSearchScreen), findsNothing);
+  });
+
+  testWidgets('/products sin sesión muestra Login', (tester) async {
+    final harness = AuthTestHarness();
+
+    await pumpRoute(tester, AppRoutes.productResults, harness: harness);
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(ProductResultsScreen), findsNothing);
+  });
+
+  testWidgets('/products/detail sin sesión muestra Login', (tester) async {
+    final harness = AuthTestHarness();
+
+    await pumpRoute(tester, AppRoutes.productDetail, harness: harness);
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(ProductDetailScreen), findsNothing);
+  });
+
+  testWidgets('/search con sesión abre Search', (tester) async {
+    final harness = authenticatedHarness();
+
+    await pumpRoute(tester, AppRoutes.search, harness: harness);
+
+    expect(find.byType(GiftSearchScreen), findsOneWidget);
+  });
+
+  testWidgets('/products con sesión abre Results', (tester) async {
+    final harness = authenticatedHarness();
+
+    await pumpRoute(tester, AppRoutes.productResults, harness: harness);
+
+    expect(find.byType(ProductResultsScreen), findsOneWidget);
+  });
+
+  testWidgets('/products/detail con sesión envía el producto', (tester) async {
+    final harness = authenticatedHarness();
+    final navigatorKey = GlobalKey<NavigatorState>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: harness.overrides,
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          navigatorKey: navigatorKey,
+          home: const SizedBox.shrink(),
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    navigatorKey.currentState!.pushNamed(
+      AppRoutes.productDetail,
+      arguments: mockProducts.first,
+    );
+    await tester.pumpAndSettle();
+
+    final detail = tester.widget<ProductDetailScreen>(
+      find.byType(ProductDetailScreen),
+    );
+    expect(detail.product, same(mockProducts.first));
   });
 
   testWidgets('/addresses con sesión abre direcciones', (tester) async {

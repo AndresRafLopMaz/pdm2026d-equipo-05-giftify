@@ -23,7 +23,9 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 }
 
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
-  late final DateTime _now;
+  static const String _addPaymentSentinel = '__add_payment__';
+
+  late final DateTime Function() _clock;
   String? _selectedAddressId;
   String? _selectedPaymentId;
   bool _isSubmitting = false;
@@ -31,14 +33,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   @override
   void initState() {
     super.initState();
-    _now = widget.now ?? DateTime.now();
+    final fixedNow = widget.now;
+    _clock = fixedNow == null ? DateTime.now : () => fixedNow;
   }
 
   String _formatPrice(double price) => 'Q ${price.toStringAsFixed(2)}';
 
   bool _isExpired(PaymentMethod method) {
-    return method.expiryYear < _now.year ||
-        (method.expiryYear == _now.year && method.expiryMonth < _now.month);
+    final now = _clock();
+    return method.expiryYear < now.year ||
+        (method.expiryYear == now.year && method.expiryMonth < now.month);
   }
 
   DeliveryAddress? _resolveAddress(AddressBook book) {
@@ -180,6 +184,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
 
     final current = _resolvePayment(methods);
+    final hasValidMethod = methods.any((method) => !_isExpired(method));
     final selectedId = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
@@ -224,6 +229,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       ],
                     ),
                   ),
+                  if (!hasValidMethod) ...[
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                      child: FilledButton.tonalIcon(
+                        key: const ValueKey(
+                          'checkout-payment-add-from-selector',
+                        ),
+                        onPressed: () =>
+                            Navigator.pop(sheetContext, _addPaymentSentinel),
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Agregar método de pago'),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                 ],
               ),
@@ -232,6 +252,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         );
       },
     );
+
+    if (selectedId == _addPaymentSentinel) {
+      await _addPaymentMethod();
+      return;
+    }
 
     if (selectedId != null && mounted) {
       setState(() => _selectedPaymentId = selectedId);
@@ -362,7 +387,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Revisa tu conexión e inténtalo de nuevo.',
+              'No pudimos cargar los datos del checkout. '
+              'Intenta nuevamente.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colors.onSurfaceVariant,
@@ -448,6 +474,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     required VoidCallback onChange,
     Key? cardKey,
     Key? changeKey,
+    bool showChangeAction = true,
   }) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
@@ -495,12 +522,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          TextButton(
-            key: changeKey,
-            onPressed: _isSubmitting ? null : onChange,
-            child: Text(changeLabel),
-          ),
+          if (showChangeAction) ...[
+            const SizedBox(width: 8),
+            TextButton(
+              key: changeKey,
+              onPressed: _isSubmitting ? null : onChange,
+              child: Text(changeLabel),
+            ),
+          ],
         ],
       ),
     );
@@ -544,6 +573,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Widget _buildPaymentSection(List<PaymentMethod> methods) {
     final payment = _resolvePayment(methods);
+    final hasValidMethod = methods.any((method) => !_isExpired(method));
+    final allExpired = methods.isNotEmpty && !hasValidMethod;
     final expired = payment != null && _isExpired(payment);
 
     return Column(
@@ -560,6 +591,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             changeKey: const ValueKey('checkout-payment-add'),
             onChange: _addPaymentMethod,
             cardKey: const ValueKey('checkout-payment-empty'),
+          )
+        else if (allExpired)
+          _selectionPanel(
+            icon: Icons.credit_card_off_outlined,
+            title: 'Sin método de pago vigente',
+            subtitle: 'Todos tus métodos guardados están vencidos.',
+            detail: 'Agrega uno nuevo para continuar.',
+            changeLabel: 'Cambiar',
+            changeKey: const ValueKey('checkout-payment-expired-change'),
+            onChange: () => _openPaymentSelector(methods),
+            cardKey: const ValueKey('checkout-payment-expired-card'),
           )
         else
           _selectionPanel(
@@ -580,6 +622,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.error,
             ),
+          ),
+        ] else if (allExpired) ...[
+          const SizedBox(height: 8),
+          Text(
+            'No tienes un método de pago vigente.',
+            key: const ValueKey('checkout-payment-expired'),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.error,
+            ),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            key: const ValueKey('checkout-payment-add-expired'),
+            onPressed: _isSubmitting ? null : _addPaymentMethod,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Agregar método de pago'),
           ),
         ] else if (expired) ...[
           const SizedBox(height: 8),

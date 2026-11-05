@@ -4,10 +4,10 @@ import '../../../shared/enums/gift_availability.dart';
 import '../../../shared/enums/gift_category.dart';
 import '../../../shared/models/gift_product.dart';
 
-/// Filtro adicional aplicado al catÃ¡logo de productos.
+/// Filtro adicional aplicado al catálogo de productos.
 ///
 /// Es independiente de `GiftSearchCriteria`: los criterios representan la
-/// bÃºsqueda personalizada y este filtro refina el listado visible.
+/// búsqueda personalizada y este filtro refina el listado visible.
 @immutable
 class ProductFilter {
   const ProductFilter({this.category, this.availability});
@@ -43,7 +43,7 @@ class ProductFilter {
   int get hashCode => Object.hash(category, availability);
 }
 
-/// Aplica el filtro a una colecciÃ³n de productos.
+/// Aplica el filtro a una colección de productos.
 List<GiftProduct> applyProductFilter(
   Iterable<GiftProduct> products,
   ProductFilter filter,

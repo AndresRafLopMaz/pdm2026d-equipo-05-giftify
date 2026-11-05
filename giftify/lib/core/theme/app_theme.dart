@@ -7,14 +7,16 @@ const Color giftifyBackground = Color(0xFFF8F9FC);
 const Color giftifySurface = Color(0xFFFFFFFF);
 const Color giftifySurfaceMuted = Color(0xFFF2F3F8);
 const Color giftifyText = Color(0xFF262936);
-const Color giftifyMuted = Color(0xFF697080);
+const Color giftifyMuted = Color(0xFF5F6777);
 const Color giftifyBorder = Color(0xFFE4E6EC);
+const Color giftifyOutline = Color(0xFF878E9F);
 const Color giftifyError = Color(0xFFB3261E);
 
 const Color giftifyDarkBackground = Color(0xFF121318);
 const Color giftifyDarkSurface = Color(0xFF1A1B22);
 const Color giftifyDarkSurfaceMuted = Color(0xFF23252E);
 const Color giftifyDarkBorder = Color(0xFF343742);
+const Color giftifyDarkOutline = Color(0xFF6B7284);
 const Color giftifyDarkText = Color(0xFFF3F4F7);
 const Color giftifyDarkMuted = Color(0xFFAEB3C2);
 
@@ -163,7 +165,7 @@ const ColorScheme _lightColorScheme = ColorScheme(
   surfaceContainer: giftifySurfaceMuted,
   surfaceContainerHigh: Color(0xFFEAECF3),
   surfaceContainerHighest: Color(0xFFE2E5EE),
-  outline: giftifyBorder,
+  outline: giftifyOutline,
   outlineVariant: giftifyBorder,
   shadow: Colors.black,
   scrim: Colors.black,
@@ -199,7 +201,7 @@ const ColorScheme _darkColorScheme = ColorScheme(
   surfaceContainer: giftifyDarkSurfaceMuted,
   surfaceContainerHigh: Color(0xFF2B2D38),
   surfaceContainerHighest: Color(0xFF323542),
-  outline: Color(0xFF4A4E5C),
+  outline: giftifyDarkOutline,
   outlineVariant: giftifyDarkBorder,
   shadow: Colors.black,
   scrim: Colors.black,
@@ -399,7 +401,7 @@ abstract final class AppTheme {
         side: BorderSide(color: scheme.outlineVariant),
         shape: const StadiumBorder(),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        showCheckmark: false,
+        showCheckmark: true,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

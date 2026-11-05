@@ -11,6 +11,26 @@ import 'package:giftify/shared/models/cart_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  test('un carrito persistido corrupto se recupera como vacío', () async {
+    SharedPreferences.setMockInitialValues({cartKeyForUser(1): '{corrupto'});
+    final store = SharedPreferencesCartStore(userId: 1);
+    final container = _containerWith(PersistentCartRepository(store: store));
+    addTearDown(container.dispose);
+
+    final snapshot = await container.read(cartItemsProvider.future);
+
+    expect(snapshot.isEmpty, isTrue);
+    expect(container.read(cartItemsProvider).hasError, isFalse);
+    expect(
+      (await SharedPreferences.getInstance()).containsKey(cartKeyForUser(1)),
+      isFalse,
+    );
+  });
+
   test('carga allItems y calcula total y categorías', () async {
     final store = InMemoryCartStore([
       CartEntry(productId: mockProducts[0].id, quantity: 2),

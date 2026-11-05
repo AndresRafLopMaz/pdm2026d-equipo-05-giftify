@@ -663,7 +663,7 @@ class _QuantityControl extends StatelessWidget {
           key: ValueKey('decrease-$productId'),
           tooltip: 'Disminuir cantidad',
           onPressed: onDecrease,
-          constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
           padding: EdgeInsets.zero,
           style: IconButton.styleFrom(
             backgroundColor: colors.surfaceContainer,
@@ -686,7 +686,7 @@ class _QuantityControl extends StatelessWidget {
           key: ValueKey('increase-$productId'),
           tooltip: 'Aumentar cantidad',
           onPressed: onIncrease,
-          constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
           padding: EdgeInsets.zero,
           style: IconButton.styleFrom(
             backgroundColor: colors.surfaceContainer,

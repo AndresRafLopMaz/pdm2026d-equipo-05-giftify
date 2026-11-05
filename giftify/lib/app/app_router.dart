@@ -93,15 +93,20 @@ abstract final class AppRouter {
         );
 
       case AppRoutes.search:
-        return _buildRoute(settings, const GiftSearchScreen());
+        return _buildRoute(
+          settings,
+          const AuthGate(authenticatedChild: GiftSearchScreen()),
+        );
 
       case AppRoutes.productResults:
         final criteria = settings.arguments;
 
         return _buildRoute(
           settings,
-          ProductResultsScreen(
-            criteria: criteria is GiftSearchCriteria ? criteria : null,
+          AuthGate(
+            authenticatedChild: ProductResultsScreen(
+              criteria: criteria is GiftSearchCriteria ? criteria : null,
+            ),
           ),
         );
 
@@ -110,7 +115,11 @@ abstract final class AppRouter {
 
         return _buildRoute(
           settings,
-          ProductDetailScreen(product: product is GiftProduct ? product : null),
+          AuthGate(
+            authenticatedChild: ProductDetailScreen(
+              product: product is GiftProduct ? product : null,
+            ),
+          ),
         );
 
       case AppRoutes.cart:

@@ -187,6 +187,18 @@ void main() {
     expect(find.bySemanticsLabel('Buscar por Cumpleaños'), findsOneWidget);
   });
 
+  testWidgets('las categorías mantienen un área táctil mínima de 48', (
+    tester,
+  ) async {
+    await _pumpHomeScreen(tester);
+
+    final category = find.byKey(const ValueKey('home-category-birthday'));
+    await tester.ensureVisible(category);
+    await tester.pumpAndSettle();
+
+    expect(tester.getSize(category).height, greaterThanOrEqualTo(48));
+  });
+
   testWidgets('los accesos rápidos son botones semánticos reales', (
     tester,
   ) async {
