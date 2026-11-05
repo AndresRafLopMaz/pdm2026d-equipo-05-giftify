@@ -11,10 +11,14 @@ import 'package:giftify/features/cart/data/persistent_cart_repository.dart';
 import 'package:giftify/features/cart/providers/cart_items_provider.dart';
 import 'package:giftify/features/cart/screens/cart_screen.dart';
 import 'package:giftify/features/cart/screens/checkout_screen.dart';
+import 'package:giftify/features/payments/providers/payment_methods_provider.dart';
+import 'package:giftify/features/payments/screens/add_payment_method_screen.dart';
+import 'package:giftify/features/payments/screens/payment_methods_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/auth_test_harness.dart';
 import '../helpers/fake_address_repository.dart';
+import '../helpers/fake_payment_method_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +42,7 @@ void main() {
     String route, {
     required AuthTestHarness harness,
     FakeAddressRepository? addressRepository,
-    bool authenticate = true,
+    FakePaymentMethodRepository? paymentRepository,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -46,13 +50,17 @@ void main() {
           ...harness.overrides,
           if (addressRepository != null)
             addressRepositoryProvider.overrideWithValue(addressRepository),
+          if (paymentRepository != null)
+            paymentMethodRepositoryProvider.overrideWithValue(
+              paymentRepository,
+            ),
           cartRepositoryProvider.overrideWithValue(
             PersistentCartRepository(store: InMemoryCartStore()),
           ),
         ],
         child: MaterialApp(
           theme: AppTheme.lightTheme,
-          initialRoute: authenticate ? route : route,
+          initialRoute: route,
           onGenerateRoute: AppRouter.onGenerateRoute,
         ),
       ),
@@ -68,7 +76,6 @@ void main() {
       AppRoutes.addresses,
       harness: harness,
       addressRepository: FakeAddressRepository(),
-      authenticate: false,
     );
 
     expect(find.byType(LoginScreen), findsOneWidget);
@@ -78,12 +85,7 @@ void main() {
   testWidgets('/cart sin sesión no expone el carrito', (tester) async {
     final harness = AuthTestHarness();
 
-    await pumpRoute(
-      tester,
-      AppRoutes.cart,
-      harness: harness,
-      authenticate: false,
-    );
+    await pumpRoute(tester, AppRoutes.cart, harness: harness);
 
     expect(find.byType(LoginScreen), findsOneWidget);
     expect(find.byType(CartScreen), findsNothing);
@@ -92,12 +94,7 @@ void main() {
   testWidgets('/checkout sin sesión no expone checkout', (tester) async {
     final harness = AuthTestHarness();
 
-    await pumpRoute(
-      tester,
-      AppRoutes.checkout,
-      harness: harness,
-      authenticate: false,
-    );
+    await pumpRoute(tester, AppRoutes.checkout, harness: harness);
 
     expect(find.byType(LoginScreen), findsOneWidget);
     expect(find.byType(CheckoutScreen), findsNothing);
@@ -130,5 +127,59 @@ void main() {
     await pumpRoute(tester, AppRoutes.checkout, harness: harness);
 
     expect(find.byType(CheckoutScreen), findsOneWidget);
+  });
+
+  testWidgets('/payment-methods sin sesión muestra Login', (tester) async {
+    final harness = AuthTestHarness();
+
+    await pumpRoute(
+      tester,
+      AppRoutes.paymentMethods,
+      harness: harness,
+      paymentRepository: FakePaymentMethodRepository(userId: 1),
+    );
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(PaymentMethodsScreen), findsNothing);
+  });
+
+  testWidgets('/payment-methods/new sin sesión muestra Login', (tester) async {
+    final harness = AuthTestHarness();
+
+    await pumpRoute(
+      tester,
+      AppRoutes.addPaymentMethod,
+      harness: harness,
+      paymentRepository: FakePaymentMethodRepository(userId: 1),
+    );
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(AddPaymentMethodScreen), findsNothing);
+  });
+
+  testWidgets('/payment-methods con sesión abre Payments', (tester) async {
+    final harness = authenticatedHarness();
+
+    await pumpRoute(
+      tester,
+      AppRoutes.paymentMethods,
+      harness: harness,
+      paymentRepository: FakePaymentMethodRepository(userId: 1),
+    );
+
+    expect(find.byType(PaymentMethodsScreen), findsOneWidget);
+  });
+
+  testWidgets('/payment-methods/new con sesión abre Add', (tester) async {
+    final harness = authenticatedHarness();
+
+    await pumpRoute(
+      tester,
+      AppRoutes.addPaymentMethod,
+      harness: harness,
+      paymentRepository: FakePaymentMethodRepository(userId: 1),
+    );
+
+    expect(find.byType(AddPaymentMethodScreen), findsOneWidget);
   });
 }
